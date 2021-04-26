@@ -1,0 +1,17 @@
+<!DOCTYPE html>
+{% load socialaccount %}
+<html>
+<body>
+<h1>My Google OAuth Project </h1>
+	<div>
+		<a href="{% provider_login_url 'google' %}">Login With Google</a>
+		{% for account in user.socialaccount_set.all %}
+		<p><img width="50" height="50" src="{{ account.get_avatar_url }}"/></p>
+		<p>UID: <a href="{{ account.extra_data.link }}">{{ account.uid }}</a></p>
+		<p>email: {{ account.extra_data.email }}</p>
+		<p>Name: {{ account.extra_data.name }}</p>
+		<p>Picture: <img sre="{{ account.extra_data.picture }}" width="100" height="100"></p>
+		{% endfor %}
+	</div>
+</body>
+</html>
