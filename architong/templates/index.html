@@ -1,17 +1,541 @@
-<!DOCTYPE html>
+{% extends 'base.html' %}
 {% load socialaccount %}
-<html>
-<body>
-<h1>My Google OAuth Project </h1>
-	<div>
-		<a href="{% provider_login_url 'google' %}">Login With Google</a>
-		{% for account in user.socialaccount_set.all %}
-		<p><img width="50" height="50" src="{{ account.get_avatar_url }}"/></p>
-		<p>UID: <a href="{{ account.extra_data.link }}">{{ account.uid }}</a></p>
-		<p>email: {{ account.extra_data.email }}</p>
-		<p>Name: {{ account.extra_data.name }}</p>
-		<p>Picture: <img sre="{{ account.extra_data.picture }}" width="100" height="100"></p>
-		{% endfor %}
-	</div>
-</body>
-</html>
+{% load static %}
+{% block content %}
+    <div class="breadcrumb_area_three">
+        <div class="container">
+            <div class="breadcrumb_text">
+                <h2> 건축통 <!--<span>Guide</span>--></h2>
+                <p>건축통은 건축, 도시, 환경 관련 텍스트 문서를 공유하는 플랫폼 서비스(Wiki) 입니다.<br>누구나 문서를 작성하고 책을 제작 할 수 있습니다. </p>
+            </div>
+        </div>
+    </div>
+    <section class="doc_tag_area bg_color sec_pad">
+        <div class="container">
+            <!--
+            <div class="section_title text-center">
+                <h2 class="h_title wow fadeInUp">Popular Tags</h2>
+            </div>
+            <ul class="nav nav-tabs doc_tag" id="myTab" role="tablist">
+                <li class="nav-item wow fadeInLeft">
+                    <a class="nav-link active" id="or-tab" data-toggle="tab" href="#or" role="tab" aria-controls="or" aria-selected="true">Ordering</a>
+                </li>
+                <li class="nav-item wow fadeInLeft" data-wow-delay="0.1s">
+                    <a class="nav-link" id="doc-tab" data-toggle="tab" href="#doc" role="tab" aria-controls="doc" aria-selected="false">Docs</a>
+                </li>
+                <li class="nav-item wow fadeInLeft" data-wow-delay="0.2s">
+                    <a class="nav-link" id="forum-tab" data-toggle="tab" href="#forum" role="tab" aria-controls="forum" aria-selected="false">Forum</a>
+                </li>
+                <li class="nav-item wow fadeInLeft" data-wow-delay="0.3s">
+                    <a class="nav-link" id="code-tab" data-toggle="tab" href="#code" role="tab" aria-controls="code" aria-selected="false">Code</a>
+                </li>
+                <li class="nav-item wow fadeInLeft" data-wow-delay="0.4s">
+                    <a class="nav-link" id="element-tab" data-toggle="tab" href="#element" role="tab" aria-controls="element" aria-selected="false">Elements</a>
+                </li>
+            </ul>
+            -->
+            <div class="tab-content" id="myTabContent">
+                <div class="tab-pane doc_tab_pane fade show active" id="or" role="tabpanel" aria-labelledby="or-tab">
+                    <div class="row">
+                        <div class="col-lg-4 col-sm-6">
+                            <div class="doc_tag_item wow fadeInUp">
+                                <div class="doc_tag_title">
+                                    <h4>Getting Started</h4>
+                                    <div class="line"></div>
+                                </div>
+                                <ul class="list-unstyled tag_list">
+                                    <li><a href="#"><i class="icon_document_alt"></i>Setup home page layout</a></li>
+                                    <li><a href="#"><i class="icon_document_alt"></i>BBpress sidebar layout styles</a></li>
+                                    <li><a href="#"><i class="icon_document_alt"></i>Knowledgebase page setup</a></li>
+                                    <li><a href="#"><i class="icon_document_alt"></i>Creating home page blocks</a></li>
+                                    <li><a href="#"><i class="icon_document_alt"></i>How do i add FAQ post</a></li>
+                                </ul>
+                                <a href="#" class="learn_btn">View All<i class="arrow_right"></i></a>
+                            </div>
+                        </div>
+                        <div class="col-lg-4 col-sm-6">
+                            <div class="doc_tag_item wow fadeInUp" data-wow-delay="0.1s">
+                                <div class="doc_tag_title">
+                                    <h4>Integrations</h4>
+                                    <div class="line"></div>
+                                </div>
+                                <ul class="list-unstyled tag_list">
+                                    <li><a href="#"><i class="icon_document_alt"></i>How To Install Manual Theme</a></li>
+                                    <li><a href="#"><i class="icon_document_alt"></i>Theme license information</a></li>
+                                    <li><a href="#"><i class="icon_document_alt"></i>How do i create tree structure menu</a></li>
+                                    <li><a href="#"><i class="icon_document_alt"></i>How do I login forum section</a></li>
+                                    <li><a href="#"><i class="icon_document_alt"></i>How do I login forum section</a></li>
+                                </ul>
+                                <a href="#" class="learn_btn">View All<i class="arrow_right"></i></a>
+                            </div>
+                        </div>
+                        <div class="col-lg-4 col-sm-6">
+                            <div class="doc_tag_item wow fadeInUp" data-wow-delay="0.2s">
+                                <div class="doc_tag_title">
+                                    <h4>Cloud Server</h4>
+                                    <div class="line"></div>
+                                </div>
+                                <ul class="list-unstyled tag_list">
+                                    <li><a href="#"><i class="icon_document_alt"></i>Mailbox and User Settings</a></li>
+                                    <li><a href="#"><i class="icon_document_alt"></i>Preparing your server for installation</a></li>
+                                    <li><a href="#"><i class="icon_document_alt"></i>Managing Docs in Docy</a></li>
+                                    <li><a href="#"><i class="icon_document_alt"></i>How do i add FAQ post</a></li>
+                                    <li><a href="#"><i class="icon_document_alt"></i>Creating home page blocks</a></li>
+                                </ul>
+                                <a href="#" class="learn_btn">View All<i class="arrow_right"></i></a>
+                            </div>
+                        </div>
+                        <div class="col-lg-4 col-sm-6">
+                            <div class="doc_tag_item wow fadeInUp" data-wow-delay="0.1s">
+                                <div class="doc_tag_title">
+                                    <h4>Solar System</h4>
+                                    <div class="line"></div>
+                                </div>
+                                <ul class="list-unstyled tag_list">
+                                    <li><a href="#"><i class="icon_document_alt"></i>How do I contact Customer Care?</a></li>
+                                    <li><a href="#"><i class="icon_document_alt"></i>How to enable labs features</a></li>
+                                    <li><a href="#"><i class="icon_document_alt"></i>Knowledgebase page setup</a></li>
+                                    <li><a href="#"><i class="icon_document_alt"></i>How do I login forum section</a></li>
+                                    <li><a href="#"><i class="icon_document_alt"></i>Mailbox and User Settings</a></li>
+                                </ul>
+                                <a href="#" class="learn_btn">View All<i class="arrow_right"></i></a>
+                            </div>
+                        </div>
+                        <div class="col-lg-4 col-sm-6">
+                            <div class="doc_tag_item wow fadeInUp" data-wow-delay="0.2s">
+                                <div class="doc_tag_title">
+                                    <h4>User Settings</h4>
+                                    <div class="line"></div>
+                                </div>
+                                <ul class="list-unstyled tag_list">
+                                    <li><a href="#"><i class="icon_document_alt"></i>Do I need to know coding</a></li>
+                                    <li><a href="#"><i class="icon_document_alt"></i>Managing Docs in Docy</a></li>
+                                    <li><a href="#"><i class="icon_document_alt"></i>Working with Conversations</a></li>
+                                    <li><a href="#"><i class="icon_document_alt"></i>Copying Email to Docy</a></li>
+                                    <li><a href="#"><i class="icon_document_alt"></i>Knowledgebase page setup</a></li>
+                                </ul>
+                                <a href="#" class="learn_btn">View All<i class="arrow_right"></i></a>
+                            </div>
+                        </div>
+                        <div class="col-lg-4 col-sm-6">
+                            <div class="doc_tag_item wow fadeInUp" data-wow-delay="0.3s">
+                                <div class="doc_tag_title">
+                                    <h4>Reporting</h4>
+                                    <div class="line"></div>
+                                </div>
+                                <ul class="list-unstyled tag_list">
+                                    <li><a href="#"><i class="icon_document_alt"></i>Setup home page layout</a></li>
+                                    <li><a href="#"><i class="icon_document_alt"></i>Can I attach files to forms?</a></li>
+                                    <li><a href="#"><i class="icon_document_alt"></i>Knowledgebase page setup</a></li>
+                                    <li><a href="#"><i class="icon_document_alt"></i>Creating home page blocks</a></li>
+                                    <li><a href="#"><i class="icon_document_alt"></i>How do i add FAQ post</a></li>
+                                </ul>
+                                <a href="#" class="learn_btn">View All<i class="arrow_right"></i></a>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+                <div class="tab-pane fade" id="doc" role="tabpanel" aria-labelledby="doc-tab">
+                    <div class="row">
+                        <div class="col-lg-4 col-sm-6">
+                            <div class="doc_tag_item wow fadeInUp">
+                                <div class="doc_tag_title">
+                                    <h4>Integrations</h4>
+                                    <div class="line"></div>
+                                </div>
+                                <ul class="list-unstyled tag_list">
+                                    <li><a href="#"><i class="icon_document_alt"></i>Setup home page layout</a></li>
+                                    <li><a href="#"><i class="icon_document_alt"></i>BBpress sidebar layout styles</a></li>
+                                    <li><a href="#"><i class="icon_document_alt"></i>Knowledgebase page setup</a></li>
+                                    <li><a href="#"><i class="icon_document_alt"></i>Creating home page blocks</a></li>
+                                    <li><a href="#"><i class="icon_document_alt"></i>How do i add FAQ post</a></li>
+                                </ul>
+                                <a href="#" class="learn_btn">View All<i class="arrow_right"></i></a>
+                            </div>
+                        </div>
+                        <div class="col-lg-4 col-sm-6">
+                            <div class="doc_tag_item wow fadeInUp" data-wow-delay="0.2s">
+                                <div class="doc_tag_title">
+                                    <h4>Getting Started</h4>
+                                    <div class="line"></div>
+                                </div>
+                                <ul class="list-unstyled tag_list">
+                                    <li><a href="#"><i class="icon_document_alt"></i>How To Install Manual Theme</a></li>
+                                    <li><a href="#"><i class="icon_document_alt"></i>Theme license information</a></li>
+                                    <li><a href="#"><i class="icon_document_alt"></i>How do i create tree structure menu</a></li>
+                                    <li><a href="#"><i class="icon_document_alt"></i>How do I login forum section</a></li>
+                                    <li><a href="#"><i class="icon_document_alt"></i>How do I login forum section</a></li>
+                                </ul>
+                                <a href="#" class="learn_btn">View All<i class="arrow_right"></i></a>
+                            </div>
+                        </div>
+                        <div class="col-lg-4 col-sm-6">
+                            <div class="doc_tag_item wow fadeInUp" data-wow-delay="0.4s">
+                                <div class="doc_tag_title">
+                                    <h4>Cloud Server</h4>
+                                    <div class="line"></div>
+                                </div>
+                                <ul class="list-unstyled tag_list">
+                                    <li><a href="#"><i class="icon_document_alt"></i>Mailbox and User Settings</a></li>
+                                    <li><a href="#"><i class="icon_document_alt"></i>Preparing your server for installation</a></li>
+                                    <li><a href="#"><i class="icon_document_alt"></i>Managing Docs in Docy</a></li>
+                                    <li><a href="#"><i class="icon_document_alt"></i>How do i add FAQ post</a></li>
+                                    <li><a href="#"><i class="icon_document_alt"></i>Creating home page blocks</a></li>
+                                </ul>
+                                <a href="#" class="learn_btn">View All<i class="arrow_right"></i></a>
+                            </div>
+                        </div>
+                        <div class="col-lg-4 col-sm-6">
+                            <div class="doc_tag_item wow fadeInUp">
+                                <div class="doc_tag_title">
+                                    <h4>Solar System</h4>
+                                    <div class="line"></div>
+                                </div>
+                                <ul class="list-unstyled tag_list">
+                                    <li><a href="#"><i class="icon_document_alt"></i>How do I contact Customer Care?</a></li>
+                                    <li><a href="#"><i class="icon_document_alt"></i>How to enable labs features</a></li>
+                                    <li><a href="#"><i class="icon_document_alt"></i>Knowledgebase page setup</a></li>
+                                    <li><a href="#"><i class="icon_document_alt"></i>How do I login forum section</a></li>
+                                    <li><a href="#"><i class="icon_document_alt"></i>Mailbox and User Settings</a></li>
+                                </ul>
+                                <a href="#" class="learn_btn">View All<i class="arrow_right"></i></a>
+                            </div>
+                        </div>
+                        <div class="col-lg-4 col-sm-6">
+                            <div class="doc_tag_item wow fadeInUp" data-wow-delay="0.2s">
+                                <div class="doc_tag_title">
+                                    <h4>User Settings</h4>
+                                    <div class="line"></div>
+                                </div>
+                                <ul class="list-unstyled tag_list">
+                                    <li><a href="#"><i class="icon_document_alt"></i>Do I need to know coding</a></li>
+                                    <li><a href="#"><i class="icon_document_alt"></i>Managing Docs in Docy</a></li>
+                                    <li><a href="#"><i class="icon_document_alt"></i>Working with Conversations</a></li>
+                                    <li><a href="#"><i class="icon_document_alt"></i>Copying Email to Docy</a></li>
+                                    <li><a href="#"><i class="icon_document_alt"></i>Knowledgebase page setup</a></li>
+                                </ul>
+                                <a href="#" class="learn_btn">View All<i class="arrow_right"></i></a>
+                            </div>
+                        </div>
+                        <div class="col-lg-4 col-sm-6">
+                            <div class="doc_tag_item wow fadeInUp" data-wow-delay="0.4s">
+                                <div class="doc_tag_title">
+                                    <h4>Reporting</h4>
+                                    <div class="line"></div>
+                                </div>
+                                <ul class="list-unstyled tag_list">
+                                    <li><a href="#"><i class="icon_document_alt"></i>Setup home page layout</a></li>
+                                    <li><a href="#"><i class="icon_document_alt"></i>Can I attach files to forms?</a></li>
+                                    <li><a href="#"><i class="icon_document_alt"></i>Knowledgebase page setup</a></li>
+                                    <li><a href="#"><i class="icon_document_alt"></i>Creating home page blocks</a></li>
+                                    <li><a href="#"><i class="icon_document_alt"></i>How do i add FAQ post</a></li>
+                                </ul>
+                                <a href="#" class="learn_btn">View All<i class="arrow_right"></i></a>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+                <div class="tab-pane fade" id="forum" role="tabpanel" aria-labelledby="forum-tab">
+                    <div class="row">
+                        <div class="col-lg-4 col-sm-6">
+                            <div class="doc_tag_item">
+                                <div class="doc_tag_title">
+                                    <h4>Cloud Server</h4>
+                                    <div class="line"></div>
+                                </div>
+                                <ul class="list-unstyled tag_list">
+                                    <li><a href="#"><i class="icon_document_alt"></i>Setup home page layout</a></li>
+                                    <li><a href="#"><i class="icon_document_alt"></i>BBpress sidebar layout styles</a></li>
+                                    <li><a href="#"><i class="icon_document_alt"></i>Knowledgebase page setup</a></li>
+                                    <li><a href="#"><i class="icon_document_alt"></i>Creating home page blocks</a></li>
+                                    <li><a href="#"><i class="icon_document_alt"></i>How do i add FAQ post</a></li>
+                                </ul>
+                                <a href="#" class="learn_btn">View All<i class="arrow_right"></i></a>
+                            </div>
+                        </div>
+                        <div class="col-lg-4 col-sm-6">
+                            <div class="doc_tag_item">
+                                <div class="doc_tag_title">
+                                    <h4>Getting Started</h4>
+                                    <div class="line"></div>
+                                </div>
+                                <ul class="list-unstyled tag_list">
+                                    <li><a href="#"><i class="icon_document_alt"></i>How To Install Manual Theme</a></li>
+                                    <li><a href="#"><i class="icon_document_alt"></i>Theme license information</a></li>
+                                    <li><a href="#"><i class="icon_document_alt"></i>How do i create tree structure menu</a></li>
+                                    <li><a href="#"><i class="icon_document_alt"></i>How do I login forum section</a></li>
+                                    <li><a href="#"><i class="icon_document_alt"></i>How do I login forum section</a></li>
+                                </ul>
+                                <a href="#" class="learn_btn">View All<i class="arrow_right"></i></a>
+                            </div>
+                        </div>
+                        <div class="col-lg-4 col-sm-6">
+                            <div class="doc_tag_item">
+                                <div class="doc_tag_title">
+                                    <h4>Integrations</h4>
+                                    <div class="line"></div>
+                                </div>
+                                <ul class="list-unstyled tag_list">
+                                    <li><a href="#"><i class="icon_document_alt"></i>Mailbox and User Settings</a></li>
+                                    <li><a href="#"><i class="icon_document_alt"></i>Preparing your server for installation</a></li>
+                                    <li><a href="#"><i class="icon_document_alt"></i>Managing Docs in Docy</a></li>
+                                    <li><a href="#"><i class="icon_document_alt"></i>How do i add FAQ post</a></li>
+                                    <li><a href="#"><i class="icon_document_alt"></i>Creating home page blocks</a></li>
+                                </ul>
+                                <a href="#" class="learn_btn">View All<i class="arrow_right"></i></a>
+                            </div>
+                        </div>
+                        <div class="col-lg-4 col-sm-6">
+                            <div class="doc_tag_item">
+                                <div class="doc_tag_title">
+                                    <h4>Solar System</h4>
+                                    <div class="line"></div>
+                                </div>
+                                <ul class="list-unstyled tag_list">
+                                    <li><a href="#"><i class="icon_document_alt"></i>How do I contact Customer Care?</a></li>
+                                    <li><a href="#"><i class="icon_document_alt"></i>How to enable labs features</a></li>
+                                    <li><a href="#"><i class="icon_document_alt"></i>Knowledgebase page setup</a></li>
+                                    <li><a href="#"><i class="icon_document_alt"></i>How do I login forum section</a></li>
+                                    <li><a href="#"><i class="icon_document_alt"></i>Mailbox and User Settings</a></li>
+                                </ul>
+                                <a href="#" class="learn_btn">View All<i class="arrow_right"></i></a>
+                            </div>
+                        </div>
+                        <div class="col-lg-4 col-sm-6">
+                            <div class="doc_tag_item">
+                                <div class="doc_tag_title">
+                                    <h4>User Settings</h4>
+                                    <div class="line"></div>
+                                </div>
+                                <ul class="list-unstyled tag_list">
+                                    <li><a href="#"><i class="icon_document_alt"></i>Do I need to know coding</a></li>
+                                    <li><a href="#"><i class="icon_document_alt"></i>Managing Docs in Docy</a></li>
+                                    <li><a href="#"><i class="icon_document_alt"></i>Working with Conversations</a></li>
+                                    <li><a href="#"><i class="icon_document_alt"></i>Copying Email to Docy</a></li>
+                                    <li><a href="#"><i class="icon_document_alt"></i>Knowledgebase page setup</a></li>
+                                </ul>
+                                <a href="#" class="learn_btn">View All<i class="arrow_right"></i></a>
+                            </div>
+                        </div>
+                        <div class="col-lg-4 col-sm-6">
+                            <div class="doc_tag_item">
+                                <div class="doc_tag_title">
+                                    <h4>Reporting</h4>
+                                    <div class="line"></div>
+                                </div>
+                                <ul class="list-unstyled tag_list">
+                                    <li><a href="#"><i class="icon_document_alt"></i>Setup home page layout</a></li>
+                                    <li><a href="#"><i class="icon_document_alt"></i>Can I attach files to forms?</a></li>
+                                    <li><a href="#"><i class="icon_document_alt"></i>Knowledgebase page setup</a></li>
+                                    <li><a href="#"><i class="icon_document_alt"></i>Creating home page blocks</a></li>
+                                    <li><a href="#"><i class="icon_document_alt"></i>How do i add FAQ post</a></li>
+                                </ul>
+                                <a href="#" class="learn_btn">View All<i class="arrow_right"></i></a>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+                <div class="tab-pane fade" id="code" role="tabpanel" aria-labelledby="code-tab">
+                    <div class="row">
+                        <div class="col-lg-4 col-sm-6">
+                            <div class="doc_tag_item">
+                                <div class="doc_tag_title">
+                                    <h4>Getting Started</h4>
+                                    <div class="line"></div>
+                                </div>
+                                <ul class="list-unstyled tag_list">
+                                    <li><a href="#"><i class="icon_document_alt"></i>Setup home page layout</a></li>
+                                    <li><a href="#"><i class="icon_document_alt"></i>BBpress sidebar layout styles</a></li>
+                                    <li><a href="#"><i class="icon_document_alt"></i>Knowledgebase page setup</a></li>
+                                    <li><a href="#"><i class="icon_document_alt"></i>Creating home page blocks</a></li>
+                                    <li><a href="#"><i class="icon_document_alt"></i>How do i add FAQ post</a></li>
+                                </ul>
+                                <a href="#" class="learn_btn">View All<i class="arrow_right"></i></a>
+                            </div>
+                        </div>
+                        <div class="col-lg-4 col-sm-6">
+                            <div class="doc_tag_item">
+                                <div class="doc_tag_title">
+                                    <h4>Integrations</h4>
+                                    <div class="line"></div>
+                                </div>
+                                <ul class="list-unstyled tag_list">
+                                    <li><a href="#"><i class="icon_document_alt"></i>How To Install Manual Theme</a></li>
+                                    <li><a href="#"><i class="icon_document_alt"></i>Theme license information</a></li>
+                                    <li><a href="#"><i class="icon_document_alt"></i>How do i create tree structure menu</a></li>
+                                    <li><a href="#"><i class="icon_document_alt"></i>How do I login forum section</a></li>
+                                    <li><a href="#"><i class="icon_document_alt"></i>How do I login forum section</a></li>
+                                </ul>
+                                <a href="#" class="learn_btn">View All<i class="arrow_right"></i></a>
+                            </div>
+                        </div>
+                        <div class="col-lg-4 col-sm-6">
+                            <div class="doc_tag_item">
+                                <div class="doc_tag_title">
+                                    <h4>Cloud Server</h4>
+                                    <div class="line"></div>
+                                </div>
+                                <ul class="list-unstyled tag_list">
+                                    <li><a href="#"><i class="icon_document_alt"></i>Mailbox and User Settings</a></li>
+                                    <li><a href="#"><i class="icon_document_alt"></i>Preparing your server for installation</a></li>
+                                    <li><a href="#"><i class="icon_document_alt"></i>Managing Docs in Docy</a></li>
+                                    <li><a href="#"><i class="icon_document_alt"></i>How do i add FAQ post</a></li>
+                                    <li><a href="#"><i class="icon_document_alt"></i>Creating home page blocks</a></li>
+                                </ul>
+                                <a href="#" class="learn_btn">View All<i class="arrow_right"></i></a>
+                            </div>
+                        </div>
+                        <div class="col-lg-4 col-sm-6">
+                            <div class="doc_tag_item">
+                                <div class="doc_tag_title">
+                                    <h4>Solar System</h4>
+                                    <div class="line"></div>
+                                </div>
+                                <ul class="list-unstyled tag_list">
+                                    <li><a href="#"><i class="icon_document_alt"></i>How do I contact Customer Care?</a></li>
+                                    <li><a href="#"><i class="icon_document_alt"></i>How to enable labs features</a></li>
+                                    <li><a href="#"><i class="icon_document_alt"></i>Knowledgebase page setup</a></li>
+                                    <li><a href="#"><i class="icon_document_alt"></i>How do I login forum section</a></li>
+                                    <li><a href="#"><i class="icon_document_alt"></i>Mailbox and User Settings</a></li>
+                                </ul>
+                                <a href="#" class="learn_btn">View All<i class="arrow_right"></i></a>
+                            </div>
+                        </div>
+                        <div class="col-lg-4 col-sm-6">
+                            <div class="doc_tag_item">
+                                <div class="doc_tag_title">
+                                    <h4>User Settings</h4>
+                                    <div class="line"></div>
+                                </div>
+                                <ul class="list-unstyled tag_list">
+                                    <li><a href="#"><i class="icon_document_alt"></i>Do I need to know coding</a></li>
+                                    <li><a href="#"><i class="icon_document_alt"></i>Managing Docs in Docy</a></li>
+                                    <li><a href="#"><i class="icon_document_alt"></i>Working with Conversations</a></li>
+                                    <li><a href="#"><i class="icon_document_alt"></i>Copying Email to Docy</a></li>
+                                    <li><a href="#"><i class="icon_document_alt"></i>Knowledgebase page setup</a></li>
+                                </ul>
+                                <a href="#" class="learn_btn">View All<i class="arrow_right"></i></a>
+                            </div>
+                        </div>
+                        <div class="col-lg-4 col-sm-6">
+                            <div class="doc_tag_item">
+                                <div class="doc_tag_title">
+                                    <h4>Reporting</h4>
+                                    <div class="line"></div>
+                                </div>
+                                <ul class="list-unstyled tag_list">
+                                    <li><a href="#"><i class="icon_document_alt"></i>Setup home page layout</a></li>
+                                    <li><a href="#"><i class="icon_document_alt"></i>Can I attach files to forms?</a></li>
+                                    <li><a href="#"><i class="icon_document_alt"></i>Knowledgebase page setup</a></li>
+                                    <li><a href="#"><i class="icon_document_alt"></i>Creating home page blocks</a></li>
+                                    <li><a href="#"><i class="icon_document_alt"></i>How do i add FAQ post</a></li>
+                                </ul>
+                                <a href="#" class="learn_btn">View All<i class="arrow_right"></i></a>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+                <div class="tab-pane fade" id="element" role="tabpanel" aria-labelledby="element-tab">
+                    <div class="row">
+                        <div class="col-lg-4 col-sm-6">
+                            <div class="doc_tag_item">
+                                <div class="doc_tag_title">
+                                    <h4>Getting Started</h4>
+                                    <div class="line"></div>
+                                </div>
+                                <ul class="list-unstyled tag_list">
+                                    <li><a href="#"><i class="icon_document_alt"></i>Setup home page layout</a></li>
+                                    <li><a href="#"><i class="icon_document_alt"></i>BBpress sidebar layout styles</a></li>
+                                    <li><a href="#"><i class="icon_document_alt"></i>Knowledgebase page setup</a></li>
+                                    <li><a href="#"><i class="icon_document_alt"></i>Creating home page blocks</a></li>
+                                    <li><a href="#"><i class="icon_document_alt"></i>How do i add FAQ post</a></li>
+                                </ul>
+                                <a href="#" class="learn_btn">View All<i class="arrow_right"></i></a>
+                            </div>
+                        </div>
+                        <div class="col-lg-4 col-sm-6">
+                            <div class="doc_tag_item">
+                                <div class="doc_tag_title">
+                                    <h4>Integrations</h4>
+                                    <div class="line"></div>
+                                </div>
+                                <ul class="list-unstyled tag_list">
+                                    <li><a href="#"><i class="icon_document_alt"></i>How To Install Manual Theme</a></li>
+                                    <li><a href="#"><i class="icon_document_alt"></i>Theme license information</a></li>
+                                    <li><a href="#"><i class="icon_document_alt"></i>How do i create tree structure menu</a></li>
+                                    <li><a href="#"><i class="icon_document_alt"></i>How do I login forum section</a></li>
+                                    <li><a href="#"><i class="icon_document_alt"></i>How do I login forum section</a></li>
+                                </ul>
+                                <a href="#" class="learn_btn">View All<i class="arrow_right"></i></a>
+                            </div>
+                        </div>
+                        <div class="col-lg-4 col-sm-6">
+                            <div class="doc_tag_item">
+                                <div class="doc_tag_title">
+                                    <h4>Cloud Server</h4>
+                                    <div class="line"></div>
+                                </div>
+                                <ul class="list-unstyled tag_list">
+                                    <li><a href="#"><i class="icon_document_alt"></i>Mailbox and User Settings</a></li>
+                                    <li><a href="#"><i class="icon_document_alt"></i>Preparing your server for installation</a></li>
+                                    <li><a href="#"><i class="icon_document_alt"></i>Managing Docs in Docy</a></li>
+                                    <li><a href="#"><i class="icon_document_alt"></i>How do i add FAQ post</a></li>
+                                    <li><a href="#"><i class="icon_document_alt"></i>Creating home page blocks</a></li>
+                                </ul>
+                                <a href="#" class="learn_btn">View All<i class="arrow_right"></i></a>
+                            </div>
+                        </div>
+                        <div class="col-lg-4 col-sm-6">
+                            <div class="doc_tag_item">
+                                <div class="doc_tag_title">
+                                    <h4>Solar System</h4>
+                                    <div class="line"></div>
+                                </div>
+                                <ul class="list-unstyled tag_list">
+                                    <li><a href="#"><i class="icon_document_alt"></i>How do I contact Customer Care?</a></li>
+                                    <li><a href="#"><i class="icon_document_alt"></i>How to enable labs features</a></li>
+                                    <li><a href="#"><i class="icon_document_alt"></i>Knowledgebase page setup</a></li>
+                                    <li><a href="#"><i class="icon_document_alt"></i>How do I login forum section</a></li>
+                                    <li><a href="#"><i class="icon_document_alt"></i>Mailbox and User Settings</a></li>
+                                </ul>
+                                <a href="#" class="learn_btn">View All<i class="arrow_right"></i></a>
+                            </div>
+                        </div>
+                        <div class="col-lg-4 col-sm-6">
+                            <div class="doc_tag_item">
+                                <div class="doc_tag_title">
+                                    <h4>User Settings</h4>
+                                    <div class="line"></div>
+                                </div>
+                                <ul class="list-unstyled tag_list">
+                                    <li><a href="#"><i class="icon_document_alt"></i>Do I need to know coding</a></li>
+                                    <li><a href="#"><i class="icon_document_alt"></i>Managing Docs in Docy</a></li>
+                                    <li><a href="#"><i class="icon_document_alt"></i>Working with Conversations</a></li>
+                                    <li><a href="#"><i class="icon_document_alt"></i>Copying Email to Docy</a></li>
+                                    <li><a href="#"><i class="icon_document_alt"></i>Knowledgebase page setup</a></li>
+                                </ul>
+                                <a href="#" class="learn_btn">View All<i class="arrow_right"></i></a>
+                            </div>
+                        </div>
+                        <div class="col-lg-4 col-sm-6">
+                            <div class="doc_tag_item">
+                                <div class="doc_tag_title">
+                                    <h4>Reporting</h4>
+                                    <div class="line"></div>
+                                </div>
+                                <ul class="list-unstyled tag_list">
+                                    <li><a href="#"><i class="icon_document_alt"></i>Setup home page layout</a></li>
+                                    <li><a href="#"><i class="icon_document_alt"></i>Can I attach files to forms?</a></li>
+                                    <li><a href="#"><i class="icon_document_alt"></i>Knowledgebase page setup</a></li>
+                                    <li><a href="#"><i class="icon_document_alt"></i>Creating home page blocks</a></li>
+                                    <li><a href="#"><i class="icon_document_alt"></i>How do i add FAQ post</a></li>
+                                </ul>
+                                <a href="#" class="learn_btn">View All<i class="arrow_right"></i></a>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </section>
+{% endblock %}
