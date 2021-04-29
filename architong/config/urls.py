@@ -16,17 +16,22 @@ Including another URLconf
 from django.contrib import admin
 from django.urls import path, include
 from django.views.generic import TemplateView
+from django.contrib.auth import views as auth_views
 from django.contrib.auth.views import LogoutView
 from apps.common.views import *
-from django.contrib.auth import views as auth_views
+from apps.book.views import *
 
 
 urlpatterns = [
+    # Common
     path('admin/', admin.site.urls),
     path('', TemplateView.as_view(template_name="index.html")),
     path('accounts/', include('allauth.urls')),
     path('logout/', auth_views.LogoutView.as_view(), name="logout"),
+
+    # Book
     path('edit/', editor),
     path('view/', viewer),
     path('martor/', include('martor.urls')),
+    path('get_law/', get_law)
 ]

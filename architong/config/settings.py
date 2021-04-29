@@ -42,6 +42,7 @@ INSTALLED_APPS = [
     'django.contrib.staticfiles',
     # 어플리케이션
     'apps.common',
+    'apps.book',
     # 사용자 인증을 위한 모듈
     'django.contrib.sites',
     'allauth',
