@@ -17,7 +17,6 @@ DROP SCHEMA IF EXISTS `architong` ;
 -- -----------------------------------------------------
 CREATE SCHEMA IF NOT EXISTS `architong` DEFAULT CHARACTER SET utf8 ;
 USE `architong` ;
-
 -- -----------------------------------------------------
 -- Table `architong`.`books`
 -- -----------------------------------------------------
@@ -26,12 +25,15 @@ DROP TABLE IF EXISTS `architong`.`books` ;
 CREATE TABLE IF NOT EXISTS `architong`.`books` (
   `book_id` INT NOT NULL COMMENT '도서ID' AUTO_INCREMENT,
   `book_title` VARCHAR(255) NOT NULL COMMENT '도서명',
+  `author_id` VARCHAR(150) NOT NULL COMMENT '저자명',
   `cover_path` VARCHAR(255) NULL COMMENT '표지 이미지 경로',
   `rls_yn` CHAR(10) NOT NULL DEFAULT 'Y' COMMENT '공개여부 (default Y : public, N: private)',
+  `like_cnt` INT COMMENT '좋아요',
   `wrt_dt` DATETIME NULL COMMENT '작성일시',
   PRIMARY KEY (`book_id`)) COMMENT '도서'
 ENGINE = InnoDB;
 
+INSERT INTO books (book_id, book_title, author_id, wrt_dt) VALUES (0, '건축법 [시행 2021. 4. 1.] [법률 제17171호, 2020. 3. 31., 타법개정]', 'codaa_', '2021.04.01');
 
 -- -----------------------------------------------------
 -- Table `architong`.`pages`
@@ -39,23 +41,22 @@ ENGINE = InnoDB;
 DROP TABLE IF EXISTS `architong`.`pages` ;
 
 CREATE TABLE IF NOT EXISTS `architong`.`pages` (
-  `page_id` INT NOT NULL AUTO_INCREMENT,
+  `page_id` INT NOT NULL AUTO_INCREMENT COMMENT '페이지ID',
   `book_id` INT NOT NULL COMMENT '도서ID(FK)',
-  `parent_id` INT NULL COMMENT '부모페이지ID',
-  `page_title` VARCHAR(255) NOT NULL COMMENT '페이지ID',
+  `page_title` VARCHAR(255) NOT NULL COMMENT '페이지제목',
+  `parent_id` INT NULL DEFAULT '0' COMMENT '부모페이지ID(default 0 : 최상위페이지)',
+  `depth` INT NULL DEFAULT '0' COMMENT '페이지 레벨',
   `description` TEXT NULL COMMENT '본문(markdown form)',
   `wrt_dt` DATETIME NULL COMMENT '작성일시',
   `mdfcn_dt` DATETIME NULL COMMENT '수정일시',
   PRIMARY KEY (`page_id`),
-  INDEX `book_id_idx` (`book_id` ASC) VISIBLE,
-  CONSTRAINT `book_id`
-    FOREIGN KEY (`book_id`)
-    REFERENCES `architong`.`books` (`book_id`)
-    ON DELETE NO ACTION
-    ON UPDATE NO ACTION) COMMENT '페이지(문서)'
+  INDEX `book_id_idx` (`book_id` ASC) VISIBLE) COMMENT '페이지(문서)'
 ENGINE = InnoDB;
-
 
 SET SQL_MODE=@OLD_SQL_MODE;
 SET FOREIGN_KEY_CHECKS=@OLD_FOREIGN_KEY_CHECKS;
 SET UNIQUE_CHECKS=@OLD_UNIQUE_CHECKS;
+
+
+truncate pages;
+select * from pages;

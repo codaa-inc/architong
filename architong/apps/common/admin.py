@@ -1,12 +1,13 @@
 from django.db import models
 from django.contrib import admin
 from martor.widgets import AdminMartorWidget
-from apps.common.models import Post
+#from apps.common.models import Post
 
-# Register your models here.
+'''
 class PostAdmin(admin.ModelAdmin):
     formfield_overrides = {
         models.TextField: {'widget': AdminMartorWidget},
     }
 
 admin.site.register(Post, PostAdmin)
+'''

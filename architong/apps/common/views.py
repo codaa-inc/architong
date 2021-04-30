@@ -1,11 +1,14 @@
 from django.shortcuts import render
+from django.conf import settings
+'''
 from apps.common.models import Post
 from apps.common.forms import PostForm
-from django.conf import settings
+'''
 
 def index(request):
     return render(request, 'index.html')
 
+'''
 def editor(request) :
     if request.method == 'POST':
         form = PostForm(request.POST)
@@ -23,3 +26,4 @@ def viewer(request) :
     post = Post.objects.last()
     context = {'post': post}
     return render(request, 'viewer.html', context)
+'''

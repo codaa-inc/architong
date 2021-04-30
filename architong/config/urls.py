@@ -28,10 +28,11 @@ urlpatterns = [
     path('', TemplateView.as_view(template_name="index.html")),
     path('accounts/', include('allauth.urls')),
     path('logout/', auth_views.LogoutView.as_view(), name="logout"),
-
     # Book
+    path('get_law/', get_law),
+    '''
     path('edit/', editor),
     path('view/', viewer),
     path('martor/', include('martor.urls')),
-    path('get_law/', get_law)
+    '''
 ]

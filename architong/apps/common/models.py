@@ -1,5 +1,7 @@
 from django.db import models
+'''
 from martor.models import MartorField
+
 
 class Post(models.Model):
     title = models.CharField(max_length=255, blank=True, null=True)
@@ -11,3 +13,10 @@ class Post(models.Model):
     class Meta:
         managed = False
         db_table = 'common_post'
+        
+'''
+
+
+
+
+
