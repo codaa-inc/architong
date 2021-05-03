@@ -119,8 +119,9 @@
                             <p><span>Welcome to Docy !</span> Get familiar with the Stripe products and explore their features:</p>
                         </div>
                         <form class="form" method="post">{% csrf_token %}
+                            <input name="book_id"></input>
                             <div class="form-group">
-                              {{ page.title }}
+                              {{ page.page_title }}
                             </div>
                             <div name="description" class="form-group">
                               {{ page.description }}
@@ -145,8 +146,7 @@
                         <script type="text/javascript" src="{% static 'plugins/js/emojis.min.js' %}"></script>
                         <script type="text/javascript" src="{% static 'martor/js/martor.bootstrap.min.js' %}"></script>
                         <script>
-                            //jQuery.noConflict();
-                            $('form [name="title"]').attr({
+                            $('form [name="page_title"]').attr({
                               'class': 'form-control',
                               'placeholder': '제목을 입력하세요'
                             });

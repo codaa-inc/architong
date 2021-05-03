@@ -1,46 +1,144 @@
-<!DOCTYPE html>
 {% extends 'base.html' %}
 {% load static %}
 {% load martortags %}
-<html lang="ko">
-<head>
-  <title></title>
-  <link href="{% static 'plugins/css/bootstrap.min.css' %}" type="text/css" media="all" rel="stylesheet" />
-  <link href="{% static 'plugins/css/ace.min.css' %}" type="text/css" media="all" rel="stylesheet" />
-  <link href="{% static 'plugins/css/resizable.min.css' %}" type="text/css" media="all" rel="stylesheet" />
-  <link href="{% static 'martor/css/martor.bootstrap.min.css' %}" type="text/css" media="all" rel="stylesheet" />
-  <style>.main-container {margin-top: 3em}</style>
-</head>
-<body>
-  <div class="ui container main-container">
-    <div class="main-content">
-      <div class="martor-content">
-        <h3>Title: {{ post.title }}</h3>
-        <p><b>Description:</b></p>
-        <hr />
-        <div class="martor-preview">
-          {{ post.description|safe_markdown }}
-        </div>
-      </div>
-    </div>
-  </div>
+{% block css %}
+<link href="{% static 'plugins/css/bootstrap.min.css' %}" type="text/css" media="all" rel="stylesheet"/>
+<link href="{% static 'plugins/css/ace.min.css' %}" type="text/css" media="all" rel="stylesheet"/>
+<link href="{% static 'plugins/css/resizable.min.css' %}" type="text/css" media="all" rel="stylesheet"/>
+<link href="{% static 'martor/css/martor.bootstrap.min.css' %}" type="text/css" media="all" rel="stylesheet"/>
+{% endblock %}
 
-  <script type="text/javascript" src="{% static 'plugins/js/jquery.min.js' %}"></script>
-  <script type="text/javascript" src="{% static 'plugins/js/bootstrap.min.js' %}"></script>
-  <script type="text/javascript" src="{% static 'plugins/js/ace.js' %}"></script>
-  <script type="text/javascript" src="{% static 'plugins/js/mode-markdown.js' %}"></script>
-  <script type="text/javascript" src="{% static 'plugins/js/ext-language_tools.js' %}"></script>
-  <script type="text/javascript" src="{% static 'plugins/js/theme-github.js' %}"></script>
-  <script type="text/javascript" src="{% static 'plugins/js/typo.js' %}"></script>
-  <script type="text/javascript" src="{% static 'plugins/js/spellcheck.js' %}"></script>
-  <script type="text/javascript" src="{% static 'plugins/js/highlight.min.js' %}"></script>
-  <script type="text/javascript" src="{% static 'plugins/js/resizable.min.js' %}"></script>
-  <script type="text/javascript" src="{% static 'plugins/js/emojis.min.js' %}"></script>
-  <script type="text/javascript" src="{% static 'martor/js/martor.bootstrap.min.js' %}"></script>
-  <script>
-    $('.martor-preview pre').each(function(i, block){
-        hljs.highlightBlock(block);
-    });
-  </script>
-</body>
-</html>
+<!--================ Bootstrap =================-->
+{% block js %}
+<script src="{% static 'assets/font-size/js/rv-jquery-fontsize-2.0.3.min.js' %}"></script>
+<script src="{% static 'assets/magnify-pop/jquery.magnific-popup.min.js' %}"></script>
+<script src="{% static 'js/plugins.js' %}"></script>
+{% endblock %}
+
+{% block content %}
+<!--================Forum Breadcrumb Area =================-->
+<div class="breadcrumb_area_three" style="padding: 0"></div>
+<!--================End Forum Breadcrumb Area =================-->
+<!--================Topic Area =================-->
+<section class="doc_documentation_area" id="sticky_doc">
+    <div class="container custom_container">
+        <div class="row">
+            <div class="col-lg-3 doc_mobile_menu display_none">
+                <aside class="doc_left_sidebarlist">
+                    <div class="open_icon" id="left">
+                        <i class="arrow_carrot-right"></i>
+                        <i class="arrow_carrot-left"></i>
+                    </div>
+                    <div>
+                        <ul class="list-unstyled nav-sidebar">
+                            <li class="nav-item active">
+                                <a href="doc-main.html" class="nav-link active"><img src="{% static 'img/side-nav/home.png' %}" alt="">Home</a>
+                            </li>
+                            <li class="nav-item">
+                                <a href="doc-main.html" class="nav-link"><img src="{% static 'img/side-nav/briefcase.png' %}" alt="briefcase">Elements</a>
+                                <span class="icon"><i class="arrow_carrot-down"></i></span>
+                                <ul class="list-unstyled dropdown_nav">
+                                    <li><a href="doc-element-tab.html">Tabs</a></li>
+                                    <li><a href="doc-element-accordion.html">Accordion</a></li>
+                                    <li><a href="doc-element-notice.html">Notices</a></li>
+                                    <li><a href="doc-content-tables.html">Table</a></li>
+                                    <li><a href="doc-element-lightbox.html">Image Lightbox</a></li>
+                                    <li><a href="doc-element-hotspots.html">Image Hotspots</a></li>
+                                    <li><a href="doc-element-code.html">Source Code</a></li>
+                                    <li><a href="doc-content-tooltip.html">Tooltip</a></li>
+                                </ul>
+                            </li>
+                            <li class="nav-item">
+                                <a href="typography.html" class="nav-link"><img
+                                        src="{% static 'img/side-nav/document.png' %}" alt="">Content</a>
+                                <span class="icon"><i class="arrow_carrot-down"></i></span>
+                                <ul class="list-unstyled dropdown_nav">
+                                    <li><a href="doc-content-image.html">Image</a></li>
+                                    <li><a href="doc-element-tab.html">Tables</a></li>
+                                    <li><a href="doc-element-code.html">Code</a></li>
+                                    <li><a href="doc-content-video.html">Video</a></li>
+                                    <li><a href="doc-content-tooltip.html">Tooltips & Direction</a></li>
+                                    <li><a href="typography.html">Typography</a></li>
+                                </ul>
+                            </li>
+                            <li class="nav-item">
+                                <a href="doc-ref-cheatsheet.html" class="nav-link"><img src="{% static 'img/side-nav/chat1.png' %}" alt="">Reference</a>
+                                <span class="icon"><i class="arrow_carrot-down"></i></span>
+                                <ul class="list-unstyled dropdown_nav">
+                                    <li><a href="doc-ref-cheatsheet.html">Cheatsheet</a></li>
+                                    <li><a href="doc-ref-footnote.html">Footnotes</a></li>
+                                    <li><a href="doc-tour.html">Interface Tour</a></li>
+                                    <li><a href="doc-ref-can-use.html">Can I Use</a></li>
+                                    <li><a href="doc-content-tooltip.html">Tooltips & Direction</a></li>
+                                    <li><a href="doc-ref-shortcuts.html">Keyboard Shortcuts</a></li>
+                                </ul>
+                            </li>
+                            <li class="nav-item">
+                                <a href="doc-content-video.html" class="nav-link"><img src="{% static 'img/side-nav/layout.png' %}" alt="">Layouts</a>
+                                <span class="icon"><i class="arrow_carrot-down"></i></span>
+                                <ul class="list-unstyled dropdown_nav">
+                                    <li><a href="doc-content-video.html">Full-width</a></li>
+                                    <li><a href="doc-element-hotspots.html">Left Sidebar</a></li>
+                                    <li><a href="doc-layout-banner-gradient.html">Gradient Banner</a></li>
+                                    <li><a href="doc-layout-banner-empty.html">Without Banner</a></li>
+                                </ul>
+                            </li>
+                            <li class="nav-item">
+                                <a href="doc-changelog.html" class="nav-link"><img src="{% static 'img/side-nav/clock.png' %}" alt="">Change Log</a>
+                            </li>
+                        </ul>
+                        <ul class="list-unstyled nav-sidebar coding_nav">
+                            <li class="nav-item">
+                                <a href="#" class="nav-link"><img src="{% static 'img/side-nav/account.png' %}" alt="">Account</a>
+                            </li>
+                            <li class="nav-item">
+                                <a href="doc-element-code.html" class="nav-link"><img src="{% static 'img/side-nav/coding.png' %}" alt="">Development</a>
+                            </li>
+                        </ul>
+                        <ul class="list-unstyled nav-sidebar bottom_nav">
+                            <li class="nav-item">
+                                <a href="#" class="nav-link"><img src="{% static 'img/side-nav/united-states.png' %}" alt="">United States</a>
+                            </li>
+                            <li class="nav-item">
+                                <a href="#" class="nav-link"><img src="{% static 'img/side-nav/edit.png' %}" alt="">English</a>
+                            </li>
+                            <li class="nav-item">
+                                <a href="#" class="nav-link"><img src="{% static 'img/side-nav/users.png' %}" alt="">Sign In <i class="arrow_right"></i></a>
+                            </li>
+                        </ul>
+                    </div>
+                </aside>
+            </div>
+            <div class="col-lg-9">
+                <article id="post" class="documentation_info">
+                    <div class="documentation_body" id="documentation">
+                      {% for p in page %}
+                        <div class="martor-content">
+                            <!--<h3>Title: {{ p.page_title }}</h3>
+                            <p><b>Description:</b></p>
+                            <hr/>-->
+                            <div class="martor-preview">
+                                {{ p.description|safe_markdown }}
+                            </div>
+                        </div>
+                      {% endfor %}
+                        <!--================ Martor =================-->
+                        <script type="text/javascript" src="{% static 'plugins/js/jquery.min.js' %}"></script>
+                        <script type="text/javascript" src="{% static 'plugins/js/bootstrap.min.js' %}"></script>
+                        <script type="text/javascript" src="{% static 'plugins/js/highlight.min.js' %}"></script>
+                        <script>
+                            $('.martor-preview pre').each(function (i, block) {
+                                hljs.highlightBlock(block);
+                            });
+                        </script>
+                    </div>
+                </article>
+            </div>
+        </div>
+    </div>
+</section>
+<!--================End Topic Area =================-->
+
+<!-- Back to top button -->
+<a id="back-to-top" title="Back to Top"></a>
+{% endblock %}

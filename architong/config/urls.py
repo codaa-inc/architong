@@ -30,9 +30,8 @@ urlpatterns = [
     path('logout/', auth_views.LogoutView.as_view(), name="logout"),
     # Book
     path('get_law/', get_law),
-    '''
     path('edit/', editor),
-    path('view/', viewer),
-    path('martor/', include('martor.urls')),
-    '''
+    path('book/<int:book_id>', viewBook),
+    path('<int:page_id>', viewPage),
+
 ]

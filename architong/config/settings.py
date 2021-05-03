@@ -194,7 +194,7 @@ SOCIALACCOUNT_PROVIDERS = {
 }
 
 # URL 맵핑
-SITE_ID = 2
+SITE_ID = 3
 
 # 로그인, 로그아웃 성공시 경로
 LOGIN_REDIRECT_URL = '/'
