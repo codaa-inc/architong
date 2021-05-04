@@ -6666,7 +6666,7 @@ body.remove .header_tabs_area.tab_fixed .header_tab_items {
 }
 
 .documentation_body {
-  padding-top: 60px;
+  /**padding-top: 60px;*/
 }
 .documentation_body footer .border_bottom {
   margin-top: 100px;
@@ -11374,63 +11374,6 @@ ul.ordered-list li::before {
   padding-left: 10px;
 }
 
-.blockquote_inner {
-  margin-top: 85px;
-}
-.blockquote_inner h6 {
-  color: #6b707f;
-  margin-bottom: 0;
-}
-
-.blockquote {
-  background: transparent;
-  padding: 0 0 0 40px;
-  border-color: #1d2746;
-  border-width: 2px;
-  margin-bottom: 55px;
-}
-.blockquote:before, .blockquote:after {
-  display: none;
-}
-.blockquote p {
-  font-size: 18px;
-  font-style: italic;
-  color: #4b505e;
-  line-height: 30px;
-}
-
-.blockquote_two {
-  background: #f9fafb;
-  padding: 14px 40px 26px 140px;
-  border: 0;
-  position: relative;
-  margin-top: 25px;
-}
-.blockquote_two:before, .blockquote_two:after {
-  display: none;
-}
-.blockquote_two span {
-  background: #d6dffa;
-  padding: 0 4px;
-}
-.blockquote_two .quote_icon {
-  font-size: 150px;
-  color: #d3d6e1;
-  position: absolute;
-  transform: rotate(180deg);
-  top: 18px;
-  background: transparent;
-  left: 40px;
-  line-height: 155px;
-}
-.blockquote_two h5 {
-  font-size: 22px;
-  line-height: 40px;
-  font-style: italic;
-  font-weight: 400;
-  color: #6b707f;
-}
-
 .button_inner {
   margin-top: 60px;
 }
@@ -14023,44 +13966,6 @@ input[type=number] {
   text-decoration: underline;
 }
 
-blockquote {
-  background: rgba(76, 76, 241, 0.05);
-  border-left: 4px solid #4c4cf1;
-  font-size: 20px;
-  padding: 50px 40px;
-  position: relative;
-  z-index: 0;
-  margin: 46px 0;
-}
-blockquote:before, blockquote:after {
-  content: "";
-  position: absolute;
-  z-index: -1;
-}
-blockquote:before {
-  background: url("../img/blog-classic/quote_top.png") no-repeat scroll left top;
-  width: 132px;
-  height: 81px;
-  top: 0;
-}
-blockquote:after {
-  background: url("../img/blog-classic/quote_bottom.png") no-repeat scroll left bottom;
-  width: 77px;
-  height: 75px;
-  right: 40px;
-  bottom: 30px;
-}
-blockquote .c_head {
-  color: #6b707f;
-  font-weight: 400;
-  line-height: 34px;
-  margin-bottom: 45px;
-}
-blockquote .author {
-  font-weight: 500;
-  font-size: 16px;
-}
-
 .single_post_two {
   padding-top: 10px;
 }
@@ -14254,11 +14159,6 @@ blockquote .author {
 }
 
 /*============= doc_blog_classic_area css ==============*/
-.doc_blog_classic_area blockquote {
-  margin-top: 0;
-  margin-bottom: 50px;
-}
-
 .blog_classic_item {
   overflow: hidden;
   margin-bottom: 50px;

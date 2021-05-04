@@ -31,7 +31,6 @@ urlpatterns = [
     # Book
     path('get_law/', get_law),
     path('edit/', editor),
-    path('book/<int:book_id>', viewBook),
-    path('<int:page_id>', viewPage),
-
+    path('book/<int:book_id>', view_book),
+    path('<int:page_id>', view_page),
 ]

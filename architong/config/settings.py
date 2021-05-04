@@ -40,16 +40,15 @@ INSTALLED_APPS = [
     'django.contrib.sessions',
     'django.contrib.messages',
     'django.contrib.staticfiles',
-    # 어플리케이션
+    # application
     'apps.common',
     'apps.book',
-    # 사용자 인증을 위한 모듈
+    # third party
     'django.contrib.sites',
     'allauth',
     'allauth.account',
     'allauth.socialaccount',
     'allauth.socialaccount.providers.google',
-    # 마크다운 패키지
     'martor',
 ]
 

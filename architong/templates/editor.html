@@ -119,7 +119,7 @@
                             <p><span>Welcome to Docy !</span> Get familiar with the Stripe products and explore their features:</p>
                         </div>
                         <form class="form" method="post">{% csrf_token %}
-                            <input name="book_id"></input>
+                            <input name="book_id" style="display: none"></input>
                             <div class="form-group">
                               {{ page.page_title }}
                             </div>
