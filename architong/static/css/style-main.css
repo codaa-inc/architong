@@ -6508,18 +6508,7 @@ body.remove .header_tabs_area.tab_fixed .header_tab_items {
   position: relative;
   height: 100%;
 }
-.doc_left_sidebarlist:before {
-  content: "";
-  width: 200%;
-  right: 0;
-  height: 100%;
-  /*background: #fafcfc;*/
-  background: rgb(248, 250, 253);
-  position: absolute;
-  border-right: 1px solid #E6EDF0;
-  top: 0;
-  z-index: -1;
-}
+
 .doc_left_sidebarlist .scroll {
   max-height: 760px;
 }

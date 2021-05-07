@@ -7,12 +7,16 @@
 <link href="{% static 'plugins/css/resizable.min.css' %}" type="text/css" media="all" rel="stylesheet"/>
 <link href="{% static 'martor/css/martor.bootstrap.min.css' %}" type="text/css" media="all" rel="stylesheet"/>
 {% endblock %}
-
-<!--================ Bootstrap =================-->
 {% block js %}
 <script src="{% static 'assets/font-size/js/rv-jquery-fontsize-2.0.3.min.js' %}"></script>
 <script src="{% static 'assets/magnify-pop/jquery.magnific-popup.min.js' %}"></script>
 <script src="{% static 'js/plugins.js' %}"></script>
+<script>
+    let liText = ""
+    function onclickPage(pageId) {
+        console.log(document.querySelector("#child-page-" + pageId).offsetTop);
+    };
+</script>
 {% endblock %}
 
 {% block content %}
@@ -29,28 +33,26 @@
                         <i class="arrow_carrot-right"></i>
                         <i class="arrow_carrot-left"></i>
                     </div>
-                    <div>
+                    <div class="scroll">
+                        {% for book in books %}
                         <ul class="list-unstyled nav-sidebar">
-                            {% for book in books %}
-                            <li class="nav-item active">
-                                <a href="#" class="nav-link active" style="display: inline-block"><img src="{% static 'img/side-nav/document.png' %}" alt="">{{ book.book_title }}</a>
+                            <li class="nav-item">
+                                <a href="#" class="nav-link" style="display: inline-block">
+                                    <img src="{% static 'img/side-nav/document2.png' %}" style="padding-right: 5px;">{{ book.book_title }}</a>
                             </li>
                             {% for page in pages %}
                             {% if page.parent_id == 0 %}
-                            <li class="nav-item">
-                                <a href="#" class="nav-link" style="display: inline-block"><img src="{% static 'img/side-nav/document2.png' %}" alt="briefcase">{{ page.page_title }}</a>
-                                <span class="icon"><i class="arrow_carrot"></i></span>
-                                <ul class="list-unstyled dropdown_nav">
-                                    <li><a href="doc-element-tab.html">Tabs</a></li>
-                                    <li><a href="doc-element-accordion.html">Accordion</a></li>
-                                    <li><a href="doc-element-notice.html">Notices</a></li>
-                                    <li><a href="doc-content-tables.html">Table</a></li>
-                                    <li><a href="doc-element-lightbox.html">Image Lightbox</a></li>
-                                    <li><a href="doc-element-hotspots.html">Image Hotspots</a></li>
-                                    <li><a href="doc-element-code.html">Source Code</a></li>
-                                    <li><a href="doc-content-tooltip.html">Tooltip</a></li>
-                                </ul>
+                            <li class="nav-item active">
+                                <a href="#" class="nav-link">{{ page.page_title }}</a>
+                                <span class="icon"><i class="arrow_carrot-down"></i></span>
+                                <ul class="list-unstyled dropdown_nav" id="parent-page-{{ page.page_id }}" ></ul>
                             </li>
+                            {% elif page.depth == 1 %}
+                            <script>
+                                liText = "<li><a onclick='javascript:onclickPage(page_id)'>" + "{{ page.page_title }}" + "</a></li>"
+                                liText = liText.replace(/page_id/gi, '"' + "{{ page.page_id }}" + '"')
+                                $("#" + "parent-page-" + "{{ page.parent_id }}").append(liText);
+                            </script>
                             {% endif %}
                             {% endfor %}
                         </ul>
@@ -58,15 +60,12 @@
                     </div>
                 </aside>
             </div>
-            <div class="col-lg-9">
+            <div class="col-xl-9 doc-middle-content">
                 <article id="post" class="documentation_info">
                     <div class="documentation_body" id="documentation">
                       {% for page in pages %}
                         <div class="martor-content">
-                            <!--<h3>Title: {{ p.page_title }}</h3>
-                            <p><b>Description:</b></p>
-                            <hr/>-->
-                            <div class="martor-preview">
+                            <div class="martor-preview" id="child-page-{{ page.page_id }}">
                                 {{ page.description|safe_markdown }}
                             </div>
                         </div>
