@@ -53,10 +53,20 @@ CREATE TABLE IF NOT EXISTS `architong`.`pages` (
   INDEX `book_id_idx` (`book_id` ASC) VISIBLE) COMMENT '페이지(문서)'
 ENGINE = InnoDB;
 
+-- -----------------------------------------------------
+-- Table `architong`.`bookmark`
+-- -----------------------------------------------------
+DROP TABLE IF EXISTS `architong`.`bookmark` ;
+
+CREATE TABLE IF NOT EXISTS `architong`.`bookmark` (
+  `bookmark_id` INT NOT NULL AUTO_INCREMENT COMMENT '북마크ID',
+  `page_id` INT NOT NULL COMMENT '페이지ID',
+  `username` VARCHAR(150) NOT NULL COMMENT '사용자ID',
+  `reg_dt` DATETIME NULL COMMENT '등록일시',
+  PRIMARY KEY (`bookmark_id`),
+  INDEX `bookmark_id_idx` (`bookmark_id` ASC) VISIBLE) COMMENT '페이지(문서)'
+ENGINE = InnoDB;
+
 SET SQL_MODE=@OLD_SQL_MODE;
 SET FOREIGN_KEY_CHECKS=@OLD_FOREIGN_KEY_CHECKS;
 SET UNIQUE_CHECKS=@OLD_UNIQUE_CHECKS;
-
-
-truncate pages;
-select * from pages;

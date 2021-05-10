@@ -1,6 +1,17 @@
 from django.db import models
 from martor.models import MartorField
 
+class Bookmark(models.Model):
+    bookmark_id = models.AutoField(primary_key=True)
+    page_id = models.IntegerField()
+    username = models.CharField(max_length=150)
+    reg_dt = models.DateTimeField(auto_now_add=True, blank=True, null=True)
+
+    class Meta:
+        managed = False
+        db_table = 'bookmark'
+
+
 class Books(models.Model):
     book_id = models.AutoField(primary_key=True)
     book_title = models.CharField(max_length=255)

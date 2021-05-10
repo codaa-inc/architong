@@ -6,17 +6,24 @@
 <link href="{% static 'plugins/css/ace.min.css' %}" type="text/css" media="all" rel="stylesheet"/>
 <link href="{% static 'plugins/css/resizable.min.css' %}" type="text/css" media="all" rel="stylesheet"/>
 <link href="{% static 'martor/css/martor.bootstrap.min.css' %}" type="text/css" media="all" rel="stylesheet"/>
+<style>
+    .martor-preview:hover {
+        background-color: #F9F9F9;
+    }
+    .martor-preview:hover > a {
+        visibility : visible;
+    }
+    .bookmark {
+        float: right;
+        cursor: pointer;
+        visibility: hidden;
+    }
+</style>
 {% endblock %}
 {% block js %}
 <script src="{% static 'assets/font-size/js/rv-jquery-fontsize-2.0.3.min.js' %}"></script>
 <script src="{% static 'assets/magnify-pop/jquery.magnific-popup.min.js' %}"></script>
 <script src="{% static 'js/plugins.js' %}"></script>
-<script>
-    let liText = ""
-    function onclickPage(pageId) {
-        console.log(document.querySelector("#child-page-" + pageId).offsetTop);
-    };
-</script>
 {% endblock %}
 
 {% block content %}
@@ -43,15 +50,15 @@
                             {% for page in pages %}
                             {% if page.parent_id == 0 %}
                             <li class="nav-item active">
-                                <a href="#" class="nav-link">{{ page.page_title }}</a>
+                                <a onclick='onclickChildList("{{ page.page_id }}")' class="nav-link">{{ page.page_title }}</a>
                                 <span class="icon"><i class="arrow_carrot-down"></i></span>
-                                <ul class="list-unstyled dropdown_nav" id="parent-page-{{ page.page_id }}" ></ul>
+                                <ul class="list-unstyled dropdown_nav" id="parent-list-{{ page.page_id }}" ></ul>
                             </li>
                             {% elif page.depth == 1 %}
                             <script>
-                                liText = "<li><a onclick='javascript:onclickPage(page_id)'>" + "{{ page.page_title }}" + "</a></li>"
-                                liText = liText.replace(/page_id/gi, '"' + "{{ page.page_id }}" + '"')
-                                $("#" + "parent-page-" + "{{ page.parent_id }}").append(liText);
+                                $("#" + "parent-list-" + "{{ page.parent_id }}").append(
+                                    `<li><a id='child-list-{{ page.page_id }}' onclick='onclickChildList(this.id)'>` + "{{ page.page_title }}" + `</a></li>`
+                                );
                             </script>
                             {% endif %}
                             {% endfor %}
@@ -65,7 +72,11 @@
                     <div class="documentation_body" id="documentation">
                       {% for page in pages %}
                         <div class="martor-content">
-                            <div class="martor-preview" id="child-page-{{ page.page_id }}">
+                            <div class="martor-preview" id="page-{{ page.page_id }}">
+                                <a id="bookmark-{{ page.page_id }}" class="bookmark" title="bookmark" onclick='addBookmark("{{ page.page_id }}")'>
+                                    <i class="icon_ribbon_alt" style="font-size: larger"></i>
+                                    <!--<i class="icon_ribbon" style="font-size: larger"></i>-->
+                                </a>
                                 {{ page.description|safe_markdown }}
                             </div>
                         </div>

@@ -193,7 +193,8 @@ SOCIALACCOUNT_PROVIDERS = {
 }
 
 # URL 맵핑
-SITE_ID = 3
+SITE_ID = 2
+SOCIAL_AUTH_URL_NAMESPACE = 'social'
 
 # 로그인, 로그아웃 성공시 경로
 LOGIN_REDIRECT_URL = '/'

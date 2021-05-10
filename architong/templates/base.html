@@ -297,25 +297,14 @@
                 </ul>
                 <div class="right-nav">
                     {% if user.is_anonymous %}
-                    <a href="{% provider_login_url 'google' %}" style="width: 120px;"><i class="icon_lock-open" style="margin-right: 5px;"></i>로그인</a>
-                     {% else %}
-                    {% for account in user.socialaccount_set.all %}
-                    <a href="edit/" target="_blank" style="width: 100px"><i class="icon_documents_alt" style="margin-right: 5px;"></i>책만들기</a>
-                    <a href="#" style="width: 100px; white-space : nowrap; overflow : hidden; text-overflow : ellipsis; margin-right: 20px "><i class="icon_profile" style="margin-right: 5px;"></i>{{ account.extra_data.name }}</a>
-                    <a href="{% url 'logout' %}" target="_blank" style="width: 120px"><i class="icon_lock" style="margin-right: 5px;"></i>로그아웃</a>
-                    {% endfor %}
-                     {% endif %}
-                    <!--
-                    <div class="px-2 js-darkmode-btn" title="Toggle dark mode">
-                        <label for="something" class="tab-btn tab-btns">
-                            <ion-icon class="light-mode" name="contrast"></ion-icon>
-                        </label>
-                        <input type="checkbox" name="something" id="something" class="dark_mode_switcher">
-                        <label for="something" class="tab-btn">
-                            <ion-icon class="dark-mode" name="contrast-outline"></ion-icon>
-                        </label>
-                    </div>
-                    -->
+                        <a href="{% provider_login_url 'google' %}" style="width: 120px;"><i class="icon_lock-open" style="margin-right: 5px;"></i>로그인</a>
+                    {% else %}
+                        {% for account in user.socialaccount_set.all %}
+                            <a href="edit/" target="_blank" style="width: 100px"><i class="icon_documents_alt" style="margin-right: 5px;"></i>책만들기</a>
+                            <a href="#" style="width: 100px; white-space : nowrap; overflow : hidden; text-overflow : ellipsis; margin-right: 20px "><i class="icon_profile" style="margin-right: 5px;"></i>{{ account.extra_data.name }}</a>
+                            <a href="{% url 'logout' %}" target="_blank" style="width: 120px"><i class="icon_lock" style="margin-right: 5px;"></i>로그아웃</a>
+                        {% endfor %}
+                    {% endif %}
                 </div>
             </div>
         </div>
@@ -423,4 +412,5 @@
 <script src="https://unpkg.com/ionicons@5.4.0/dist/ionicons.js"></script>
 <script src="{% static 'js/main.js' %}"></script>
 </body>
+<script src="{% static 'js/docs.js' %}"></script>
 </html>

@@ -1,12 +1,20 @@
 import requests
+
+from django.contrib.sessions.models import Session
+from django.contrib.auth.models import User
 from django.conf import settings
+from django.http import HttpResponse
+from django.http import JsonResponse
+from django.core.serializers import json
+from django.contrib.auth.decorators import login_required
 from django.shortcuts import render, redirect
+from xml.etree import ElementTree
+
 from .models import Books
 from .models import Pages
+from .models import Bookmark
 from .forms import PostForm
 from .forms import PageForm
-
-from xml.etree import ElementTree
 
 def editor(request) :
     if request.method == 'POST':
@@ -22,15 +30,43 @@ def editor(request) :
 
 def view_book(request, book_id) :
     books = Books.objects.filter(book_id=book_id)
+    username = request.session.get('user')  # 세션으로부터 유저 정보 가져오기
+    print("username : ", username)
+    # 로그인된 사용자의 경우 페이지 정보에 북마크 등록여부 추가
+    '''
+    if username is not None:
+        pages = Pages.objects.filter(book_id=book_id)
+        print(pages.query)
+    else:
+        pages = Pages.objects.filter(book_id=book_id)
+    '''
     pages = Pages.objects.filter(book_id=book_id)
     context = {'books': books, 'pages': pages}
     return render(request, 'viewer.html', context)
 
-def view_page(request, page_id) :
-    # 해당 책의 페이지 호출
-    page = Pages.objects.filter(page_id=page_id)
-    context = {'pages': page}
-    return render(request, 'viewer.html', context)
+
+def view_page(request, page_id):
+    '''
+    if page_id is not None:
+        pages = Pages.objects.filter(page_id=page_id) | Pages.objects.filter(parent_id=page_id)
+        json_serializer = json.Serializer()
+        context = {'pages': json_serializer.serialize(pages)}
+        return JsonResponse(request, context)
+'''
+
+@login_required(login_url="/account/google/login")
+def add_bookmark(request, page_id):
+    if request.user.is_authenticated:
+        bookmark = Bookmark()   # 모델 객체 생성
+        bookmark.page_id = page_id
+        bookmark.username = request.user
+        bookmark.save()
+        result = 'true'
+    else:
+        result = 'false'
+    json_serializer = json.Serializer()
+    context = {"result": json_serializer.serialize(result)}
+    return JsonResponse(request, context)
 
 def get_law(request):
     # Request : 국가법령정보 API call
@@ -51,8 +87,7 @@ def get_law(request):
 
 
 def insert_law(is_jomun, title, markdown_text):
-    # 모델 객체 생성
-    page = Pages()
+    page = Pages() # 모델 객체 생성
     page.book_id = 1
     page.page_title = title
     page.description = markdown_text
