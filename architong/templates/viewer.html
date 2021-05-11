@@ -73,10 +73,18 @@
                       {% for page in pages %}
                         <div class="martor-content">
                             <div class="martor-preview" id="page-{{ page.page_id }}">
-                                <a id="bookmark-{{ page.page_id }}" class="bookmark" title="bookmark" onclick='addBookmark("{{ page.page_id }}")'>
-                                    <i class="icon_ribbon_alt" style="font-size: larger"></i>
-                                    <!--<i class="icon_ribbon" style="font-size: larger"></i>-->
-                                </a>
+                                {% if page.depth == 1 %}
+                                    <a id="bookmark-{{ page.page_id }}" class="bookmark" title="북마크 추가" onclick='addOrRemoveBookmark("{{ page.page_id }}")'>
+                                        {% if page.is_bookmarked == 1 %}
+                                            <i class="icon_ribbon" style="font-size: larger"></i>
+                                            <script>
+                                                $("#bookmark-" + "{{ page.page_id }}").prop("title", "북마크 삭제");
+                                            </script>
+                                        {% else %}
+                                            <i class="icon_ribbon_alt" style="font-size: larger"></i>
+                                        {% endif %}
+                                    </a>
+                                {% endif %}
                                 {{ page.description|safe_markdown }}
                             </div>
                         </div>

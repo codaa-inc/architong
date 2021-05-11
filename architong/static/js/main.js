@@ -497,7 +497,7 @@
     });
   }
 
-  /*=========== Font size switcher/controller ===========*/
+  /*=========== Font size switcher/controller ===========
   if ($("#post").length > 0) {
     $.rvFontsize({
       targetSection: "#post",
@@ -508,6 +508,7 @@
       },
     });
   }
+  */
 
   /*=========== anchors js ===========*/
   if ($(".shortcode_info h4").length) {

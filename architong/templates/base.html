@@ -18,7 +18,8 @@
     <link rel="stylesheet" href="{% static 'css/responsive.css' %}">
     <!-- jquery cdn -->
     <script src="//cdnjs.cloudflare.com/ajax/libs/jquery/3.2.1/jquery.min.js"></script>
-    {% block css %}{% endblock %}
+    {% block css %}
+    {% endblock %}
     <!-- Font -->
     <link rel="stylesheet" type="text/css" href="https://cdn.rawgit.com/moonspam/NanumSquare/master/nanumsquare.css">
     <title>Architong</title>
@@ -28,14 +29,10 @@
 <div class="body_wrapper">
     <nav class="navbar navbar-expand-lg menu_one dark_menu sticky-nav">
         <div class="container">
-            <a class="navbar-brand header_logo" href="index.html">
-                <img class="first_logo sticky_logo main_logo" src="{% static 'img/logo.png' %}" srcset="{% static 'img/logo-2x.png'%}" alt="logo">
-                <img class="white_logo" src="{% static 'img/logo-w.png' %}" srcset="{% static 'img/logo-w2x.png' %}" alt="logo">
+            <a class="navbar-brand header_logo" href="/">
+                <img class="first_logo sticky_logo main_logo" src="{% static 'img/logo_w.png' %}" srcset="{% static 'img/custom_logo.png'%}" alt="logo">
+                <img class="white_logo" src="{% static 'img/logo_w.png' %}" srcset="{% static 'img/custom_logo.png' %}" alt="logo">
             </a>
-            <div class="search-input">
-                <ion-icon class="search-icon" name="search-outline"></ion-icon>
-                <input type="text" placeholder="Search..." value="" class="">
-            </div>
             <div class="mobile-dark-mode d-lg-none">
                 <label for="something" class="tab-btn tab-btns">
                     <ion-icon class="light-mode" name="contrast"></ion-icon>
@@ -300,19 +297,17 @@
                         <a href="{% provider_login_url 'google' %}" style="width: 120px;"><i class="icon_lock-open" style="margin-right: 5px;"></i>로그인</a>
                     {% else %}
                         {% for account in user.socialaccount_set.all %}
-                            <a href="edit/" target="_blank" style="width: 100px"><i class="icon_documents_alt" style="margin-right: 5px;"></i>책만들기</a>
-                            <a href="#" style="width: 100px; white-space : nowrap; overflow : hidden; text-overflow : ellipsis; margin-right: 20px "><i class="icon_profile" style="margin-right: 5px;"></i>{{ account.extra_data.name }}</a>
-                            <a href="{% url 'logout' %}" target="_blank" style="width: 120px"><i class="icon_lock" style="margin-right: 5px;"></i>로그아웃</a>
+                            <a href="edit/" style="width: 100px"><i class="icon_documents_alt" style="margin-right: 5px;"></i>책만들기</a>
+                            <a href="#" style="width: 100px; white-space : nowrap; overflow : hidden; text-overflow : ellipsis;"><i class="icon_profile" style="margin-right: 5px;"></i>{{ account.extra_data.given_name }}</a>
+                            <a href="{% url 'logout' %}" style="width: 120px"><i class="icon_lock" style="margin-right: 5px;"></i>로그아웃</a>
                         {% endfor %}
                     {% endif %}
                 </div>
             </div>
         </div>
     </nav>
-
     {% block content %}
     {% endblock %}
-    <!--
     <footer class="doc_footer_area">
         <div class="doc_footer_top">
             <div class="container">
@@ -320,23 +315,17 @@
                     <div class="col-lg-4 col-sm-6">
                         <div class="f_widget doc_about_widget wow fadeInUp" data-wow-delay="0.2s">
                             <a href="#">
-                                <img src="{% static 'img/f_logo.png' %}" srcset="{% static 'img/f_logo.png' %}"
-                                     alt="" >
+                                <img src="{% static 'img/f_logo.png' %}" srcset="{% static 'img/f_logo.png' %}" alt="" >
                             </a>
                             <p style="line-height: 1.5rem;">대표 : 정호건 &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;<br>
                             사업자 등록번호 : 185-86-01338 <br>
                             05398 서울특별시 강동구 성내로 6길 42, 201호 (성내동, 중앙빌딩) <br>
                             F. 02.6956.3372 &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;<br>
                             E. codaaxyz@naver.com </p>
-                            <ul class="list-unstyled">
-                                <li><a href="https://www.facebook.com/codaa.kr/"><i class="social_facebook"></i></a></li>
-                                <li><a href="https://www.instagram.com/codaa.kr"><i class="social_instagram"></i></a></li>
-                                <li><a href="https://blog.naver.com/codaaxyz"><i class="social_blogger"></i></a></li>
-                            </ul>
                         </div>
                     </div>
                     <div class="col-lg-2 col-sm-6">
-
+                        <!--
                         <div class="f_widget doc_service_list_widget pl-30 wow fadeInUp" data-wow-delay="0.3s">
                             <h3 class="f_title_two">Solutions</h3>
                             <ul class="list-unstyled">
@@ -347,10 +336,10 @@
                                 <li><a href="#"><img src="{% static 'img/new/bag2.png' %}" alt="">Lightbox</a></li>
                             </ul>
                         </div>
-
+                        -->
                     </div>
                     <div class="col-lg-3 col-sm-6">
-
+                        <!--
                         <div class="f_widget doc_service_list_widget pl-100 wow fadeInUp" data-wow-delay="0.4s">
                             <h3 class="f_title_two">Support</h3>
                             <ul class="list-unstyled">
@@ -362,12 +351,19 @@
                                 <li><a href="#">Messages</a></li>
                             </ul>
                         </div>
-
+                        -->
                     </div>
                     <div class="col-lg-3 col-sm-6" style="text-align: right">
                         <h3>CODAA</h3>
                         <p style="line-height: 1.6rem;">WE SHAPE A BETTER WORLD<br>LET’S SHAPE TOGETHER</p>
-
+                        <div class="f_widget doc_about_widget wow fadeInUp" data-wow-delay="0.2s" style="padding-right: 0px;">
+                            <ul class="list-unstyled">
+                                <li><a href="https://www.facebook.com/codaa.kr/" target="_blank"><i class="social_facebook"></i></a></li>
+                                <li><a href="https://www.instagram.com/codaa.kr" target="_blank"><i class="social_instagram"></i></a></li>
+                                <li><a href="https://blog.naver.com/codaaxyz" target="_blank"><i class="social_blogger"></i></a></li>
+                            </ul>
+                        </div>
+                        <!--
                         <div class="f_widget doc_service_list_widget pl-70 wow fadeInUp" data-wow-delay="0.5s">
                             <h3 class="f_title_two">Company</h3>
                             <ul class="list-unstyled">
@@ -377,9 +373,8 @@
                                 <li><a href="#">Partners</a></li>
                                 <li><a href="#">Careers</a></li>
                             </ul>
-
                         </div>
-
+                        -->
                     </div>
                 </div>
             </div>
@@ -390,7 +385,6 @@
             </div>
         </div>
     </footer>
-    -->
 </div>
 
 <!-- Back to top button -->

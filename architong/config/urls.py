@@ -15,7 +15,6 @@ Including another URLconf
 """
 from django.contrib import admin
 from django.urls import path, include
-from django.views.generic import TemplateView
 from django.contrib.auth import views as auth_views
 from django.contrib.auth.views import LogoutView
 from apps.common.views import *
@@ -25,13 +24,13 @@ from apps.book.views import *
 urlpatterns = [
     # Common
     path('admin/', admin.site.urls),
-    path('', TemplateView.as_view(template_name="index.html")),
+    path('', index),
     path('accounts/', include('allauth.urls')),
     path('logout/', auth_views.LogoutView.as_view(), name="logout"),
+
     # Book
     path('get_law/', get_law),
     path('edit/', editor),
     path('book/<int:book_id>', view_book),
-    path('<int:page_id>', view_page),
-    path('book/bookmark/<int:page_id>', add_bookmark),
+    path('book/bookmark/<int:page_id>', add_or_remove_bookmark),
 ]
