@@ -62,12 +62,12 @@
                 <div class="col-lg-4 col-sm-6">
                     <div class="blog_grid_post shadow-sm wow fadeInUp">
                         <!--<img src="img/blog-grid/blog_grid_post7.jpg" alt="">-->
-                        <div class="grid_post_content">
+                        <div onclick="location.href='book/{{ book.book_id }}'" class="grid_post_content">
                             <div class="post_tag">
                                 <a href="#">법규</a>
                                 <a class="c_blue" href="#">현행</a>
                             </div>
-                            <a href="book/{{ book.book_id }}">
+                            <a>
                                 <h4 class="b_title">{{ book.book_title }}</h4>
                             </a>
                             <div class="media post_author">

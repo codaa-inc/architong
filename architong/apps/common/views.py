@@ -6,7 +6,7 @@ from apps.book.models import Books
 from apps.book.models import Pages
 
 def index(request):
-    books = Books.objects.all()
+    books = Books.objects.all().order_by('book_title')
     context = {"books": books}
     return render(request, 'index.html', context)
 
@@ -25,7 +25,7 @@ def get_law(request):
     host = "http://www.law.go.kr/DRF/lawService.do?"
     OC = 'mediaquery1'
     target = 'law'  # 현행법령 본문 조항호목
-    MST = '228443'
+    MST = '224171'
     type = 'XML'    # type : HTML / XML
     url = host + "OC=" + OC + "&target=" + target + "&MST=" + MST + "&type=" + type
     print(url)
@@ -39,11 +39,9 @@ def get_law(request):
 
 def insert_law(is_jomun, title, markdown_text):
     page = Pages()  # 모델 객체 생성
-    page.book_id = 3
+    page.book_id = 6
     page.page_title = title
     page.description = markdown_text
-    page.wrt_dt = "2021-01-08 00:00:00"
-    page.mdfcn_dt = "2021-01-08 00:00:00"
     if is_jomun == "조문":
         page.depth = 1
         # 부모ID로 depth가 0인 것 중의 가장 마지막 row의 page_id를 넣는다
@@ -98,12 +96,13 @@ def xml_to_markdown_law(xml_text):
         insert_law(is_jomun, title, markdown_text)
 
 '''
-시행령 마크다운 디자인 적용
+시행령, 시행규칙 마크다운 디자인 적용
  - 전문 → H2 + 구분선
  - 조문 → H3
  - 항 → 디자인 없음
- - 호 → blockquote
- - 목 → inner blockquote
+ - 호 → blockquote, ordered list 제거
+ - 목 → dluble blockquote
+ - 목 하위 텍스트(tab으로 구분) → triple blockquote
 '''
 def xml_to_markdown_enforcement(xml_text):
     tree = ElementTree.fromstring(xml_text)
@@ -124,28 +123,33 @@ def xml_to_markdown_enforcement(xml_text):
                         markdown_text += context.rstrip() + "\n"
                 else:
                     markdown_text = header
-                if jo.iter(tag='항') is not None:    # TODO
-                    hang_root = jo.iter(tag='항')
-                    for hang in hang_root:   # 항 → 디자인 없음
-                        if hang:
-                            if hang.find('항내용') is not None:
-                                markdown_text += hang.find('항내용').text.lstrip() + "\n"
-                            ho_root = hang.iter(tag='호')
-                            for idx, ho in enumerate(ho_root):
-                                if ho:        # 호 → Blockquote
-                                    markdown_text += ">" + ho.find('호내용').text.lstrip() + "\n"
-                                    if ho.find('목') != -1:
-                                        mok_root = ho.find('목')
-                                        for mok in mok_root:
-                                            markdown_text += ">>" + mok.find('목내용').text.lstrip() + "\n"
-                                    else:
-                                        break
+                hang_root = jo.iter(tag='항')
+                for hang in hang_root:   # 항 → 디자인 없음
+                    if hang:
+                        if hang.find('항내용') is not None:
+                            markdown_text += hang.find('항내용').text.lstrip() + "\n"
+                        ho_root = hang.iter(tag='호')
+                        for idx, ho in enumerate(ho_root):
+                            if ho:        # 호 → Blockquote
+                                markdown_text += "> " + ho.find('호내용').text.lstrip().replace(". ", ".") + "\n"
+                                if ho.find('목') != -1:
+                                    mok_root = ho.iter(tag='목')
+                                    for mok in mok_root:
+                                        mok = mok.find('목내용').text.split('\t\t\t\t\t\t')
+                                        for idx, row in enumerate(mok):
+                                            if row:
+                                                if idx == 0:
+                                                    markdown_text += ">> " + row.lstrip() + '\n' + '\n'
+                                                else:
+                                                    markdown_text += ">>> " + row.lstrip() + '\n'
+                                                if idx == len(mok) - 1:
+                                                    markdown_text += '\n'
                                 else:
                                     break
-                        else:
-                            break
-                else:
-                    break
+                            else:
+                                break
+                    else:
+                        break
             else:                       # 전문 → H2 + 구분선
                 markdown_text = "\n\n##" + title + "\n----------"
         insert_law(is_jomun, title, markdown_text)
