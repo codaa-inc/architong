@@ -1,5 +1,22 @@
-let preSelId, preBmId = "" // 이전에 선택한 컴포넌트를 기억하기 위한 전역변수
+let preSelId, preBmId = "" // 목록 클릭시 이전 선택값을 저장하는 전역변수
 
+/**
+ * 페이지 네비게이션 클릭 이벤트
+ * */
+function onclickPagination(page_number) {
+    const searchbox = $("#searchbox").val()
+    // 검색어가 없으면 GET 요청, 검색어가 있으면 POST 요청(Form Submit)
+    if (searchbox == "" || searchbox == null) {
+        location.href ='?page=' + page_number;
+    } else {
+        $("#page").text(page_number);
+        document.searchForm.action = "";
+    }
+};
+
+/**
+ * 법규 목록 클릭시 스크롤을 이동시키는 함수
+ * */
 function onclickChildList(id) {
     const selId = 'page-' + id.replace('child-list-', '');                 // 해당 조문 ID
     const bmId = selId.replace("page", "bookmark")  // 해당 조문 북마크 ID

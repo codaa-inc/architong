@@ -30,6 +30,7 @@ def view_book(request, book_id) :
     username = request.user  # 세션으로부터 유저 정보 가져오기
     books = Books.objects.filter(book_id=book_id)
     pages = Pages.objects.filter(book_id=book_id)
+
     # 로그인된 사용자의 경우 페이지 정보에 북마크 등록여부 추가
     if username is not None:
         for page in pages:
@@ -38,6 +39,7 @@ def view_book(request, book_id) :
                 page.is_bookmarked = 1
             else:
                 page.is_bookmarked = 0
+
     context = {'books': books, 'pages': pages}
     return render(request, 'viewer.html', context)
 

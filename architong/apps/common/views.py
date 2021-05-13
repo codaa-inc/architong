@@ -2,13 +2,36 @@ import requests
 from django.shortcuts import render
 from django.conf import settings
 from xml.etree import ElementTree
+from django.core.paginator import Paginator
 from apps.book.models import Books
 from apps.book.models import Pages
 
 def index(request):
-    books = Books.objects.all().order_by('book_title')
-    context = {"books": books}
-    return render(request, 'index.html', context)
+    books = Books.objects.all().order_by('book_title')  # 전체 쿼리셋
+
+    # GET 요청일때 전체 쿼리셋을 가져온다
+    if request.method == 'GET':
+        page = request.GET.get('page')  # 이동할 페이지
+        paginator = Paginator(books, 6).get_page(page)
+        return render(request, 'index.html', {"books": paginator})
+
+    # POST 요청일때 해당 검색조건을 적용한 쿼리셋을 가져온다.
+    elif request.method == 'POST':
+        text = request.POST['search-box']           # 검색어
+        option = request.POST['search-option']      # 검색 범위 옵션
+        # TODO
+        page = request.POST['page']                 # 이동할 페이지
+        if option == '0':
+            books = books.filter(book_title__icontains=text)
+        elif option == '1':
+            page = Pages.objects.all().filter(description__icontains=text).only('book_id')
+            book_id_list = page.values_list('book_id', flat=True).distinct().order_by("book_id")
+            books = books.filter(book_id__in=book_id_list)
+        elif option == '2':
+            books = books.filter(author_id__icontains=text)
+        paginator = Paginator(books, 6).get_page(page)
+        return render(request, 'index.html', {"books": paginator, "search_term": text})
+
 
 '''
 [ 법령 MST ] 
@@ -28,29 +51,15 @@ def get_law(request):
     MST = '224171'
     type = 'XML'    # type : HTML / XML
     url = host + "OC=" + OC + "&target=" + target + "&MST=" + MST + "&type=" + type
-    print(url)
+
     try:
         res = requests.get(url)
+        print(res.url)
         if res.status_code == 200:
             xml_to_markdown_enforcement(res.text)
     except Exception as e:
         print(e)
 
-
-def insert_law(is_jomun, title, markdown_text):
-    page = Pages()  # 모델 객체 생성
-    page.book_id = 6
-    page.page_title = title
-    page.description = markdown_text
-    if is_jomun == "조문":
-        page.depth = 1
-        # 부모ID로 depth가 0인 것 중의 가장 마지막 row의 page_id를 넣는다
-        parent_id = Pages.objects.filter(depth=0).last().page_id
-        page.parent_id = parent_id
-    else:
-        page.depth = 0
-        page.parent_id = 0
-    page.save()     # 모델 DB 저장
 
 '''
 법령 마크다운 디자인 적용
@@ -153,3 +162,23 @@ def xml_to_markdown_enforcement(xml_text):
             else:                       # 전문 → H2 + 구분선
                 markdown_text = "\n\n##" + title + "\n----------"
         insert_law(is_jomun, title, markdown_text)
+
+'''
+법규 마크다운 저장 함수
+'''
+def insert_law(is_jomun, title, markdown_text):
+    page = Pages()  # 모델 객체 생성
+    page.book_id = 6
+    page.page_title = title
+    page.description = markdown_text
+
+    if is_jomun == "조문":
+        page.depth = 1
+        # 부모ID로 depth가 0인 것 중의 가장 마지막 row의 page_id를 넣는다
+        parent_id = Pages.objects.filter(depth=0).last().page_id
+        page.parent_id = parent_id
+
+    else:
+        page.depth = 0
+        page.parent_id = 0
+    page.save()  # 모델 DB 저장

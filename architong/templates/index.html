@@ -2,97 +2,111 @@
 {% load socialaccount %}
 {% load static %}
 {% block content %}
-    <div class="breadcrumb_area_three">
-        <div class="container">
-            <div class="breadcrumb_text">
-                <h2> 건축통 </h2>
-                <p>건축통은 건축, 도시, 환경 관련 텍스트 문서를 공유하는 플랫폼 서비스(Wiki) 입니다.<br>누구나 문서를 작성하고 책을 제작 할 수 있습니다. </p>
-            </div>
-            <div class="doc_banner_content">
-                <form action="#" class="header_search_form">{% csrf_token %}
-                    <div class="header_search_form_info">
-                        <div class="form-group">
-                            <div class="input-wrapper">
-                                <i class="icon_search"></i>
-                                <input type='search' id="searchbox" autocomplete="off" name="search"
-                                    placeholder="Search the Doc" />
-                                <select class="search-expand-types custom-select" name="post_type"
-                                    id="search_post_type">
-                                    <option value="">All Docs </option>
-                                    <option value="manual_kb">Knowledge Base</option>
-                                    <option value="manual_documentation">Documentation</option>
-                                    <option value="manual_faq">FAQs</option>
-                                    <option value="forum">Forums</option>
-                                    <option value="manual_portfolio">Portfolio</option>
-                                    <option value="product">Products</option>
-                                </select>
-                            </div>
-                            <button type="submit" class="header_form_submit">Search</button>
-                        </div>
-                    </div>
-                    <!--
-                    <div class="header_search_keyword">
-                        <span class="header-search-form__keywords-label">Suggested Search:</span>
-                        <ul class="list-unstyled">
-                            <li class="wow fadeInUp" data-wow-delay="0.2s"><a href="#">guest users</a></li>
-                            <li class="wow fadeInUp" data-wow-delay="0.3s"><a href="#">invoice</a></li>
-                            <li class="wow fadeInUp" data-wow-delay="0.4s"><a href="#">security</a></li>
-                        </ul>
-                    </div>
-                    -->
-                </form>
-            </div>
+<div class="breadcrumb_area_three">
+    <div class="container">
+        <div class="breadcrumb_text">
+            <h2> 건축통 </h2>
+            <p>건축통은 건축, 도시, 환경 관련 텍스트 문서를 공유하는 플랫폼 서비스(Wiki) 입니다.<br>누구나 문서를 작성하고 책을 제작 할 수 있습니다. </p>
         </div>
+        <form id="search-form" name="searchForm" method="POST" class="header_search_form">{% csrf_token %}
+            <div class="doc_banner_content">
+                <div class="header_search_form_info">
+                    <div class="form-group">
+                        <div class="input-wrapper">
+                            <i class="icon_search"></i>
+                            <input type='search' id="searchbox" autocomplete="off" name="search-box" value="{{ search_term }}"/>
+                            <select class="search-expand-types custom-select" name="search-option" id="search_post_type">
+                                <option value="0">title</option>
+                                <option value="1">contents</option>
+                                <option value="2">author</option>
+                            </select>
+                            <input id="page" name="page" type="number" style="display: none;" readonly>
+                        </div>
+                        <button id="searchbtn" type="submit" class="header_form_submit">Search</button>
+                    </div>
+                </div>
+                <!--<div class="header_search_keyword">
+                    <span class="header-search-form__keywords-label">Suggested Search:</span>
+                    <ul class="list-unstyled">
+                        <li class="wow fadeInUp" data-wow-delay="0.2s"><a href="#">guest users</a></li>
+                        <li class="wow fadeInUp" data-wow-delay="0.3s"><a href="#">invoice</a></li>
+                        <li class="wow fadeInUp" data-wow-delay="0.4s"><a href="#">security</a></li>
+                    </ul>
+                </div>-->
+            </div>
+        </form>
     </div>
-    <section class="doc_tag_area bg_color sec_pad" style="padding-top: 0px;">
-        <div class="container">
-            <ul class="nav nav-tabs doc_tag" id="myTab" role="tablist" style="margin-bottom: 0px;">
-                <li class="nav-item wow fadeInLeft" data-wow-delay="0.3s">
-                    <a class="nav-link active" id="code-tab" data-toggle="tab" href="#" role="tab" aria-controls="code" aria-selected="false">Codes</a>
-                </li>
-                <li class="nav-item wow fadeInLeft" data-wow-delay="0.1s">
-                    <a class="nav-link" id="doc-tab" data-toggle="tab" href="#" role="tab" aria-controls="doc" aria-selected="false">Docs</a>
-                </li>
-                <li class="nav-item wow fadeInLeft" data-wow-delay="0.4s">
-                    <a class="nav-link" id="element-tab" data-toggle="tab" href="#" role="tab" aria-controls="element" aria-selected="false">QnA</a>
-                </li>
-            </ul>
-            <div class="row blog_grid_tab">
-                {% for book in books %}
-                <div class="col-lg-4 col-sm-6">
-                    <div class="blog_grid_post shadow-sm wow fadeInUp">
-                        <!--<img src="img/blog-grid/blog_grid_post7.jpg" alt="">-->
-                        <div onclick="location.href='book/{{ book.book_id }}'" class="grid_post_content">
-                            <div class="post_tag">
-                                <a href="#">법규</a>
-                                <a class="c_blue" href="#">현행</a>
+</div>
+<section class="doc_tag_area bg_color sec_pad" style="padding-top: 0px;">
+    <div class="container">
+        <ul class="nav nav-tabs doc_tag" id="myTab" role="tablist" style="margin-bottom: -25px; padding-top: 25px;">
+            <li class="nav-item wow fadeInLeft" data-wow-delay="0.3s">
+                <a class="nav-link active" id="code-tab" data-toggle="tab" href="#" role="tab"
+                   aria-controls="code" aria-selected="false">Codes</a>
+            </li>
+            <li class="nav-item wow fadeInLeft" data-wow-delay="0.1s">
+                <a class="nav-link" id="doc-tab" data-toggle="tab" href="#" role="tab" aria-controls="doc"
+                   aria-selected="false">Docs</a>
+            </li>
+            <li class="nav-item wow fadeInLeft" data-wow-delay="0.4s">
+                <a class="nav-link" id="element-tab" data-toggle="tab" href="#" role="tab"
+                   aria-controls="element" aria-selected="false">Forums</a>
+            </li>
+        </ul>
+        <div id="docs" class="row blog_grid_tab">
+            {% if books %}
+            {% for book in books %}
+            <div class="col-lg-4 col-sm-6">
+                <div class="blog_grid_post shadow-sm wow fadeInUp">
+                    <!--<img src="img/blog-grid/blog_grid_post7.jpg" alt="">-->
+                    <div onclick="location.href='book/{{ book.book_id }}'" class="grid_post_content">
+                        <div class="post_tag">
+                            <a href="#">법규</a>
+                            <a class="c_blue" href="#">현행</a>
+                        </div>
+                        <a>
+                            <h4 class="b_title">{{ book.book_title }}</h4>
+                        </a>
+                        <div class="media post_author">
+                            <div class="round_img">
+                                <img src="{% static 'img/blog-grid/author_1.jpg' %}" alt="">
                             </div>
-                            <a>
-                                <h4 class="b_title">{{ book.book_title }}</h4>
-                            </a>
-                            <div class="media post_author">
-                                <div class="round_img">
-                                    <img src="{% static 'img/blog-grid/author_1.jpg' %}" alt="">
-                                </div>
-                                <div class="media-body author_text">
-                                    <h4>{{ book.author_id }}</h4>
-                                    <div class="date">{{ book.wrt_dt | date:'Y.m.d' }}</div>
-                                </div>
+                            <div class="media-body author_text">
+                                <h4>{{ book.author_id }}</h4>
+                                <div class="date">{{ book.wrt_dt | date:'Y.m.d' }}</div>
                             </div>
                         </div>
                     </div>
                 </div>
-                {% endfor %}
             </div>
-            <div class="col-lg-12 col-sm-2" style="text-align: center">
-                <nav class="navigation pagination" style="display: inline;">
-                    <div class="nav-links" style="padding-top: 50px;">
-                        <a class="page-numbers current" href="#">1</a>
-                        <a class="page-numbers" href="#">2</a>
-                        <a class="next page-numbers" href="#"><i class="arrow_carrot-right"></i></a>
-                    </div>
-                </nav>
-            </div>
+            {% endfor %}
+            {% else %}
+            <p style="margin: auto; padding: 20px 0;">검색 결과가 없습니다.</p>
+            {% endif %}
         </div>
-    </section>
+        <div class="col-lg-12 col-sm-2" style="text-align: center">
+            <nav class="navigation pagination" style="display: inline;">
+                <div class="nav-links" style="padding-top: 50px;">
+                    {% if books.has_previous %}
+                    <a class="next page-numbers" onclick='onclickPagination("{{ previous_page_number}}")'><i class="arrow_carrot-left"></i></a>
+                    {% endif %}
+
+                    {% for page_number in books.paginator.page_range %}
+                    {% if page_number >= books.number|add:-5 and page_number <= books.number|add:5 %}
+                    {% if page_number == books.number %}
+                    <a class="page-numbers current" onclick='onclickPagination("{{ page_number}}")'>{{ page_number}}</a>
+                    {% else %}
+                    <a class="page-numbers" onclick='onclickPagination("{{ page_number}}")'>{{ page_number}}</a>
+                    {% endif %}
+                    {% endif %}
+                    {% endfor %}
+
+                    {% if books.has_next %}
+                    <a class="next page-numbers" onclick='onclickPagination("{{ next_page_number}}")'><i class="arrow_carrot-right"></i></a>
+                    {% endif %}
+                </div>
+            </nav>
+        </div>
+    </div>
+</section>
 {% endblock %}
