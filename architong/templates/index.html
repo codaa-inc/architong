@@ -8,7 +8,7 @@
             <h2> 건축통 </h2>
             <p>건축통은 건축, 도시, 환경 관련 텍스트 문서를 공유하는 플랫폼 서비스(Wiki) 입니다.<br>누구나 문서를 작성하고 책을 제작 할 수 있습니다. </p>
         </div>
-        <form id="search-form" name="searchForm" method="POST" class="header_search_form">{% csrf_token %}
+        <form id="search-form" name="searchForm" method="POST" action="/" class="header_search_form">{% csrf_token %}
             <div class="doc_banner_content">
                 <div class="header_search_form_info">
                     <div class="form-group">
@@ -88,21 +88,21 @@
             <nav class="navigation pagination" style="display: inline;">
                 <div class="nav-links" style="padding-top: 50px;">
                     {% if books.has_previous %}
-                    <a class="next page-numbers" onclick='onclickPagination("{{ previous_page_number}}")'><i class="arrow_carrot-left"></i></a>
+                    <a class="next page-numbers" onclick='onclickPagination("{{ previous_page_number}}")' style="cursor: pointer;"><i class="arrow_carrot-left"></i></a>
                     {% endif %}
 
                     {% for page_number in books.paginator.page_range %}
                     {% if page_number >= books.number|add:-5 and page_number <= books.number|add:5 %}
                     {% if page_number == books.number %}
-                    <a class="page-numbers current" onclick='onclickPagination("{{ page_number}}")'>{{ page_number}}</a>
+                    <a class="page-numbers current" onclick='onclickPagination("{{ page_number}}")' style="cursor: pointer;">{{ page_number}}</a>
                     {% else %}
-                    <a class="page-numbers" onclick='onclickPagination("{{ page_number}}")'>{{ page_number}}</a>
+                    <a class="page-numbers" onclick='onclickPagination("{{ page_number}}")' style="cursor: pointer;">{{ page_number}}</a>
                     {% endif %}
                     {% endif %}
                     {% endfor %}
 
                     {% if books.has_next %}
-                    <a class="next page-numbers" onclick='onclickPagination("{{ next_page_number}}")'><i class="arrow_carrot-right"></i></a>
+                    <a class="next page-numbers" onclick='onclickPagination("{{ next_page_number}}")' style="cursor: pointer;"><i class="arrow_carrot-right"></i></a>
                     {% endif %}
                 </div>
             </nav>

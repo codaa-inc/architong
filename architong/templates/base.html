@@ -30,8 +30,8 @@
     <nav class="navbar navbar-expand-lg menu_one dark_menu sticky-nav">
         <div class="container">
             <a class="navbar-brand header_logo" href="/">
-                <img class="first_logo sticky_logo main_logo" src="{% static 'img/logo_w.png' %}" srcset="{% static 'img/custom_logo.png'%}" alt="logo">
-                <img class="white_logo" src="{% static 'img/logo_w.png' %}" srcset="{% static 'img/custom_logo.png' %}" alt="logo">
+                <img class="first_logo sticky_logo main_logo" src="{% static 'img/logo_w.png' %}" srcset="{% static 'img/custom/custom_logo.png'%}" alt="logo">
+                <img class="white_logo" src="{% static 'img/logo_w.png' %}" srcset="{% static 'img/custom/custom_logo.png' %}" alt="logo">
             </a>
             <div class="mobile-dark-mode d-lg-none">
                 <label for="something" class="tab-btn tab-btns">
@@ -59,13 +59,13 @@
             <div class="collapse navbar-collapse" id="navbarSupportedContent">
                 <ul class="navbar-nav menu ml-auto">
                     <li class="nav-item dropdown submenu">
-                        <a href="index.html" class="nav-link dropdown-toggle">Home</a>
+                        <a href="#" class="nav-link dropdown-toggle">Home</a>
                         <i class="arrow_carrot-down_alt2 mobile_dropdown_icon" aria-hidden="false"
                            data-toggle="dropdown"></i>
                         <ul class="dropdown-menu">
-                            <li class="nav-item"><a href="index.html" class="nav-link">Creative Helpdesk</a></li>
-                            <li class="nav-item"><a href="index-multi.html" class="nav-link">Multi Helpdesk</a></li>
-                            <li class="nav-item"><a href="index-classic.html" class="nav-link">Classic Helpdesk</a></li>
+                            <li class="nav-item"><a href="#" class="nav-link">Creative Helpdesk</a></li>
+                            <li class="nav-item"><a href="#" class="nav-link">Multi Helpdesk</a></li>
+                            <li class="nav-item"><a href="#" class="nav-link">Classic Helpdesk</a></li>
                         </ul>
                     </li>
                     <li class="nav-item dropdown submenu mega_menu tab-demo active">
@@ -293,15 +293,32 @@
                     </li>
                 </ul>
                 <div class="right-nav">
+                    <ul class="navbar-nav menu ml-auto">
                     {% if user.is_anonymous %}
-                        <a href="{% provider_login_url 'google' %}" style="width: 120px;"><i class="icon_lock-open" style="margin-right: 5px;"></i>로그인</a>
+                        <li class="nav-item dropdown submenu">
+                            <a href="{% provider_login_url 'google' %}" style="width: 120px;"><i class="icon_lock-open" style="margin-right: 5px;"></i>로그인</a>
+                        </li>
                     {% else %}
                         {% for account in user.socialaccount_set.all %}
-                            <a href="edit/" style="width: 100px"><i class="icon_documents_alt" style="margin-right: 5px;"></i>책만들기</a>
-                            <a href="#" style="width: 100px; white-space : nowrap; overflow : hidden; text-overflow : ellipsis;"><i class="icon_profile" style="margin-right: 5px;"></i>{{ account.extra_data.given_name }}</a>
-                            <a href="{% url 'logout' %}" style="width: 120px"><i class="icon_lock" style="margin-right: 5px;"></i>로그아웃</a>
+                            <li class="nav-item dropdown submenu">
+                                <a href="edit/" style="width: 100px"><i class="icon_documents_alt" style="margin-right: 5px;"></i>책만들기</a>
+                            </li>
+                            <li class="nav-item dropdown submenu active">
+                                <a class="nav-link dropdown-toggle" href="#"><i class="icon_profile"></i>{{ account.extra_data.given_name }}</a>
+                                <i class="arrow_carrot-down_alt2 mobile_dropdown_icon" aria-hidden="false" data-toggle="dropdown"></i>
+                                <ul class="dropdown-menu">
+                                    <li class="nav-item"><a href="bookmark/" class="nav-link"><i class="icon_ribbon_alt"></i>&nbsp;북마크</a></li>
+                                    <li class="nav-item"><a href="#" class="nav-link"><i class="icon_comment_alt"></i>&nbsp;최근 댓글</a></li>
+                                    <li class="nav-item"><a href="#" class="nav-link"><i class="icon_pencil-edit"></i>&nbsp;저서</a></li>
+                                    <li class="nav-item"><a href="#" class="nav-link"><i class="icon_cog"></i>&nbsp;계정 설정</a></li>
+                                </ul>
+                            </li>
+                            <li class="nav-item dropdown submenu">
+                                <a href="{% url 'logout' %}" style="width: 120px"><i class="icon_lock" style="margin-right: 5px;"></i>로그아웃</a>
+                            </li>
                         {% endfor %}
                     {% endif %}
+                    </ul>
                 </div>
             </div>
         </div>

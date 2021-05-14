@@ -1,0 +1,78 @@
+{% extends 'base.html' %}
+{% load static %}
+{% load martortags %}
+{% block css %}
+<link href="{% static 'plugins/css/bootstrap.min.css' %}" type="text/css" media="all" rel="stylesheet"/>
+<link href="{% static 'plugins/css/ace.min.css' %}" type="text/css" media="all" rel="stylesheet"/>
+<link href="{% static 'plugins/css/resizable.min.css' %}" type="text/css" media="all" rel="stylesheet"/>
+<link href="{% static 'martor/css/martor.bootstrap.min.css' %}" type="text/css" media="all" rel="stylesheet"/>
+<style>
+    .martor-preview:hover {
+        background-color: #F9F9F9;
+    }
+    .martor-preview:hover > a {
+        visibility : visible;
+    }
+    .bookmark {
+        float: right;
+        cursor: pointer;
+        visibility: hidden;
+    }
+</style>
+{% endblock %}
+{% block js %}
+<script src="{% static 'assets/font-size/js/rv-jquery-fontsize-2.0.3.min.js' %}"></script>
+<script src="{% static 'assets/magnify-pop/jquery.magnific-popup.min.js' %}"></script>
+<script src="{% static 'js/plugins.js' %}"></script>
+{% endblock %}
+
+{% block content %}
+<!--================Forum Breadcrumb Area =================-->
+<div class="breadcrumb_area_three" style="padding: 0"></div>
+<!--================End Forum Breadcrumb Area =================-->
+<!--================Topic Area =================-->
+<section class="doc_documentation_area" id="sticky_doc">
+    <div class="container custom_container">
+        <div class="row">
+            <div class="col-xl-9 doc-middle-content">
+                <article id="post" class="documentation_info">
+                    <div class="documentation_body" id="documentation">
+                      {% for bookmark in bookmarks %}
+                        <div class="martor-content">
+                            <div class="martor-preview" id="page-{{ bookmarks.page_id }}">
+                                {% if bookmark.depth == 1 %}
+                                    <a id="bookmark-{{ bookmark.page_id }}" class="bookmark" title="북마크 추가" onclick='addOrRemoveBookmark("{{ bookmark.page_id }}")'>
+                                        {% if page.is_bookmarked == 1 %}
+                                            <i class="icon_ribbon" style="font-size: larger"></i>
+                                            <script>
+                                                $("#bookmark-" + "{{ bookmark.page_id }}").prop("title", "북마크 삭제");
+                                            </script>
+                                        {% else %}
+                                            <i class="icon_ribbon_alt" style="font-size: larger"></i>
+                                        {% endif %}
+                                    </a>
+                                {% endif %}
+                                {{ bookmark.description|safe_markdown }}
+                            </div>
+                        </div>
+                      {% endfor %}
+                        <!--================ Martor =================-->
+                        <script type="text/javascript" src="{% static 'plugins/js/jquery.min.js' %}"></script>
+                        <script type="text/javascript" src="{% static 'plugins/js/bootstrap.min.js' %}"></script>
+                        <script type="text/javascript" src="{% static 'plugins/js/highlight.min.js' %}"></script>
+                        <script>
+                            $('.martor-preview pre').each(function (i, block) {
+                                hljs.highlightBlock(block);
+                            });
+                        </script>
+                    </div>
+                </article>
+            </div>
+        </div>
+    </div>
+</section>
+<!--================End Topic Area =================-->
+
+<!-- Back to top button -->
+<a id="back-to-top" title="Back to Top"></a>
+{% endblock %}

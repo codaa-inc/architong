@@ -7,10 +7,12 @@ function onclickPagination(page_number) {
     const searchbox = $("#searchbox").val()
     // 검색어가 없으면 GET 요청, 검색어가 있으면 POST 요청(Form Submit)
     if (searchbox == "" || searchbox == null) {
+        console.log("GET 요청");
         location.href ='?page=' + page_number;
     } else {
-        $("#page").text(page_number);
-        document.searchForm.action = "";
+        console.log("POST 요청");
+        $("#page").val(page_number);
+        document.searchForm.submit();
     }
 };
 

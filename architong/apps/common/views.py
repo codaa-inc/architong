@@ -4,8 +4,12 @@ from django.conf import settings
 from xml.etree import ElementTree
 from django.core.paginator import Paginator
 from apps.book.models import Books
+from apps.book.models import Bookmark
 from apps.book.models import Pages
 
+'''
+메인페이지 조회, 문서검색 함수
+'''
 def index(request):
     books = Books.objects.all().order_by('book_title')  # 전체 쿼리셋
 
@@ -19,7 +23,6 @@ def index(request):
     elif request.method == 'POST':
         text = request.POST['search-box']           # 검색어
         option = request.POST['search-option']      # 검색 범위 옵션
-        # TODO
         page = request.POST['page']                 # 이동할 페이지
         if option == '0':
             books = books.filter(book_title__icontains=text)
@@ -32,6 +35,15 @@ def index(request):
         paginator = Paginator(books, 6).get_page(page)
         return render(request, 'index.html', {"books": paginator, "search_term": text})
 
+'''
+북마크 관리 페이지 조회 함수
+'''
+def view_bookmark(request):
+    username = request.user  # 세션으로부터 유저 정보 가져오기
+    if username is not None:
+        page_list = Bookmark.objects.filter(username=username).values_list('page_id', flat=True)
+        bookmarks = Pages.objects.filter(page_id__in=page_list)
+        return render(request, "bookmark.html", {"bookmarks": bookmarks})
 
 '''
 [ 법령 MST ] 
@@ -41,6 +53,12 @@ def index(request):
     - 217375 : 녹색건축물 조성 지원법
     - 223893 : 녹색건축물 조성 지원법 시행령
     - 224171 : 녹색건축물 조성 지원법 시행규칙
+
+[ 별표/서식 ]
+    - target : licby
+    - search : 2
+    - query : 건축법 시행령 / 건축법 시행규칙 / 녹색건축물 조성 지원법 시행령 / 녹색건축물 조성 지원법 시행규칙
+    - full url : http://www.law.go.kr/DRF/lawSearch.do?OC=mediaquery1&target=licbyl&type=XML&search=2&query=
 '''
 def get_law(request):
     # Request : 국가법령정보 API call
@@ -56,7 +74,7 @@ def get_law(request):
         res = requests.get(url)
         print(res.url)
         if res.status_code == 200:
-            xml_to_markdown_enforcement(res.text)
+            xml_to_markdown_attachments(res.text)
     except Exception as e:
         print(e)
 
@@ -164,6 +182,39 @@ def xml_to_markdown_enforcement(xml_text):
         insert_law(is_jomun, title, markdown_text)
 
 '''
+별표/서식 마크다운 디자인 적용
+ - 별표제목 → 별표제목 + &nbsp;&nbsp;&nbsp;&nbsp; + 파일링크
+ - 별표서식파일링크, 별표서식PDF파일링크 → 이미지링크
+    [![]({% static 'img/custom/hg_download.png' %})](http://www.law.go.kr + 링크)
+    [![]({% static 'img/custom/pdf_download.png' %})](http://www.law.go.kr + 링크)
+'''
+def xml_to_markdown_attachments(xml_text) :
+    global order_branch
+    tree = ElementTree.fromstring(xml_text)
+    attachments = tree.iter(tag='별표단위')
+    for attachment in attachments:  # 조문 → H3
+        attachment_gb = attachment.find('별표구분').text
+        order = str(int(attachment.find('별표번호').text))
+        order_branch = str(int(attachment.find('별표가지번호').text))
+
+        if attachment_gb == "별표":
+            if order_branch != "0":
+                order += "의" + order_branch
+            order = "별표 " + order
+        elif attachment_gb == "서식":
+            if order_branch != "0":
+                order += "호의" + order_branch
+            else:
+                order += "호"
+            order = "별지 제" + order + "서식"
+
+        title = "[" + order + "] " + attachment.find('별표제목').text.replace("&lt;", "<").replace("&gt;", ">")
+        hwp = "[![](https://www.law.go.kr/LSW/images/button/btn_han.gif)](http://www.law.go.kr" + attachment.find("별표서식파일링크").text + ")"
+        pdf = "[![](https://www.law.go.kr/LSW/images/button/btn_pdf.gif)](http://www.law.go.kr" + attachment.find("별표서식PDF파일링크").text + ")"
+        markdown_text = title + "&nbsp;&nbsp;&nbsp;&nbsp;" + hwp + "&nbsp;&nbsp;" + pdf + "\n"
+        insert_law("별표", title, markdown_text)
+
+'''
 법규 마크다운 저장 함수
 '''
 def insert_law(is_jomun, title, markdown_text):
@@ -172,13 +223,15 @@ def insert_law(is_jomun, title, markdown_text):
     page.page_title = title
     page.description = markdown_text
 
-    if is_jomun == "조문":
+    if is_jomun == "조문" or is_jomun == "별표":
         page.depth = 1
         # 부모ID로 depth가 0인 것 중의 가장 마지막 row의 page_id를 넣는다
-        parent_id = Pages.objects.filter(depth=0).last().page_id
-        page.parent_id = parent_id
+        #parent_id = Pages.objects.filter(depth=0).last().page_id
+        page.parent_id = 594
 
     else:
         page.depth = 0
         page.parent_id = 0
     page.save()  # 모델 DB 저장
+
+
