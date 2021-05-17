@@ -40,9 +40,12 @@ INSTALLED_APPS = [
     'django.contrib.sessions',
     'django.contrib.messages',
     'django.contrib.staticfiles',
+
     # application
     'apps.common',
     'apps.book',
+    'apps.forum',
+
     # third party
     'django.contrib.sites',
     'allauth',

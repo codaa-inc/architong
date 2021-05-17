@@ -43,8 +43,8 @@ def view_book(request, book_id) :
     context = {'books': books, 'pages': pages}
     return render(request, 'viewer.html', context)
 
-@login_required(login_url="/account/google/login")
 @csrf_exempt
+@login_required(login_url="/account/google/login")
 def add_or_remove_bookmark(request, page_id):
     if request.user.is_authenticated:
         # 해당 북마크가 존재하는지 select

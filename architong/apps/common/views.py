@@ -3,9 +3,14 @@ from django.shortcuts import render
 from django.conf import settings
 from xml.etree import ElementTree
 from django.core.paginator import Paginator
+from django.views.decorators.csrf import csrf_exempt
+from django.contrib.auth.decorators import login_required
+from django.http import JsonResponse
+
 from apps.book.models import Books
 from apps.book.models import Bookmark
 from apps.book.models import Pages
+
 
 '''
 메인페이지 조회, 문서검색 함수
@@ -38,12 +43,28 @@ def index(request):
 '''
 북마크 관리 페이지 조회 함수
 '''
+@login_required(login_url="/account/google/login")
 def view_bookmark(request):
     username = request.user  # 세션으로부터 유저 정보 가져오기
     if username is not None:
-        page_list = Bookmark.objects.filter(username=username).values_list('page_id', flat=True)
-        bookmarks = Pages.objects.filter(page_id__in=page_list)
+        bookmarks = Bookmark.objects.filter(username=username)
+        pages = Pages.objects.filter(page_id__in=bookmarks.values_list('page_id', flat=True)).values('description')
+        for bookmark in bookmarks:
+            description = pages.get(page_id=bookmark.page_id)['description']
+            bookmark.description = description
         return render(request, "bookmark.html", {"bookmarks": bookmarks})
+
+'''
+북마크 관리 페이지 삭제 함수
+'''
+@login_required(login_url="/account/google/login")
+@csrf_exempt
+def delete_bookmark(request, page_id):
+    username = request.user  # 세션으로부터 유저 정보 가져오기
+    if username is not None:
+        bookmark = Bookmark.objects.get(page_id=page_id, username=username)
+        bookmark.delete()
+        return JsonResponse({"result": "success"})
 
 '''
 [ 법령 MST ] 

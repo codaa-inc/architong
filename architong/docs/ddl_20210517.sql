@@ -30,6 +30,7 @@ CREATE TABLE IF NOT EXISTS `architong`.`books` (
   `rls_yn` CHAR(10) NOT NULL DEFAULT 'Y' COMMENT '공개여부 (default Y : public, N: private)',
   `like_cnt` INT COMMENT '좋아요',
   `wrt_dt` DATETIME NULL COMMENT '작성일시',
+  `codes_yn` CHAR(10) NULL DEFAULT 'N' COMMENT '법규/일반문서 구분(default N: 일반문서, Y: 법규)',
   PRIMARY KEY (`book_id`)) COMMENT '도서'
 ENGINE = InnoDB;
 
@@ -65,6 +66,24 @@ CREATE TABLE IF NOT EXISTS `architong`.`bookmark` (
   `reg_dt` DATETIME NULL COMMENT '등록일시',
   PRIMARY KEY (`bookmark_id`),
   INDEX `bookmark_id_idx` (`bookmark_id` ASC) VISIBLE) COMMENT '페이지(문서)'
+ENGINE = InnoDB;
+
+-- -----------------------------------------------------
+-- Table `architong`.`comments`
+-- -----------------------------------------------------
+DROP TABLE IF EXISTS `architong`.`comments` ;
+
+CREATE TABLE IF NOT EXISTS `architong`.`comments` (
+  `comment_id` INT NOT NULL COMMENT '댓글ID',
+  `page_id` INT NOT NULL COMMENT '원글 페이지ID (FK - Pages)',
+  `parent_id` INT NOT NULL DEFAULT 0 COMMENT '부모댓글ID (default : 0)',
+  `depth` INT NOT NULL DEFAULT 0 COMMENT '댓글 레벨 (default : 0)',
+  `username` VARCHAR(150) NOT NULL COMMENT '등록자ID',
+  `content` TEXT NULL COMMENT '댓글내용',
+  `rls_yn` CHAR(10) NULL DEFAULT 'Y' COMMENT '공개여부(default : Y-공개/N-비공개)',
+  `reg_dt` DATETIME NULL COMMENT '등록일시',
+  PRIMARY KEY (`comment_id`),
+  INDEX `comments_id_idx` (`comment_id` ASC) VISIBLE) COMMENT '댓글'
 ENGINE = InnoDB;
 
 SET SQL_MODE=@OLD_SQL_MODE;

@@ -34,4 +34,5 @@ urlpatterns = [
     path('book/<int:book_id>', view_book),
     path('book/bookmark/<int:page_id>', add_or_remove_bookmark),
     path('bookmark/', view_bookmark),
+    path('bookmark/<int:page_id>', delete_bookmark),
 ]

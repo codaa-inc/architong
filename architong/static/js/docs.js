@@ -62,4 +62,33 @@ function addOrRemoveBookmark(pageId) {
             window.location.replace("/accounts/google/login/")
         },
     });
-}
+};
+
+/**
+ * 북마크 관리페이지 - 북마크 삭제
+ * */
+function removeBookmark(pageId) {
+    $.ajax({
+        type: "DELETE",
+        url: pageId,
+        dataType: "json", // 서버측에서 전송한 Response 데이터 형식 (json)
+        success: function (response) { // 통신 성공시 - 동적으로 북마크 아이콘 변경
+            if (response.result == "success") {
+                $("div").remove("#page-" + pageId);
+            }
+        },
+        error: function (request, status, error) { // 통신 실패시 - 로그인 페이지 리다이렉트
+            window.location.replace("/accounts/google/login/")
+        },
+    });
+};
+
+/**
+ * 댓글창 생성 함수, 댓글 조회
+ * */
+function viewComment(comment_count, page_id) {
+    if(comment_count > 0) {
+        // 해당 게시물의 댓글 조회 ajax
+    }
+
+};
