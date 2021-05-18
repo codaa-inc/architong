@@ -7,10 +7,8 @@ function onclickPagination(page_number) {
     const searchbox = $("#searchbox").val()
     // 검색어가 없으면 GET 요청, 검색어가 있으면 POST 요청(Form Submit)
     if (searchbox == "" || searchbox == null) {
-        console.log("GET 요청");
         location.href ='?page=' + page_number;
     } else {
-        console.log("POST 요청");
         $("#page").val(page_number);
         document.searchForm.submit();
     }
@@ -87,8 +85,14 @@ function removeBookmark(pageId) {
  * 댓글창 생성 함수, 댓글 조회
  * */
 function viewComment(comment_count, page_id) {
-    if(comment_count > 0) {
-        // 해당 게시물의 댓글 조회 ajax
+    const status = $('#commentbox-' + page_id).css('display');
+    // 댓글창 toggle
+    if (status === 'none' ) {
+        $('#commentbox-' + page_id).show();
+        if(comment_count > 0) {
+            // 해당 게시물의 댓글이 존재하면 불러온다.
+        }
+    } else {
+        $('#commentbox-' + page_id).hide();
     }
-
 };
