@@ -24,6 +24,32 @@
         visibility: hidden;
         margin-left: 10px;
     }
+    #radio-group {
+        vertical-align : middle;
+        justify-content: flex-end;
+        align-items: center;
+        display: flex;
+        flex-direction: row;
+        margin-bottom: 0px;
+        font-family: 'NanumSquare', san-serif;
+    }
+    #radio-group > input, button {
+        margin: auto 10px;
+    }
+    .comment_inner {
+        padding-top: 0px;
+        font-family: 'NanumSquare', san-serif;
+    }
+    .comment_inner > ul, li {
+        list-style: none !important;
+    }
+    .comment_author {
+        padding-top: 10px !important;
+    }
+    .media-body{
+        padding-bottom: 10px !important;
+    }
+
 </style>
 {% endblock %}
 {% block js %}
@@ -105,25 +131,20 @@
                                     </a>
                                     <!----------------------- End Bookmark Icon -------------------->
                                 {% endif %}
+                                <div id="description-{{ page.page_id }}">
                                 {{ page.description|safe_markdown }}
+                                </div>
                                 <!----------------------- Comment Area ----------------------------->
                                 <div id="commentbox-{{ page.page_id }}" class="blog_comment_box topic_comment" style="padding-top: 0px; display: none;">
-                                    <form class="get_quote_form row" action="#" method="post">{% csrf_token %}
+                                    <form id="comment-form-{{ page.page_id }}" name="comment-form-{{ page.page_id }}" class="get_quote_form row">{% csrf_token %}
                                         <div class="col-md-12 form-group">
-                                            <textarea class="form-control message" required></textarea>
+                                            <textarea name="content" class="form-control message" required></textarea>
                                             <label class="floating-label">Comment</label>
                                         </div>
-                                        <div class="col-md-12 form-group check_input">
-                                            <div class="box_info">
-                                                <div class="form-check">
-                                                    <input class="form-check-input" type="checkbox" id="Checkone">
-                                                    <label class="form-check-label" for="Checkone">공개 댓글</label>
-                                                    <input class="form-check-input" type="checkbox" id="Checktwo">
-                                                    <label class="form-check-label" for="Checktwo" style="margin-left: 10px;">비공개 메모</label>
-                                                    <button class="btn action_btn thm_btn"type="submit" style="float:right; color: #fff;">저장</button>
-                                                </div>
-
-                                            </div>
+                                        <div class="col-md-12 form-group" id="radio-group">
+                                            <input type="radio" class="rls_yn" name="rls_yn" value="Y" id="rls_y" onchange="checkOne(this.id)" checked><label>공개 댓글</label>
+                                            <input type="radio" class="rls_yn" name="rls_yn" value="N" id="rls_n" onchange="checkOne(this.id)" style="margin-left: 10px;"><label>비공개 메모</label>
+                                            <button class="action_btn btn_small" type="button" onclick='addComment("{{ page.page_id }}")' style="color: #fff;">저장</button>
                                         </div>
                                     </form>
                                 </div>

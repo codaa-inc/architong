@@ -82,17 +82,75 @@ function removeBookmark(pageId) {
 };
 
 /**
- * 댓글창 생성 함수, 댓글 조회
+ * 댓글 조회, 댓글창 생성
  * */
 function viewComment(comment_count, page_id) {
     const status = $('#commentbox-' + page_id).css('display');
-    // 댓글창 toggle
     if (status === 'none' ) {
-        $('#commentbox-' + page_id).show();
-        if(comment_count > 0) {
-            // 해당 게시물의 댓글이 존재하면 불러온다.
+        if(comment_count > 0) {     // 해당 게시물의 댓글이 존재하면 불러온다.
+            $.ajax({
+                type: "GET",
+                url: "/comment/" + page_id,
+                dataType: "json", // 서버측에서 전송한 Response 데이터 형식 (json)
+                success: function (data) { // 통신 성공시 - 동적으로 북마크 아이콘 변경
+                    if (data.length > 0) {
+                        let comment_html = '<div class="comment_inner"><ul class="comment_box list-unstyled"><li class="post_comment">';
+                        for (let i in data) {
+                            let comment = data[i].fields;
+                            if (comment.depth == 0) {
+                               comment_html += '<div class="media comment_author"><div class="media-body"><div class="comment_info">' +
+                                            '<div class="comment_date"><strong>' + comment.username + '</strong>&nbsp;&nbsp;' +
+                                            moment(comment.reg_dt).format('YYYY.MM.DD HH:mm') + '</div></div><p>' + comment.content + '</p>' +
+                                            '<a href="#" class="comment_reply">Reply <i class="arrow_right"></i></a></div></div>';
+                            } else if (comment.depth == 1) {
+                                comment_html += '<ul class="list-unstyled reply_comment"><li><div class="media comment_author"><div class="media-body">' +
+                                            '<div class="comment_info"><div class="comment_date"><strong>' + comment.username + '</strong>&nbsp;&nbsp;' +
+                                            moment(comment.reg_dt).format('YYYY.MM.DD HH:mm') + '</div></div><p>' + comment.content + '</p></div></div></li></ul>';
+                            }
+                        }
+                        comment_html += '</li></ul></div>';
+                        comment_html.replace("{{ page.page_id }}", page_id);
+                        $("#description-" + page_id).append(comment_html);
+                    }
+                },
+                error: function (request, status, error) { // 통신 실패시 - 로그인 페이지 리다이렉트
+                    window.location.replace("/accounts/google/login/")
+                },
+            });
         }
+        $('#commentbox-' + page_id).show();     // 댓글창 toggle
     } else {
-        $('#commentbox-' + page_id).hide();
+        $('#commentlist-' + page_id).hide();    // 댓글리스트 toggle
+        $('#commentbox-' + page_id).hide();     // 댓글창 toggle
     }
 };
+
+/**
+ * 댓글 radio toggle
+ * */
+function checkOne(id) {
+    if (id == "rls_y") {
+        $("input:checkbox[id='rls_n']").prop("checked", "false");
+    } else {
+        $("input:checkbox[id='rls_y']").prop("checked", "false");
+    }
+};
+
+/**
+ * 댓글작성함수
+ * */
+function addComment(page_id) {
+    $.ajax({
+        type: "POST",
+        url: "/comment/" + page_id,
+        dataType: "json", // 서버측에서 전송한 Response 데이터 형식 (json)
+        success: function (response) { // 통신 성공시 - 동적으로 북마크 아이콘 변경
+            if (response.result == "success") {
+
+            }
+        },
+        error: function (request, status, error) { // 통신 실패시 - 로그인 페이지 리다이렉트
+            window.location.replace("/accounts/google/login/")
+        },
+    });
+}

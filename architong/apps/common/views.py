@@ -6,11 +6,9 @@ from django.core.paginator import Paginator
 from django.views.decorators.csrf import csrf_exempt
 from django.contrib.auth.decorators import login_required
 from django.http import JsonResponse
-
 from apps.book.models import Books
 from apps.book.models import Bookmark
 from apps.book.models import Pages
-
 
 '''
 메인페이지 조회, 문서검색 함수

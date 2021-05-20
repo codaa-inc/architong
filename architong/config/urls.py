@@ -19,6 +19,7 @@ from django.contrib.auth import views as auth_views
 from django.contrib.auth.views import LogoutView
 from apps.common.views import *
 from apps.book.views import *
+from apps.forum.views import *
 
 
 urlpatterns = [
@@ -35,4 +36,7 @@ urlpatterns = [
     path('book/bookmark/<int:page_id>', add_or_remove_bookmark),
     path('bookmark/', view_bookmark),
     path('bookmark/<int:page_id>', delete_bookmark),
+
+    # Forum
+    path('comment/<int:page_id>', comment)
 ]

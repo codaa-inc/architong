@@ -14106,7 +14106,7 @@ input[type=number] {
   color: #6b707f;
 }
 .blog_comment_box .get_quote_form {
-  padding-top: 40px;
+  padding-top: 20px;
 }
 .blog_comment_box .get_quote_form .form-group {
   margin-bottom: 30px;
@@ -14136,7 +14136,7 @@ input[type=number] {
   border: 2px solid #4c4cf1;
 }
 .blog_comment_box .get_quote_form .form-group .form-control.message {
-  height: 160px;
+  height: 80px;
   padding-top: 22px;
 }
 .blog_comment_box .get_quote_form .thm_btn {
