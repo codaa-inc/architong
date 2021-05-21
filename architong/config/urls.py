@@ -38,5 +38,5 @@ urlpatterns = [
     path('bookmark/<int:page_id>', delete_bookmark),
 
     # Forum
-    path('comment/<int:page_id>', comment)
+    path('comment/<str:id>', comment)
 ]

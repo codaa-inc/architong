@@ -49,6 +49,9 @@
     .media-body{
         padding-bottom: 10px !important;
     }
+    .comment_reply {
+        cursor: pointer;
+    }
 
 </style>
 {% endblock %}
@@ -99,7 +102,7 @@
                     </div>
                 </aside>
             </div>
-            <div class="col-xl-9 doc-middle-content">
+            <div class="col-xl-9 doc-middle-content">{% csrf_token %}
                 <article id="post" class="documentation_info">
                     <div class="documentation_body" id="documentation">
                       {% for page in pages %}
@@ -108,7 +111,7 @@
                                 {% if page.depth == 1 %}
                                     <!----------------------- Comment Icon ----------------------->
                                     <a id="comment-{{ page.page_id }}" class="comment" title="댓글 작성"
-                                       onclick='viewComment("{{ page.comment_count }}", "{{ page.page_id }}")'>
+                                       onclick='onclickComment("{{ page.comment_count }}", "{{ page.page_id }}")'>
                                         <ion-icon style="font-size: large" name="chatbubbles-outline"></ion-icon>{{ page.comment_count }}
                                     </a>
                                     {% if page.comment_count < 1 %}
@@ -133,21 +136,9 @@
                                 {% endif %}
                                 <div id="description-{{ page.page_id }}">
                                 {{ page.description|safe_markdown }}
-                                </div>
+                                </div> {% csrf_token %}
                                 <!----------------------- Comment Area ----------------------------->
-                                <div id="commentbox-{{ page.page_id }}" class="blog_comment_box topic_comment" style="padding-top: 0px; display: none;">
-                                    <form id="comment-form-{{ page.page_id }}" name="comment-form-{{ page.page_id }}" class="get_quote_form row">{% csrf_token %}
-                                        <div class="col-md-12 form-group">
-                                            <textarea name="content" class="form-control message" required></textarea>
-                                            <label class="floating-label">Comment</label>
-                                        </div>
-                                        <div class="col-md-12 form-group" id="radio-group">
-                                            <input type="radio" class="rls_yn" name="rls_yn" value="Y" id="rls_y" onchange="checkOne(this.id)" checked><label>공개 댓글</label>
-                                            <input type="radio" class="rls_yn" name="rls_yn" value="N" id="rls_n" onchange="checkOne(this.id)" style="margin-left: 10px;"><label>비공개 메모</label>
-                                            <button class="action_btn btn_small" type="button" onclick='addComment("{{ page.page_id }}")' style="color: #fff;">저장</button>
-                                        </div>
-                                    </form>
-                                </div>
+
                                 <!----------------------- End Comment Area ------------------------->
                             </div>
                         </div>
