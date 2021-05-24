@@ -114,36 +114,70 @@ function requestCommentList(page_id) {
         dataType: "json", // 서버측에서 전송한 Response 데이터 형식 (json)
         success: function (data) { // 통신 성공시 - 동적으로 북마크 아이콘 변경
             if (data.length > 0) {
-                viewCommentList(data, page_id);
+                viewCommentList(data, page_id, "select");
             }
         },
         error: function (request, status, error) { // 통신 실패시 - 로그인 페이지 리다이렉트
-            window.location.replace("/accounts/google/login/")
+            console.log("code:"+request.status+"\n"+"message:"+request.responseText+"\n"+"error:"+error)
+            //window.location.replace("/accounts/google/login/")
         },
     });
 }
 
 /**
  * 댓글 리스트 생성
+ * Param : data, page_id, status[select/insert]
  * */
-function viewCommentList(data, page_id) {
-    let comment_html = '<div id="commentlist-' + page_id + '" class="comment_inner"><ul class="comment_box list-unstyled"><li class="post_comment">';
+function viewCommentList(data, page_id, status) {
+    let comment_html = "";
+    // depth1인 댓글을 insert 할때는 select와 동일한 로직 적용
+    if (status == "insert" && data[0].depth == 0) {
+        page_id = page_id.split('-')[1];
+        status = "select";
+    }
+    // Append HTML
+    if (status == "select") {
+        comment_html = '<div id="commentlist-' + page_id + '" class="comment_inner"><ul class="comment_box list-unstyled"><li class="post_comment">';
+    }
     for (let i in data) {
-        let comment = data[i].fields;
-        let comment_id = String(data[i].pk);
+        let comment = data[i];
         if (comment.depth == 0) {
-            comment_html += '<div id=' + "parent-" + comment_id + ' class="media comment_author"><div class="media-body"><div class="comment_info">' +
+            comment_html += '<div id=' + "parent-" + comment.comment_id + ' class="media comment_author"><div class="media-body"><div class="comment_info">' +
                         '<div class="comment_date"><strong>' + comment.username + '</strong>&nbsp;&nbsp;' +
                         moment(comment.reg_dt).format('YYYY.MM.DD HH:mm') + '</div></div><p>' + comment.content + '</p>' +
-                        '<a onclick="viewCommentBox(' + "'child-" + comment_id + "'" + ')" class="comment_reply">Reply <i class="arrow_right"></i></a></div></div>';
+                        '<a onclick="viewCommentBox(' + "'child-" + comment.comment_id + "'" + ')" class="comment_reply">Reply <i class="arrow_right"></i></a></div></div>';
         } else if (comment.depth == 1) {
-            comment_html += '<ul id="child-' + comment_id + '" class="list-unstyled reply_comment"><li><div class="media comment_author"><div class="media-body">' +
+            comment_html += '<ul id="child-' + comment.comment_id + '" class="list-unstyled reply_comment"><li><div class="media comment_author"><div class="media-body">' +
                         '<div class="comment_info"><div class="comment_date"><strong>' + comment.username + '</strong>&nbsp;&nbsp;' +
                         moment(comment.reg_dt).format('YYYY.MM.DD HH:mm') + '</div></div><p>' + comment.content + '</p></div></div></li></ul>';
         }
     }
-    comment_html += '</li></ul></div>';
-    $("#description-" + page_id).append(comment_html);
+
+    // select할 경우 댓글창 새로 생성
+    if (status == "select") {
+       comment_html += '</li></ul></div>';
+       $("#description-" + page_id).append(comment_html);
+
+    // insert할 경우 댓글을 삽입할 위치를 탐색
+    } else if(status == "insert") {
+        const comment = data[0];
+        let target_id = "";
+        let nodeArr = $("#parent-" + comment.parent_id).nextAll();
+        if (nodeArr.length < 1 || nodeArr[0].localName == "div") {
+            target_id = "parent-" + comment.parent_id;
+        } else {
+            for (let i in nodeArr) {
+                if (nodeArr[i].localName == "div") {
+                    target_id = nodeArr[i - 1].id;
+                    break;
+                }
+                if (i == nodeArr.length - 1 && target_id == "") {
+                    target_id = nodeArr[i].id;
+                }
+            }
+        }
+        $("#" + target_id).after(comment_html);
+    }
 };
 
 /**
@@ -153,40 +187,61 @@ function viewCommentBox(id) {
     const page_id = id.split("-")[1];
     let commentbox_html = '<div id="commentbox-' + id + '" class="blog_comment_box topic_comment" style="padding-top: 0px;">' +
                             '<form id="form-' + id + '"  class="get_quote_form row"><div class="col-md-12 form-group">' +
-                            '<textarea name="content" class="form-control message" required></textarea>' +
+                            '<textarea id="textarea-' + id + '" name="content" class="form-control message" required></textarea>' +
                             '<label class="floating-label">Comment</label></div><div class="col-md-12 form-group" id="radio-group">' +
                             '<input type="radio" class="rls_yn" name="rls_yn" value="Y" id="rls_y" onchange="checkOne(' + "'" + "rls_y" + "'" + ')" checked><label>공개 댓글</label>' +
                             '<input type="radio" class="rls_yn" name="rls_yn" value="N" id="rls_n" onchange="checkOne(' + "'" + "rls_n" + "'" + ')" style="margin-left: 10px;"><label>비공개 메모</label>' +
                             '<button class="action_btn btn_small" type="button" onclick="addComment(' + "'" + id + "'" + ')" style="color: #fff;">저장</button></div></form></div>';
 
-    if (id.indexOf("parent") == -1) {       // depth 2
-        if(!document.getElementById("commentbox-" + id)) {  // 대댓글 창이 존재하지 않는 경우 생성
+    ////////////////////  Depth 2 ////////////////////
+    if (id.indexOf("parent") == -1) {
+        // 대댓글 창이 존재하지 않는 경우 생성
+        if(!document.getElementById("commentbox-" + id)) {
             let targetId = "";
             const nodeArr = $("#parent-" + page_id).nextAll();
-            for(let i in nodeArr) {
-                // 다음 부모댓글이 존재하는 경우 바로 위 ID를 targetId로 지정
-                if (nodeArr[i].localName == "div") {
-                    targetId = nodeArr[i - 1].id;
-                    break;
-                }
-                // 다음 부모댓글이 없는 경우 마지막 ID를 targetId로 지정
-                if (i == nodeArr.length - 1 && targetId == "") {
-                    targetId = nodeArr[i].id;
+             // 다음 부모댓글이 없거나, 자식댓글이 없는 경우 현재 ID를 targetId로 지정
+            if (nodeArr.length < 1 || nodeArr[0].localName == "div") {
+                targetId = "parent-" + page_id;
+            } else {
+                for(let i in nodeArr) {
+                    // 해당 부모 댓글에 다른 하위 댓글이 존재하는 경우 마지막 자식댓글 ID를 targetId로 지정
+                    if (nodeArr[i].localName == "div") {
+                        targetId = nodeArr[i - 1].id;
+                        break;
+                    }
+                    // 맨 마지막 순서의 경우 자신의 ID를 targetId로 지정
+                    if(targetId == "" || i == nodeArr.length -1) {
+                        targetId = nodeArr[i].id;
+                    }
                 }
             }
             commentbox_html = '<ul class="list-unstyled reply_comment">' + commentbox_html + '</ul>';
             $("#" + targetId).after(commentbox_html);
-        } else {    // 대댓글 창이 이미 존재하는 경우 toggle
+
+        // 대댓글 창이 이미 존재하는 경우 toggle
+        } else {
             if($('#commentbox-' + page_id).css('display') == 'none'){
                 $('#commentbox-' + page_id).show();     // 댓글창 show
             } else {
                 $('#commentbox-' + page_id).hide(200, 'swing');     // 댓글창 hide
             }
         }
-    } else {        // depth 1
+
+    ////////////////////  Depth 1 ////////////////////
+    } else {
         $("#description-" + page_id).after(commentbox_html);
     }
+
+    // 생성한 textarea로 마우스 커서 이동
+    $('#textarea-' + id).focus();
 };
+
+/**
+// textarea enter key 입력시 저장 버튼 클릭 이벤트 실행
+$('textarea[name=content]').click(function(){
+    const id = $(this).attr('id').replace("textarea-", "");
+    addComment(id);
+});*/
 
 /**
  * 댓글 radio toggle
@@ -211,12 +266,26 @@ function addComment(id) {
         dataType: "json", // 서버측에서 전송한 Response 데이터 형식 (json)
         data: formData,
         success: function (response) { // 통신 성공시 - 동적으로 북마크 아이콘 변경
-            if (response.result == "success") {
-
-
+            if (response.length > 0) {
+                const data = response[0];
+                // 부모댓글일 경우 comment box 내용을 삭제
+                if (data.depth == 0 && document.getElementById("textarea-" + id)) {
+                    $("#textarea-" + id).val('');
+                }
+                // 자식댓글일 경우 comment box 요소를 삭제
+                else if (data.depth == 1) {
+                    $("#commentbox-" + id).parent().remove();
+                }
+                // 해당 page의 comment count 증감
+                // TODO: 증감시 아이콘 안 날라가고 숫자만 변경되도록
+                const comment_count = $("#comment-" + data.page_id).text();
+                $("#comment-" + data.page_id).text(comment_count + 1);
+                // 댓글창 추가
+                viewCommentList(response, id, "insert");
             }
         },
         error: function (request, status, error) { // 통신 실패시 - 로그인 페이지 리다이렉트
+            console.log("code:"+request.status+"\n"+"message:"+request.responseText+"\n"+"error:"+error)
             //window.location.replace("/accounts/google/login/")
         },
     });
