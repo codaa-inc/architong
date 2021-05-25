@@ -302,7 +302,7 @@
                     {% else %}
                         {% for account in user.socialaccount_set.all %}
                             <li class="nav-item dropdown submenu">
-                                <a href="edit/" style="width: 100px"><i class="icon_documents_alt" style="margin-right: 5px;"></i>책만들기</a>
+                                <a href="/edit/" style="width: 100px"><i class="icon_documents_alt" style="margin-right: 5px;"></i>책만들기</a>
                             </li>
                             <li class="nav-item dropdown submenu active">
                                 <a class="nav-link dropdown-toggle" href="#"><i class="icon_profile"></i>{{ account.extra_data.given_name }}</a>

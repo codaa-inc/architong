@@ -9,6 +9,7 @@ class Comments(models.Model):
     content = models.TextField(blank=True, null=True)
     rls_yn = models.CharField(max_length=10, blank=True, null=True)
     reg_dt = models.DateTimeField(auto_now_add=True, blank=True, null=True)
+    status = models.CharField(max_length=10, blank=True, null=True)
 
     class Meta:
         managed = False

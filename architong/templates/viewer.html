@@ -36,6 +36,13 @@
     #radio-group > input, button {
         margin: auto 10px;
     }
+
+    .comment_tag {
+        color: #4c4cf1 !important;
+        cursor: pointer;
+        float: right;
+    }
+
     .comment_inner {
         padding-top: 0px;
         font-family: 'NanumSquare', san-serif;
@@ -52,7 +59,6 @@
     .comment_reply {
         cursor: pointer;
     }
-
 </style>
 {% endblock %}
 {% block js %}
@@ -62,6 +68,14 @@
 {% endblock %}
 
 {% block content %}
+
+{% for account in user.socialaccount_set.all %}
+<script>
+    // 로그인 시 사용자 ID 전역변수에 저장
+    let USERNAME = "{{ account.extra_data.given_name }}";
+</script>
+{% endfor %}
+
 <!--================Forum Breadcrumb Area =====================-->
 <div class="breadcrumb_area_three" style="padding: 0"></div>
 <!--================End Forum Breadcrumb Area =================-->
@@ -112,7 +126,8 @@
                                     <!----------------------- Comment Icon ----------------------->
                                     <a id="comment-{{ page.page_id }}" class="comment" title="댓글 작성"
                                        onclick='onclickComment("{{ page.comment_count }}", "{{ page.page_id }}")'>
-                                        <ion-icon style="font-size: large" name="chatbubbles-outline"></ion-icon>{{ page.comment_count }}
+                                        <ion-icon style="font-size: large" name="chatbubbles-outline"></ion-icon>
+                                        {{ page.comment_count }}
                                     </a>
                                     {% if page.comment_count < 1 %}
                                         <script>

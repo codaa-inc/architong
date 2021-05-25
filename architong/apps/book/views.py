@@ -7,7 +7,7 @@ from django.http import JsonResponse
 from django.views.decorators.csrf import csrf_exempt
 from django.contrib.auth.decorators import login_required
 from django.shortcuts import render, redirect
-
+from django.db.models import Q
 from .models import Books
 from .models import Pages
 from .models import Bookmark
@@ -33,7 +33,13 @@ def view_book(request, book_id) :
     pages = Pages.objects.filter(book_id=book_id)
     # 페이지별 댓글 count 추가
     for page in pages:
-        page.comment_count = Comments.objects.filter(page_id=page.page_id, rls_yn="Y").count()
+        q = Q()
+        q.add(Q(page_id=page.page_id), q.AND)
+        q.add(~Q(status="D"), q.AND)
+        q.add(~Q(status="TD"), q.AND)
+        q.add(Q(page_id=page.page_id, rls_yn="Y") | Q(page_id=page.page_id, rls_yn="N", username=username), q.AND)
+        comment_count = Comments.objects.filter(q).count()
+        page.comment_count = comment_count
     # 로그인된 사용자의 경우 페이지 정보에 북마크 등록여부 추가
     if username is not None:
         for page in pages:

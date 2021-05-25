@@ -91,7 +91,11 @@ function onclickComment(comment_count, page_id) {
             // 해당 게시물의 댓글이 존재하면 불러오고 댓글리스트를 생성한다.
             requestCommentList(page_id);
         }
-        viewCommentBox("parent-" + page_id);   // 댓글창 생성
+        if (!document.getElementById('commentbox-parent-' + page_id)) {
+            viewCommentBox("parent-" + page_id);        // 댓글창 생성
+        } else {
+            $('#commentbox-parent-' + page_id).remove();     // 댓글창 remove
+        }
     // 댓글창이 이미 생성되어 있으면 → 댓글리스트와 댓글창을 토글한다
     } else {
         if($('#commentlist-' + page_id).css('display') == 'none' || $('#commentbox-' + page_id).css('display') == 'none'){
@@ -137,19 +141,48 @@ function viewCommentList(data, page_id, status) {
     }
     // Append HTML
     if (status == "select") {
-        comment_html = '<div id="commentlist-' + page_id + '" class="comment_inner"><ul class="comment_box list-unstyled"><li class="post_comment">';
+        comment_html = '<div id="commentlist-' + page_id + '" class="comment_inner">' +
+                        '<ul class="comment_box list-unstyled"><li class="post_comment">';
     }
     for (let i in data) {
         let comment = data[i];
         if (comment.depth == 0) {
-            comment_html += '<div id=' + "parent-" + comment.comment_id + ' class="media comment_author"><div class="media-body"><div class="comment_info">' +
-                        '<div class="comment_date"><strong>' + comment.username + '</strong>&nbsp;&nbsp;' +
-                        moment(comment.reg_dt).format('YYYY.MM.DD HH:mm') + '</div></div><p>' + comment.content + '</p>' +
-                        '<a onclick="viewCommentBox(' + "'child-" + comment.comment_id + "'" + ')" class="comment_reply">Reply <i class="arrow_right"></i></a></div></div>';
+            comment_html += '<div id=' + "parent-" + comment.comment_id + ' class="media comment_author">' +
+                '<div class="media-body"><div class="comment_info"><div class="comment_date"><strong>' + comment.username + '</strong>' +
+                '&nbsp;&nbsp;' + moment(comment.reg_dt).format('YYYY.MM.DD HH:mm')
+            // 수정됨 표시
+            if (comment.status == "U") {
+                comment_html += "&nbsp;&nbsp;수정됨";
+            }
+            comment_html += '</div></div><p';
+            // 임시저장 메세지 스타일 적용
+            if (comment.status == "TD") {
+                comment_html += ' style="color: rgba(0, 0, 0, 0.4); font-style: italic;"';
+            }
+            comment_html += '>' + comment.content + '</p>';
+            // 자신의 글에 수정, 삭제 태그 추가
+            if (USERNAME == comment.username && comment.status != "TD") {
+                comment_html += '<a onclick="deleteComment(' + "'parent-" + comment.comment_id + "'" + ')" class="comment_tag">&nbsp;삭제&nbsp;</a>';
+                comment_html += '<a onclick="viewUpdateComment(' + "'parent-" + comment.comment_id + "'" + ')" class="comment_tag">&nbsp;수정&nbsp;</a>';
+            }
+            comment_html += '<a onclick="viewCommentBox(' + "'child-" + comment.comment_id + "'" + ')" class="comment_reply">Reply ' +
+                            '<i class="arrow_right"></i></a></div></div>';
         } else if (comment.depth == 1) {
-            comment_html += '<ul id="child-' + comment.comment_id + '" class="list-unstyled reply_comment"><li><div class="media comment_author"><div class="media-body">' +
-                        '<div class="comment_info"><div class="comment_date"><strong>' + comment.username + '</strong>&nbsp;&nbsp;' +
-                        moment(comment.reg_dt).format('YYYY.MM.DD HH:mm') + '</div></div><p>' + comment.content + '</p></div></div></li></ul>';
+            comment_html += '<ul id="child-' + comment.comment_id + '" class="list-unstyled reply_comment">' +
+                            '<li><div class="media comment_author"><div class="media-body"><div class="comment_info">' +
+                            '<div class="comment_date"><strong>' + comment.username + '</strong>&nbsp;&nbsp;' +
+                            moment(comment.reg_dt).format('YYYY.MM.DD HH:mm');
+            // 수정됨 표시
+            if (comment.status == "U") {
+                comment_html += "&nbsp;&nbsp;수정됨";
+            }
+            comment_html += '</div></div><p>' + comment.content + '</p>'
+            // 자신의 글에 수정, 삭제 태그 추가
+            if (USERNAME == comment.username && comment.status != "TD") {
+                comment_html += '<a onclick="deleteComment(' + "'child-" + comment.comment_id + "'" + ')" class="comment_tag">&nbsp;삭제&nbsp;</a>';
+                comment_html += '<a onclick="viewUpdateComment(' + "'child-" + comment.comment_id + "'" + ')" class="comment_tag">&nbsp;수정&nbsp;</a>';
+            }
+            comment_html += '</div></div></li></ul>';
         }
     }
 
@@ -189,8 +222,8 @@ function viewCommentBox(id) {
                             '<form id="form-' + id + '"  class="get_quote_form row"><div class="col-md-12 form-group">' +
                             '<textarea id="textarea-' + id + '" name="content" class="form-control message" required></textarea>' +
                             '<label class="floating-label">Comment</label></div><div class="col-md-12 form-group" id="radio-group">' +
-                            '<input type="radio" class="rls_yn" name="rls_yn" value="Y" id="rls_y" onchange="checkOne(' + "'" + "rls_y" + "'" + ')" checked><label>공개 댓글</label>' +
-                            '<input type="radio" class="rls_yn" name="rls_yn" value="N" id="rls_n" onchange="checkOne(' + "'" + "rls_n" + "'" + ')" style="margin-left: 10px;"><label>비공개 메모</label>' +
+                            '<input type="radio" class="rls_yn" name="rls_yn" value="Y" id="rls_y" onchange="onchangeRadio(' + "'" + "rls_y" + "'" + ')" checked><label>공개 댓글</label>' +
+                            '<input type="radio" class="rls_yn" name="rls_yn" value="N" id="rls_n" onchange="onchangeRadio(' + "'" + "rls_n" + "'" + ')" style="margin-left: 10px;"><label>비공개 메모</label>' +
                             '<button class="action_btn btn_small" type="button" onclick="addComment(' + "'" + id + "'" + ')" style="color: #fff;">저장</button></div></form></div>';
 
     ////////////////////  Depth 2 ////////////////////
@@ -246,7 +279,7 @@ $('textarea[name=content]').click(function(){
 /**
  * 댓글 radio toggle
  * */
-function checkOne(id) {
+function onchangeRadio(id) {
     if (id == "rls_y") {
         $("input:checkbox[id='rls_n']").prop("checked", "false");
     } else {
@@ -277,9 +310,9 @@ function addComment(id) {
                     $("#commentbox-" + id).parent().remove();
                 }
                 // 해당 page의 comment count 증감
-                // TODO: 증감시 아이콘 안 날라가고 숫자만 변경되도록
-                const comment_count = $("#comment-" + data.page_id).text();
-                $("#comment-" + data.page_id).text(comment_count + 1);
+                const comment_count = Number($("#comment-" + data.page_id).text()) + 1;
+                const comment_icon  = '<ion-icon style="font-size: large" name="chatbubbles-outline"></ion-icon>&nbsp;';
+                $("#comment-" + data.page_id).html(comment_icon + comment_count);
                 // 댓글창 추가
                 viewCommentList(response, id, "insert");
             }
@@ -289,4 +322,79 @@ function addComment(id) {
             //window.location.replace("/accounts/google/login/")
         },
     });
+};
+
+/**
+ * 댓글수정함수
+ * */
+function viewUpdateComment(id) {
+    /**TODO: 수정 댓글창 생성 */
+    const text_node = $('#' + id).find();
+    console.log("id : ", id);
+    console.log("text_node : ", text_node);
+    let commentbox_html = '<div id="commentbox-' + id + '" class="blog_comment_box topic_comment" style="padding-top: 0px;">' +
+                            '<form id="form-' + id + '"  class="get_quote_form row"><div class="col-md-12 form-group">' +
+                            '<textarea id="textarea-' + id + '" name="content" class="form-control message" required>' + text_node.innerText + '</textarea>' +
+                            '<label class="floating-label">Comment</label></div><div class="col-md-12 form-group" id="radio-group">' +
+                            '<button class="action_btn btn_small" type="button" onclick="updateComment(' + "'" + id + "'" + ')" style="color: #fff;">저장</button></div></form></div>';
+    //text_node.parent().replaceChild(text_node, commentbox_html);
+    /**
+     * //첫번째 span을 찾을때
+        $('ul>li:eq(0)').children('span'); or $('ul').find('span:eq(0)');
+     * */
+};
+
+/**
+ * 댓글수정함수
+ * */
+function updateComment(id) {
+
+    console.log("updateComment : ", id);
 }
+
+/**
+ * 댓글삭제함수
+ * */
+function deleteComment(id) {
+    $.ajax({
+        type: "DELETE",
+        url: "/comment/" + id,
+        headers: {
+            "X-CSRFToken" : $("input[name=csrfmiddlewaretoken]").val()
+        },
+        dataType: "json", // 서버측에서 전송한 Response 데이터 형식 (json)
+        success: function (response) { // 통신 성공시 - 동적으로 북마크 아이콘 변경
+            // 해당 page의 comment count 증감
+            const comment_count = Number($("#comment-" + id).text()) - 1;
+            const comment_icon  = '<ion-icon style="font-size: large" name="chatbubbles-outline"></ion-icon>&nbsp;';
+            $("#comment-" + id).html(comment_icon + comment_count);
+            // delete → 해당 댓글란 삭제
+            if (response.result == "delete") {
+                $("#" + id).remove();
+            }
+            // parent delete → 해당 댓글란 + 부모 댓글란 삭제
+            else if (response.result == "parent delete") {
+                const prev_node = $("#" + id).prev()
+                $("#" + id).remove();
+                prev_node.remove();
+            }
+            // temporary delete → 내용 갈아끼움 ("이 댓글은 삭제되었습니다.")
+            else if (response.result == "temporary delete") {
+                const node_arr = $("#" + id).children().children()
+                for (let i in node_arr) {
+                    if (i == 1) {
+                        node_arr[i].innerText = "이 댓글은 삭제되었습니다.";
+                        node_arr[i].style.color = "rgba(0, 0, 0, 0.4)";
+                        node_arr[i].style.fontStyle = "italic";
+                    } else if (i == 2 || i == 3) {
+                        node_arr[i].remove();
+                    }
+                }
+            }
+        },
+        error: function (request, status, error) { // 통신 실패시 - 로그인 페이지 리다이렉트
+            console.log("code:"+request.status+"\n"+"message:"+request.responseText+"\n"+"error:"+error)
+            //window.location.replace("/accounts/google/login/")
+        },
+    });
+};

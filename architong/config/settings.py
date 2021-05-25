@@ -168,7 +168,6 @@ STATICFILES_DIRS = [
 #  웹서버와 연동하기 위한 collectstatic 경로
 STATIC_ROOT = os.path.join(ROOT_DIR, '.static_root')
 
-
 """--------------------------------
 -------- 구글 OAuth 연동 -----------
 --------------------------------"""
@@ -199,10 +198,18 @@ SOCIALACCOUNT_PROVIDERS = {
 SITE_ID = 2
 SOCIAL_AUTH_URL_NAMESPACE = 'social'
 
+"""--------------------------------
+---------- Django Auth  -----------
+--------------------------------"""
+
 # 로그인, 로그아웃 성공시 경로
 LOGIN_REDIRECT_URL = '/'
 LOGOUT_REDIRECT_URL = '/'
 
+# Template에서 Session 사용
+TEMPLATE_CONTEXT_PROCESSORS = (
+    'django.core.context_processors.request',
+)
 
 """---------------------------------
 -------- 마크다운 에디터 ------------

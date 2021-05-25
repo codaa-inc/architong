@@ -1,4 +1,4 @@
--- MySQL Workbench Forward Engineering
+- MySQL Workbench Forward Engineering
 
 SET @OLD_UNIQUE_CHECKS=@@UNIQUE_CHECKS, UNIQUE_CHECKS=0;
 SET @OLD_FOREIGN_KEY_CHECKS=@@FOREIGN_KEY_CHECKS, FOREIGN_KEY_CHECKS=0;
@@ -74,7 +74,7 @@ ENGINE = InnoDB;
 DROP TABLE IF EXISTS `architong`.`comments` ;
 
 CREATE TABLE IF NOT EXISTS `architong`.`comments` (
-  `comment_id` INT NOT NULL COMMENT '댓글ID',
+  `comment_id` INT NOT NULL AUTO_INCREMENT COMMENT '댓글ID',
   `page_id` INT NOT NULL COMMENT '원글 페이지ID (FK - Pages)',
   `parent_id` INT NOT NULL DEFAULT 0 COMMENT '부모댓글ID (default : 0)',
   `depth` INT NOT NULL DEFAULT 0 COMMENT '댓글 레벨 (default : 0)',
@@ -82,6 +82,7 @@ CREATE TABLE IF NOT EXISTS `architong`.`comments` (
   `content` TEXT NULL COMMENT '댓글내용',
   `rls_yn` CHAR(10) NULL DEFAULT 'Y' COMMENT '공개여부(default : Y-공개/N-비공개)',
   `reg_dt` DATETIME NULL COMMENT '등록일시',
+  `status` CHAR(10) NULL DEFAULT 'C' COMMENT '댓글상태 (default C 최초등록 / U 수정 /  D 삭제 /  TD 임시삭제 - 자식댓글이있는경우)',
   PRIMARY KEY (`comment_id`),
   INDEX `comments_id_idx` (`comment_id` ASC) VISIBLE) COMMENT '댓글'
 ENGINE = InnoDB;
