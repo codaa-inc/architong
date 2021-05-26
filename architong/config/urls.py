@@ -17,6 +17,7 @@ from django.contrib import admin
 from django.urls import path, include
 from django.contrib.auth import views as auth_views
 from django.contrib.auth.views import LogoutView
+from django.views.generic import TemplateView
 from apps.common.views import *
 from apps.book.views import *
 from apps.forum.views import *
@@ -38,5 +39,6 @@ urlpatterns = [
     path('bookmark/<int:page_id>', delete_bookmark),
 
     # Forum
-    path('comment/<str:id>', comment)
+    path('comment/<str:id>', CommentView.as_view()),
+    path('comment/update/<str:id>', comment_update),
 ]

@@ -203,6 +203,7 @@ SOCIAL_AUTH_URL_NAMESPACE = 'social'
 --------------------------------"""
 
 # 로그인, 로그아웃 성공시 경로
+LOGIN__URL = '/accounts/google/login/'
 LOGIN_REDIRECT_URL = '/'
 LOGOUT_REDIRECT_URL = '/'
 

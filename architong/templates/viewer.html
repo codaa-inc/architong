@@ -68,12 +68,16 @@
 {% endblock %}
 
 {% block content %}
-
-{% for account in user.socialaccount_set.all %}
 <script>
-    // 로그인 시 사용자 ID 전역변수에 저장
-    let USERNAME = "{{ account.extra_data.given_name }}";
+    // 로그인 시 사용자 ID를 저장하는 전역변수 선언
+    let USERNAME = "";
 </script>
+{% for account in user.socialaccount_set.all %}
+    {% if account.extra_data.given_name %}
+    <script>
+        USERNAME = "{{ account.extra_data.given_name }}";
+    </script>
+    {% endif %}
 {% endfor %}
 
 <!--================Forum Breadcrumb Area =====================-->

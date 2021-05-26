@@ -42,6 +42,7 @@
             <div class="col-xl-9 doc-middle-content">
                 <article id="post" class="documentation_info">
                     <div class="documentation_body" id="documentation">
+                      {% if bookmarks %}
                       {% for bookmark in bookmarks %}
                         <div class="martor-content">
                             <div class="martor-preview" id="page-{{ bookmark.page_id }}">
@@ -53,6 +54,9 @@
                             </div>
                         </div>
                       {% endfor %}
+                        {% else %}
+                        <p style="margin: auto; padding: 20px 0; color: rgba(0, 0, 0, 0.4);">등록된 북마크가 없습니다.</p>
+                        {% endif %}
                         <!--================ Martor =================-->
                         <script type="text/javascript" src="{% static 'plugins/js/jquery.min.js' %}"></script>
                         <script type="text/javascript" src="{% static 'plugins/js/bootstrap.min.js' %}"></script>

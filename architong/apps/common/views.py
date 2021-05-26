@@ -15,7 +15,6 @@ from apps.book.models import Pages
 '''
 def index(request):
     books = Books.objects.all().order_by('book_title')  # 전체 쿼리셋
-
     # GET 요청일때 전체 쿼리셋을 가져온다
     if request.method == 'GET':
         page = request.GET.get('page')  # 이동할 페이지

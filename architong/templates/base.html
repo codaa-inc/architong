@@ -297,7 +297,7 @@
                     <ul class="navbar-nav menu ml-auto">
                     {% if user.is_anonymous %}
                         <li class="nav-item dropdown submenu">
-                            <a href="{% provider_login_url 'google' %}" style="width: 120px;"><i class="icon_lock-open" style="margin-right: 5px;"></i>로그인</a>
+                            <a href="{% provider_login_url 'google' %}?next={{request.path}}" style="width: 120px;"><i class="icon_lock-open" style="margin-right: 5px;"></i>로그인</a>
                         </li>
                     {% else %}
                         {% for account in user.socialaccount_set.all %}
@@ -315,7 +315,7 @@
                                 </ul>
                             </li>
                             <li class="nav-item dropdown submenu">
-                                <a href="{% url 'logout' %}" style="width: 120px"><i class="icon_lock" style="margin-right: 5px;"></i>로그아웃</a>
+                                <a href="{% url 'logout' %}?next={{request.path}}" style="width: 120px"><i class="icon_lock" style="margin-right: 5px;"></i>로그아웃</a>
                             </li>
                         {% endfor %}
                     {% endif %}
