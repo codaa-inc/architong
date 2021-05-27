@@ -1,0 +1,335 @@
+{% extends 'base.html' %}
+{% load static %}
+{% block css %}
+<link rel="stylesheet" href="{% static 'assets/slick/slick.css' %}">
+<link rel="stylesheet" href="{% static 'assets/slick/slick-theme.css' %}">
+<link rel="stylesheet" href="{% static 'assets/ionicons/css/ionicons.min.css' %}">
+{% endblock %}
+{% block content %}
+<!--================Forum Body Area =================-->
+<section class="forum_sidebar_area" id="sticky_doc">
+    <div class="container-fluid pl-60 pr-60">
+        <div class="row">
+            <div class="col-xl-2 d-none d-xl-block">
+                <div class="left_side_forum">
+                    <aside class="l_widget l_tags_wd">
+                        <h3 class="wd_title">Tags</h3>
+                        <ul class="list-unstyled w_tag_list style-light">
+                            <li><a href="#">Swagger</a></li>
+                            <li><a href="#">Docy</a></li>
+                            <li><a href="#">weCare</a></li>
+                            <li><a href="#">Business</a></li>
+                            <li><a href="#">Download</a></li>
+                            <li><a href="#">Doc</a></li>
+                            <li><a href="#">Product board</a></li>
+                            <li><a href="#">WordPress</a></li>
+                            <li><a href="#">Design</a></li>
+                            <li><a href="#">ui/ux</a></li>
+                            <li><a href="#">Doc Design</a></li>
+                            <li><a href="#">DocAll</a></li>
+                        </ul>
+                    </aside>
+                    <aside class="l_widget comment_list">
+                        <h3 class="wd_title">Recent Topics</h3>
+                        <ul class="navbar-nav">
+                            <li>
+                                <div class="media">
+                                    <div class="d-flex">
+                                        <i class="icon_chat_alt"></i>
+                                    </div>
+                                    <div class="media-body">
+                                        <a href="#">
+                                            <h4>Intégration 300 by</h4>
+                                        </a>
+                                        <a href="#">
+                                            <h5><img src="{% static 'img/forum/r-topic-user.png' %}" alt=""> Jean Conner</h5>
+                                        </a>
+                                        <p>4 days, 3 hours ago</p>
+                                    </div>
+                                </div>
+                            </li>
+                            <li>
+                                <div class="media">
+                                    <div class="d-flex">
+                                        <i class="icon_chat_alt"></i>
+                                    </div>
+                                    <div class="media-body">
+                                        <a href="#">
+                                            <h4>how by</h4>
+                                        </a>
+                                        <a href="#">
+                                            <h5><img src="{% static 'img/forum/r-topic-user.png' %}" alt=""> Lucile Barber</h5>
+                                        </a>
+                                        <p>1 week ago</p>
+                                    </div>
+                                </div>
+                            </li>
+                            <li>
+                                <div class="media">
+                                    <div class="d-flex">
+                                        <i class="icon_chat_alt"></i>
+                                    </div>
+                                    <div class="media-body">
+                                        <a href="#">
+                                            <h4>testing by</h4>
+                                        </a>
+                                        <a href="#">
+                                            <h5><img src="{% static 'img/forum/r-topic-user.png' %}" alt=""> Dwain Cherry</h5>
+                                        </a>
+                                        <p>3 days, 20 hours ago</p>
+                                    </div>
+                                </div>
+                            </li>
+                            <li>
+                                <div class="media">
+                                    <div class="d-flex">
+                                        <i class="icon_chat_alt"></i>
+                                    </div>
+                                    <div class="media-body">
+                                        <a href="#">
+                                            <h4>Title by</h4>
+                                        </a>
+                                        <a href="#">
+                                            <h5><img src="{% static 'img/forum/r-topic-user.png' %}" alt=""> Kati Burch</h5>
+                                        </a>
+                                        <p>1 month ago</p>
+                                    </div>
+                                </div>
+                            </li>
+                            <li>
+                                <div class="media">
+                                    <div class="d-flex">
+                                        <i class="icon_chat_alt"></i>
+                                    </div>
+                                    <div class="media-body">
+                                        <a href="#">
+                                            <h4>Green Planet by</h4>
+                                        </a>
+                                        <a href="#">
+                                            <h5><img src="{% static 'img/forum/r-topic-user.png' %}" alt=""> Morris Ruiz</h5>
+                                        </a>
+                                        <p>1 week, 2 days ago</p>
+                                    </div>
+                                </div>
+                            </li>
+                        </ul>
+                    </aside>
+                </div>
+            </div>
+            <div class="col-xl-7 col-lg-8">
+                <div class="forum_topic_list_inner">
+                    <div class="topics-filter d-xl-none">
+                        <ul class="nav">
+                            <li class="nav-item">
+                                <a class="nav-link active" href="#">
+                                    <ion-icon name="earth-outline"></ion-icon>
+                                    View all
+                                </a>
+                            </li>
+                            <li class="nav-item">
+                                <a href="#" class="nav-link">
+                                    <ion-icon name="swap-horizontal-outline"></ion-icon>
+                                    General
+                                </a>
+                            </li>
+                            <li class="nav-item">
+                                <a href="#" class="nav-link">
+                                    <ion-icon name="bulb-outline"></ion-icon>
+                                    Ideas
+                                </a>
+                            </li>
+                            <li class="nav-item">
+                                <a href="#" class="nav-link">
+                                    <ion-icon name="bulb-outline"></ion-icon>
+                                    User Feedback
+                                </a>
+                            </li>
+                        </ul>
+                    </div>
+                    <div class="forum_l_inner">
+                        <div class="forum_head d-flex justify-content-between">
+                            <ul class="nav left" style="float: left !important;">
+                                <li><a href="#"><i class="icon_refresh"></i> Reset</a></li>
+                            </ul>
+                            <ul class="nav right" style="float: right !important;">
+                                <li>
+                                    <div class="dropdown right_dir">
+                                        <button class="btn dropdown-toggle" type="button" data-toggle="dropdown"
+                                            aria-haspopup="true" aria-expanded="false">
+                                            Label <i class="arrow_carrot-down"></i>
+                                        </button>
+                                        <div class="dropdown-menu">
+                                            <h3 class="title">Filter by label</h3>
+                                            <form action="#" class="cate-search-form">
+                                                <input type="text" placeholder="Search Users">
+                                            </form>
+                                            <div class="all_users scroll">
+                                                <a class="dropdown-item" href="#"><span class="color red"></span>bugs</a>
+                                                <a class="dropdown-item" href="#"><span class="color blue"></span>request/feature</a>
+                                                <a class="dropdown-item" href="#"><span class="color dark_blue"></span> Developer Edition</a>
+                                            </div>
+                                        </div>
+                                    </div>
+                                </li>
+                                <li>
+                                    <div class="dropdown right_dir">
+                                        <button class="btn dropdown-toggle" type="button" data-toggle="dropdown"
+                                            aria-haspopup="true" aria-expanded="false">
+                                            Sort <i class="arrow_carrot-down"></i>
+                                        </button>
+                                        <div class="dropdown-menu">
+                                            <h3 class="title">Filter by author</h3>
+                                            <form action="#" class="cate-search-form">
+                                                <input type="text" placeholder="Search users">
+                                            </form>
+                                            <div class="all_users short-by scroll">
+                                                <a class="dropdown-item active-short" href="#">
+                                                    <ion-icon name="checkmark-outline"></ion-icon> Newest
+                                                </a>
+                                                <a class="dropdown-item" href="#"> Oldest </a>
+                                                <a class="dropdown-item" href="#"> Most commented </a>
+                                                <a class="dropdown-item" href="#"> Least commented </a>
+                                                <a class="dropdown-item" href="#"> Recently updated </a>
+                                                <a class="dropdown-item" href="#"> Recently updated </a>
+                                            </div>
+                                        </div>
+                                    </div>
+                                </li>
+                            </ul>
+                        </div>
+                        <div class="forum_body">
+                            {% if comments %}
+                            {% for comment in comments %}
+                            <ul class="navbar-nav topic_list">
+                                <li>
+                                    <div class="media">
+                                        <div class="d-flex">
+                                            <img class="rounded-circle" src="{% static 'img/forum/f-user-2.png' %}" alt="">
+                                        </div>
+                                        <div class="media-body">
+                                            <div class="t_title">
+                                                <a href="/forum/{{ comment.comment_id }}">
+                                                    <h4>{{ comment.content  | truncatechars:35 }}</h4>
+                                                </a>
+                                            </div>
+                                            <a href="/page/{{ comment.page_id }}"><h6 style="margin-right: 0px;">{{ comment.page_title | truncatechars:20 }} |</h6></a>
+                                            <a href="#"><h6 style="margin-right: 0px;">{{ comment.username }} | </h6></a>
+                                            {% if comment.created_string == False %}
+                                            <h6>{{ comment.reg_dt | date:'Y.m.d' }}</h6>
+                                            {% else %}
+                                            <h6>{{ comment.created_string }}</h6>
+                                            {% endif %}
+                                        </div>
+                                        <div class="media-right">
+                                            <a class="count" href="#"><ion-icon name="heart-outline"></ion-icon>5</a>
+                                            <a class="count" href="#"><ion-icon name="chatbubbles-outline"></ion-icon>{{ comment.child_count }}</a>
+                                            <a class="count" href="#"><ion-icon name="eye-outline"></ion-icon>420</a>
+                                        </div>
+                                    </div>
+                                </li>
+                            </ul>
+                            {% endfor %}
+                            {% endif %}
+                        </div>
+                    </div>
+                    <div class="row pagination_inner">
+                        <div class="col-lg-2">
+                            {% if comments_count %}
+                            {% for count in comments_count %}
+                            <h6>Total: <span> {{ count }} </span></h6>
+                            {% endfor %}
+                            {% endif %}
+                        </div>
+                        <div class="col-lg-8 col-sm-2" style="text-align: center">
+                            <nav class="navigation pagination" style="display: inline;">
+                                <div class="nav-links" style="padding-top: 50px;">
+                                    {% if comments.has_previous %}
+                                    <a class="next page-numbers" onclick='onclickPagination("{{ previous_page_number}}")' style="cursor: pointer;"><i class="arrow_carrot-left"></i></a>
+                                    {% endif %}
+                                    {% for page_number in comments.paginator.page_range %}
+                                    {% if page_number >= comments.number|add:-5 and page_number <= comments.number|add:5 %}
+                                    {% if page_number == comments.number %}
+                                    <a class="page-numbers current" onclick='onclickPagination("{{ page_number}}")' style="cursor: pointer;">{{ page_number}}</a>
+                                    {% else %}
+                                    <a class="page-numbers" onclick='onclickPagination("{{ page_number}}")' style="cursor: pointer;">{{ page_number}}</a>
+                                    {% endif %}
+                                    {% endif %}
+                                    {% endfor %}
+                                    {% if comments.has_next %}
+                                    <a class="next page-numbers" onclick='onclickPagination("{{ next_page_number}}")' style="cursor: pointer;"><i class="arrow_carrot-right"></i></a>
+                                    {% endif %}
+                                </div>
+                            </nav>
+                        </div>
+                    </div>
+                </div>
+            </div>
+            <div class="col-xl-3 col-lg-4">
+                <div class="right_side_forum">
+                    <aside class="r_widget question_list_wd">
+                        <div class="r_heading d-flex justify-content-between">
+                            <h3>Top</h3>
+                            <ul class="nav nav-tabs" id="myTab" role="tablist">
+                                <li class="nav-item" role="presentation">
+                                    <a class="nav-link active" id="home-tab" data-toggle="tab" href="#home"
+                                       role="tab" aria-controls="home" aria-selected="true">7 days</a>
+                                </li>
+                                <li class="nav-item" role="presentation">
+                                    <a class="nav-link" id="profile-tab" data-toggle="tab" href="#profile"
+                                       role="tab" aria-controls="profile" aria-selected="false">30 days</a>
+                                </li>
+                            </ul>
+                        </div>
+                        <div class="tab-content" id="myTabContent">
+                            <div class="tab-pane fade show active" id="home" role="tabpanel"
+                                 aria-labelledby="home-tab">
+                                <ul class="navbar-nav">
+                                    <li><a href="#"><span>01</span>Example of NearBy Place Search - SITE KIT</a>
+                                    </li>
+                                    <li><a href="#"><span>02</span>Example of Direction Steps - MAP KIT</a></li>
+                                    <li><a href="#"><span>03</span>Introduction to AppGallery Connect Crash
+                                        Service</a>
+                                    </li>
+                                    <li><a href="#"><span>04</span>Bank Card Recognition and Payment Screen - ML
+                                        KIT</a>
+                                    </li>
+                                    <li><a href="#"><span>05</span>Example of Direction Steps - MAP KIT</a></li>
+                                    <li><a href="#"><span>06</span>Example of NearBy Place Search - SITE KIT</a>
+                                    </li>
+                                </ul>
+                            </div>
+                            <div class="tab-pane fade" id="profile" role="tabpanel"
+                                 aria-labelledby="profile-tab">
+                                <ul class="navbar-nav">
+                                    <li><a href="#"><span>01</span>Example of NearBy Place Search - SITE KIT</a>
+                                    </li>
+                                    <li><a href="#"><span>02</span>Example of Direction Steps - MAP KIT</a></li>
+                                    <li><a href="#"><span>03</span>Introduction to AppGallery Connect Crash
+                                        Service</a>
+                                    </li>
+                                    <li><a href="#"><span>04</span>Bank Card Recognition and Payment Screen - ML
+                                        KIT</a>
+                                    </li>
+                                    <li><a href="#"><span>05</span>Example of Direction Steps - MAP KIT</a></li>
+                                    <li><a href="#"><span>06</span>Example of NearBy Place Search - SITE KIT</a>
+                                    </li>
+                                </ul>
+                            </div>
+                        </div>
+                    </aside>
+                </div>
+            </div>
+        </div>
+    </div>
+</section>
+<!--================End Forum Body Area =================-->
+<!-- Back to top button -->
+<a id="back-to-top" title="Back to Top"></a>
+{% endblock %}
+{% block js %}
+<script src="{% static 'js/jquery.parallax-scroll.js' %}"></script>
+<script src="{% static 'https://unpkg.com/ionicons@5.2.3/dist/ionicons.js' %}"></script>
+<script src="{% static 'assets/magnify-pop/jquery.magnific-popup.min.js' %}"></script>
+<script src="{% static 'js/plugins.js' %}"></script>
+<script src="{% static 'js/theme.js' %}"></script>
+{% endblock %}

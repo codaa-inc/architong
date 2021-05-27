@@ -9,7 +9,9 @@ from django.core import serializers
 from django.core.serializers.json import DjangoJSONEncoder
 from django.db.models import Q
 from django.db.models import Subquery
+from django.core.paginator import Paginator
 from .models import Comments
+from apps.book.models import Books, Pages
 
 class CommentView(View):
     # GET 요청시 해당 페이지의 댓글 조회
@@ -98,6 +100,7 @@ class CommentView(View):
             context = {"result": "fail"}
             return JsonResponse(context, content_type="text/json")
 
+
 @login_required
 def comment_update(request, id):
     if request.method == 'POST':
@@ -111,3 +114,36 @@ def comment_update(request, id):
         update_comment = Comments.objects.filter(comment_id=comment_id).values()
         update_comment = json.dumps(list(update_comment), cls=DjangoJSONEncoder)
         return HttpResponse(update_comment, content_type="text/json")
+
+
+def forum(request):
+    books = Books.objects.all()
+    pages = Pages.objects.all()
+    status = Q()
+    status = status.add(Q(status="C") | Q(status="U"), status.AND)
+    comments = Comments.objects.filter(Q(depth=0) & Q(rls_yn='Y') & status).order_by('-reg_dt')
+    count = str(comments.count())
+    # comments 객체에 Books, Pages 속성 추가
+    for comment in comments:
+        page = pages.get(page_id=comment.page_id)
+        page_title = "[" + str(books.get(book_id=page.book_id).book_title).replace(" ", "") + "] " + page.page_title
+        comment.page_title = page_title
+        comment.page_id = page.page_id
+        comment.child_count = Comments.objects.filter(depth=1, rls_yn='Y', parent_id=comment.comment_id).count()
+    # 페이징 처리
+    if request.GET.get('page') is None:
+        page = 1
+    else:
+        page = request.GET.get('page')
+    paginator = Paginator(comments, 10).get_page(page)
+    return render(request, 'forum.html', {"comments": paginator, "comments_count": count})
+
+
+def forum_detail(request, comment_id):
+    parent_comment = Comments.objects.get(comment_id=comment_id)
+    page = Pages.objects.get(page_id=parent_comment.page_id)
+    page_title = "[" + str(Books.objects.get(book_id=page.book_id).book_title).replace(" ", "") + "] " + page.page_title
+    parent_comment.page_id = page.page_id
+    parent_comment.page_title = page_title
+    child_comments = Comments.objects.filter(parent_id=comment_id).order_by('-reg_dt')
+    return render(request, "forum_detail.html", {"parent_comment": parent_comment, "child_comments": child_comments})

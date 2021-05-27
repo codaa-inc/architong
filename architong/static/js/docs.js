@@ -1,4 +1,7 @@
-let preSelId, preBmId = "" // 목록 클릭시 이전 선택값을 저장하는 전역변수
+/**
+ * 전역변수 영역
+ * */
+let preSelId, preBmId = "" // 목록 클릭시 이전 선택값을 저장
 
 /**
  * 페이지 네비게이션 클릭 이벤트
@@ -149,7 +152,7 @@ function viewCommentList(data, page_id, status) {
         if (comment.depth == 0) {
             comment_html += '<div id=' + "parent-" + comment.comment_id + ' class="media comment_author">' +
                 '<div class="media-body"><div class="comment_info"><div class="comment_date"><strong>' + comment.username + '</strong>' +
-                '&nbsp;&nbsp;' + moment(comment.reg_dt).format('YYYY.MM.DD HH:mm')
+                '&nbsp;&nbsp;' + displayRegDt(comment.reg_dt);
             // 수정됨 표시
             if (comment.status == "U") {
                 comment_html += "&nbsp;&nbsp;수정됨";
@@ -159,7 +162,7 @@ function viewCommentList(data, page_id, status) {
             if (comment.status == "TD") {
                 comment_html += ' style="color: rgba(0, 0, 0, 0.4); font-style: italic;"';
             }
-            comment_html += '>' + comment.content + '</p>';
+            comment_html += '>' + displayNewLine(comment.content) + '</p>';
             // 자신의 글에 수정, 삭제 태그 추가
             if (USERNAME == comment.username && comment.status != "TD") {
                 comment_html += '<a onclick="deleteComment(' + "'parent-" + comment.comment_id + "'" + ')" class="comment_tag">&nbsp;삭제&nbsp;</a>';
@@ -171,12 +174,12 @@ function viewCommentList(data, page_id, status) {
             comment_html += '<ul id="child-' + comment.comment_id + '" class="list-unstyled reply_comment">' +
                             '<li><div class="media comment_author"><div class="media-body"><div class="comment_info">' +
                             '<div class="comment_date"><strong>' + comment.username + '</strong>&nbsp;&nbsp;' +
-                            moment(comment.reg_dt).format('YYYY.MM.DD HH:mm');
+                            displayRegDt(comment.reg_dt);
             // 수정됨 표시
             if (comment.status == "U") {
                 comment_html += "&nbsp;&nbsp;수정됨";
             }
-            comment_html += '</div></div><p>' + comment.content + '</p>'
+            comment_html += '</div></div><p>' + displayNewLine(comment.content) + '</p>'
             // 자신의 글에 수정, 삭제 태그 추가
             if (USERNAME == comment.username && comment.status != "TD") {
                 comment_html += '<a onclick="deleteComment(' + "'child-" + comment.comment_id + "'" + ')" class="comment_tag">&nbsp;삭제&nbsp;</a>';
@@ -291,13 +294,18 @@ function onchangeRadio(id) {
  * 댓글작성함수
  * */
 function addComment(id) {
-    let formData = $("#form-" + id).serialize();
-    formData += "&csrfmiddlewaretoken=" + $("input[name=csrfmiddlewaretoken]").val();
+    // 글자수 체크
+    const textLength = $("#textarea-" + id).val().length;
+    if (textLength < 5) {
+        alert("댓글은 5글자 이상 입력해야 합니다.");
+        return;
+    }
+    // 댓글 등록 POST 요청
     $.ajax({
         type: "POST",
         url: "/comment/" + id,
         dataType: "json", // 서버측에서 전송한 Response 데이터 형식 (json)
-        data: formData,
+        data: $("#form-" + id).serialize() + "&csrfmiddlewaretoken=" + $("input[name=csrfmiddlewaretoken]").val(),
         success: function (response) { // 통신 성공시 - 동적으로 북마크 아이콘 변경
             if (response.result == "fail") {
                 if (confirm(response.message)) {
@@ -333,29 +341,48 @@ function addComment(id) {
  * 댓글수정함수
  * */
 function viewUpdateComment(id) {
-    const text_node = $('#' + id).find('p');
-    let commentbox_html = '<div id="commentbox-' + id + '" class="blog_comment_box topic_comment" style="padding-top: 0px;">' +
-                            '<form id="form-' + id + '"  class="get_quote_form row"><div class="col-md-12 form-group">' +
-                            '<textarea id="textarea-' + id + '" name="content" class="form-control message" required>' + text_node.text() + '</textarea>' +
-                            '<label class="floating-label">Comment</label></div><div class="col-md-12 form-group" id="radio-group">' +
-                            '<button class="action_btn btn_small" type="button" onclick="updateComment(' + "'" + id + "'" + ')" style="color: #fff;">저장</button></div></form></div>';
-    // 공개/비공개 radio 삭제, p태그를 textarea로 교체
-    text_node.next().remove();
-    text_node.next().remove();
-    text_node.replaceWith(commentbox_html);
+    const edit_comment = $('#' + id).find('p');
+    // 수정일때
+    if (edit_comment.css('display') == 'none') {
+        // textarea 삭제, 댓글창 삽입
+        $('#commentbox-' + id).remove();
+        edit_comment.show();
+        edit_comment.next().show();
+        edit_comment.next().next().show();
+    }
+    // 수정취소일때
+    else {
+        let commentbox_html = '<div id="commentbox-' + id + '" class="blog_comment_box topic_comment" style="padding-top: 0px;">' +
+                                '<form id="form-' + id + '"  class="get_quote_form row"><div class="col-md-12 form-group">' +
+                                '<textarea id="textarea-' + id + '" name="content" class="form-control message" required>' + edit_comment.text() + '</textarea>' +
+                                '<label class="floating-label">Comment</label></div><div class="col-md-12 form-group" id="radio-group">' +
+                                '<a class="doc_border_btn btn_small" type="button" onclick="viewUpdateComment(' + "'" + id + "'" + ')" style="margin-right: 10px; font-size: 16px;">취소</a>' +
+                                '<a class="action_btn btn_small" type="button" onclick="updateComment(' + "'" + id + "'" + ')" style="color: #fff;">저장</a></div></form></div>';
+        // 댓글창 숨김, textarea 삽입
+        edit_comment.hide();
+        edit_comment.next().hide();
+        edit_comment.next().next().hide();
+        edit_comment.after(commentbox_html);
+    }
 };
+
 
 /**
  * 댓글수정함수
  * */
 function updateComment(id) {
-    let formData = $("#form-" + id).serialize();
-    formData += "&csrfmiddlewaretoken=" + $("input[name=csrfmiddlewaretoken]").val();
+    // 글자수 체크
+    const textLength = $("#textarea-" + id).val().length;
+    if (textLength < 5) {
+        alert("댓글은 5글자 이상 입력해야 합니다.");
+        return;
+    }
+    // 댓글 수정 POST 요청
     $.ajax({
     type: "POST",
     url: "/comment/update/" + id,
     dataType: "json", // 서버측에서 전송한 Response 데이터 형식 (json)
-    data: formData,
+    data: $("#form-" + id).serialize() + "&csrfmiddlewaretoken=" + $("input[name=csrfmiddlewaretoken]").val(),
     success: function (response) { // 통신 성공시 - 동적으로 북마크 아이콘 변경
         if (response.length > 0) {
             let comment = response[0];
@@ -363,7 +390,8 @@ function updateComment(id) {
             if (comment.depth == 0) {
                 comment_html += '<div id=' + "parent-" + comment.comment_id + ' class="media comment_author">' +
                      '<div class="media-body"><div class="comment_info"><div class="comment_date"><strong>' + comment.username + '</strong>' +
-                     '&nbsp;&nbsp;' + moment(comment.reg_dt).format('YYYY.MM.DD HH:mm') + '&nbsp;&nbsp;수정됨</div></div><p>' + comment.content + '</p>' +
+                     '&nbsp;&nbsp;' + displayRegDt(comment.reg_dt) + '&nbsp;&nbsp;수정됨</div></div><p>' +
+                    displayNewLine(comment.content) + '</p>' +
                      '<a onclick="deleteComment(' + "'parent-" + comment.comment_id + "'" + ')" class="comment_tag">&nbsp;삭제&nbsp;</a>' +
                      '<a onclick="viewUpdateComment(' + "'parent-" + comment.comment_id + "'" + ')" class="comment_tag">&nbsp;수정&nbsp;</a>' +
                      '<a onclick="viewCommentBox(' + "'child-" + comment.comment_id + "'" + ')" class="comment_reply">Reply ' +
@@ -372,7 +400,8 @@ function updateComment(id) {
                 comment_html += '<ul id="child-' + comment.comment_id + '" class="list-unstyled reply_comment">' +
                     '<li><div class="media comment_author"><div class="media-body"><div class="comment_info">' +
                     '<div class="comment_date"><strong>' + comment.username + '</strong>&nbsp;&nbsp;' +
-                    moment(comment.reg_dt).format('YYYY.MM.DD HH:mm') + '&nbsp;&nbsp;수정됨</div></div><p>' + comment.content + '</p>' +
+                    displayRegDt(comment.reg_dt) + '&nbsp;&nbsp;수정됨</div></div><p>' +
+                    displayNewLine(comment.content) + '</p>' +
                     '<a onclick="deleteComment(' + "'child-" + comment.comment_id + "'" + ')" class="comment_tag">&nbsp;삭제&nbsp;</a>' +
                     '<a onclick="viewUpdateComment(' + "'child-" + comment.comment_id + "'" + ')" class="comment_tag">&nbsp;수정&nbsp;</a>' +
                     '</div></div></li></ul>';
@@ -435,3 +464,36 @@ function deleteComment(id) {
         },
     });
 };
+
+/**
+ * 작성일 표시형식 변경 함수
+ * */
+function displayRegDt(reg_dt) {
+    const milliSeconds = new Date() - new Date(reg_dt);
+    const seconds = milliSeconds / 1000;
+    if (seconds < 60) {
+        return `방금 전`;
+    }
+    const minutes = seconds / 60;
+    if (minutes < 60) {
+        return `${Math.floor(minutes)}분 전`;
+    }
+    const hours = minutes / 60;
+    if (hours < 24) {
+        return `${Math.floor(hours)}시간 전`;
+    }
+    const days = hours / 24;
+    if (days < 7) {
+        return `${Math.floor(days)}일 전`
+    }
+    return moment(reg_dt).format('YYYY.MM.DD');
+}
+
+/**
+ * 문자열 개행 함수
+ * */
+function displayNewLine(str) {
+    if(typeof str == "string") {
+        return str.replace(/\n/g, '<br/>');
+    }
+}

@@ -1,0 +1,157 @@
+{% extends 'base.html' %}
+{% load static %}
+{% block css %}
+<link rel="stylesheet" href="{% static 'assets/slick/slick.css' %}">
+<link rel="stylesheet" href="{% static 'assets/slick/slick-theme.css' %}">
+<link rel="stylesheet" href="{% static 'assets/ionicons/css/ionicons.min.css' %}">
+{% endblock %}
+{% block content %}
+<section class="doc_blog_grid_area sec_pad forum-single-content">
+    <div class="container">
+        <div class="row">
+            <div class="col-lg-9">
+                <!-- End of Parent Comment -->
+                {% if parent_comment  %}
+                <div class="row">
+                    <div class="col-lg-9">
+                        <div class="forum-post-top">
+                            <a class="author-avatar" href="#">
+                                <img src="{% static 'img/forum/author-avatar.png' %}" alt="">
+                            </a>
+                            <div class="forum-post-author">
+                                <a class="author-name" href="#"> {{ parent_comment.username }} </a>
+                                <div class="forum-author-meta">
+                                    <div class="author-badge">
+                                        {% if parent_comment.created_string == False %}
+                                        <a>{{ parent_comment.reg_dt | date:'Y.m.d' }}</a>
+                                        {% else %}
+                                        <a>{{ parent_comment.created_string }}</a>
+                                        {% endif %}
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+                <div class="q-title">
+                    <a href="/page/{{ parent_comment.page_id }}"><h6>{{ parent_comment.page_title }}</h6></a>
+                </div>
+                <div class="forum-post-content">
+                    <div class="content"><p>{{ parent_comment.content | linebreaks }}</p></div>
+                    <div class="forum-post-btm">
+                        <div class="taxonomy forum-post-tags">
+                            <i class="icon_tags_alt"></i><a href="#">Bug</a>, <a href="#">Feature</a>, <a href="#">Error</a>
+                        </div>
+                    </div>
+                    <div class="action-button-container action-btns">
+                        <a href="#" class="action_btn btn-ans ask-btn reply-btn">Reply</a>
+                    </div>
+                </div>
+                {% endif %}
+                <!-- End of Parent Comment -->
+                <!-- Start of Child Comment -->
+                <div class="all-answers">
+                    <h3 class="title">All Replies</h3>
+                    <div class="filter-bar d-flex">
+                        <div class="sort">
+                            <select class="custom-select" id="sortBy">
+                                <option selected>Sort By</option>
+                                <option value="1">ASC</option>
+                                <option value="2">Desc</option>
+                                <option value="3">Vote</option>
+                            </select>
+                        </div>
+                        <p>Page 1 of 4</p>
+                    </div>
+
+                    <div class="forum-comment">
+                        {% if child_comments  %}
+                        {% for comment in child_comments %}
+                        <div class="forum-post-top">
+                            <a class="author-avatar" href="#">
+                                <img src="{% static 'img/forum/author-avatar.png' %}" alt="author avatar">
+                            </a>
+                            <div class="forum-post-author">
+                                <a class="author-name" href="#">{{ comment.username }}</a>
+                                <div class="forum-author-meta">
+                                    <div class="author-badge">
+                                        {% if comment.created_string == False %}
+                                        <a>{{ comment.reg_dt | date:'Y.m.d' }}</a>
+                                        {% else %}
+                                        <a>{{ comment.created_string }}</a>
+                                        {% endif %}
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                        <div class="comment-content">
+                            <p>{{ comment.content | linebreaks }}</p>
+                            <div class="action-button-container action-btns">
+                                <a href="#" class="action_btn btn-ans ask-btn reply-btn">Reply</a>
+                                <a href="#" class="action_btn btn-ans ask-btn too-btn">Helpful</a>
+                            </div>
+                        </div>
+                        {% endfor %}
+                        {% else %}
+                        <p style="margin: auto; padding: 20px 0; color: rgba(0, 0, 0, 0.4);">등록된 댓글이 없습니다.</p>
+                        {% endif %}
+                    </div>
+                    <!-- End of Child Comment -->
+
+                    <!-- Start of Paginavigator -->
+                    <div class="pagination-wrapper">
+                        <div class="view-post-of">
+                            <p>Viewing 4 Comments - 1 through 10 (of 96 total)</p>
+                        </div>
+                        <ul class="post-pagination">
+                            <li class="prev-post pegi-disable"><a href="#"><i class="arrow_carrot-left"></i></a>
+                            </li>
+                            <li><a href="#" class="active">1</a></li>
+                            <li><a href="#">2</a></li>
+                            <li><a href="#">3</a></li>
+                            <li><a href="#">4</a></li>
+                            <li><a href="#">15</a></li>
+                            <li class="next-post"><a href="#"><i class="arrow_carrot-right"></i></a></li>
+                        </ul>
+                    </div>
+                    <!-- End of Paginavigator -->
+                </div>
+            </div>
+
+            <!-- Start of SideBar -->
+            <div class="col-lg-3">
+                <div class="forum_sidebar">
+                    <div class="widget tag_widget">
+                        <h4 class="c_head">Tags</h4>
+                        <ul class="list-unstyled w_tag_list style-light">
+                            <li><a href="#">Swagger</a></li>
+                            <li><a href="#">Docy</a></li>
+                            <li><a href="#">weCare</a></li>
+                            <li><a href="#">Business</a></li>
+                            <li><a href="#">Download</a></li>
+                            <li><a href="#">Doc</a></li>
+                            <li><a href="#">WordPress</a></li>
+                            <li><a href="#">Design</a></li>
+                            <li><a href="#">ui/ux</a></li>
+                            <li><a href="#">Doc Design</a></li>
+                            <li><a href="#">DocAll</a></li>
+                            <li><a href="#">Productboard</a></li>
+                            <li><a href="#">Magento</a></li>
+                        </ul>
+                    </div>
+                </div>
+            </div>
+            <!-- End of SideBar -->
+        </div>
+    </div>
+</section>
+<!-- Back to top button -->
+<a id="back-to-top" title="Back to Top"></a>
+{% endblock %}
+{% block js %}
+<script src="{% static 'js/jquery.parallax-scroll.js' %}"></script>
+<script src="{% static 'https://unpkg.com/ionicons@5.2.3/dist/ionicons.js' %}"></script>
+<script src="{% static 'assets/magnify-pop/jquery.magnific-popup.min.js' %}"></script>
+<script src="{% static 'js/plugins.js' %}"></script>
+<script src="{% static 'js/theme.js' %}"></script>
+{% endblock %}
