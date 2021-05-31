@@ -1,4 +1,5 @@
 import json
+
 from django.contrib.sessions.models import Session
 from django.contrib.auth.models import User
 from django.conf import settings
@@ -8,14 +9,14 @@ from django.views.decorators.csrf import csrf_exempt
 from django.contrib.auth.decorators import login_required
 from django.shortcuts import render, redirect
 from django.db.models import Q
-from .models import Books
-from .models import Pages
-from .models import Bookmark
-from apps.forum.models import Comments
-from .forms import PostForm
-from .forms import PageForm
 
-def editor(request) :
+from .models import Books, Pages, Bookmark
+from apps.forum.models import Comments
+from .forms import PostForm, PageForm
+
+
+# 마크다운 편집 페이지 렌더링 function
+def editor(request):
     if request.method == 'POST':
         form = PostForm(request.POST)
         if form.is_valid():
@@ -27,7 +28,9 @@ def editor(request) :
         context = {"page": post}
         return render(request, 'editor.html', context)
 
-def view_book(request, book_id) :
+
+# 책 조회 function
+def view_book(request, book_id):
     username = request.user  # 세션으로부터 유저 정보 가져오기
     books = Books.objects.filter(book_id=book_id)
     pages = Pages.objects.filter(book_id=book_id)
@@ -52,6 +55,35 @@ def view_book(request, book_id) :
     context = {'books': books, 'pages': pages}
     return render(request, 'viewer.html', context)
 
+
+# 페이지 조회 function
+def view_page(request, page_id):
+    username = request.user  # 세션으로부터 유저 정보 가져오기
+    book_id = Pages.objects.get(page_id=page_id).book_id
+    books = Books.objects.filter(book_id=book_id)
+    pages = Pages.objects.filter(book_id=book_id)
+    # 페이지별 댓글 count 추가
+    for page in pages:
+        q = Q()
+        q.add(Q(page_id=page.page_id), q.AND)
+        q.add(~Q(status="D"), q.AND)
+        q.add(~Q(status="TD"), q.AND)
+        q.add(Q(page_id=page.page_id, rls_yn="Y") | Q(page_id=page.page_id, rls_yn="N", username=username), q.AND)
+        comment_count = Comments.objects.filter(q).count()
+        page.comment_count = comment_count
+    # 로그인된 사용자의 경우 페이지 정보에 북마크 등록여부 추가
+    if username is not None:
+        for page in pages:
+            is_bookmarked = Bookmark.objects.filter(page_id=page.page_id, username=username).count()
+            if is_bookmarked > 0:
+                page.is_bookmarked = 1
+            else:
+                page.is_bookmarked = 0
+    context = {'books': books, 'pages': pages, 'page_id': str(page_id)}
+    return render(request, 'viewer.html', context)
+
+
+# 북마크 등록 / 삭제 function
 @csrf_exempt
 @login_required(login_url="/account/google/login")
 def add_or_remove_bookmark(request, page_id):
@@ -74,4 +106,3 @@ def add_or_remove_bookmark(request, page_id):
         result = 'false'
     context = {"result": result}
     return JsonResponse(context)
-

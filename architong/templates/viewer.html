@@ -71,13 +71,27 @@
 <script>
     // 로그인 시 사용자 ID를 저장하는 전역변수 선언
     let USERNAME = "";
+
+    // page_id 전역변수 선언
+    let PAGEID = "";
+
+    // Page View인 경우 해당 Page 댓글창 펼침, scroll 이동
+    $( document ).ready(function() {
+        if (PAGEID != "") {
+            onclickComment(1, PAGEID);
+            onclickChildList(PAGEID, 'auto');
+        }
+    });
 </script>
+
+{% if page_id %}
+<script>PAGEID = "{{ page_id }}"; </script>
+{% endif %}
+
 {% for account in user.socialaccount_set.all %}
-    {% if account.extra_data.given_name %}
-    <script>
-        USERNAME = "{{ account.extra_data.given_name }}";
-    </script>
-    {% endif %}
+{% if account.extra_data.given_name %}
+<script>USERNAME = "{{ account.extra_data.given_name }}";</script>
+{% endif %}
 {% endfor %}
 
 <!--================Forum Breadcrumb Area =====================-->

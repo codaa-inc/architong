@@ -148,10 +148,10 @@
                     </div>
                     <div class="forum_l_inner">
                         <div class="forum_head d-flex justify-content-between">
-                            <ul class="nav left" style="float: left !important;">
-                                <li><a href="#"><i class="icon_refresh"></i> Reset</a></li>
+                            <ul class="nav left">
+                                <li><a href="/forum/"><i class="icon_refresh"></i> Reset</a></li>
                             </ul>
-                            <ul class="nav right" style="float: right !important;">
+                            <ul class="nav right">
                                 <li>
                                     <div class="dropdown right_dir">
                                         <button class="btn dropdown-toggle" type="button" data-toggle="dropdown"
@@ -204,7 +204,8 @@
                                 <li>
                                     <div class="media">
                                         <div class="d-flex">
-                                            <img class="rounded-circle" src="{% static 'img/forum/f-user-2.png' %}" alt="">
+                                            <img class="rounded-circle" src="{{ comment.picture }}"
+                                                 alt="{% static 'img/forum/f-user-2.png' %}" style="width: 45px;">
                                         </div>
                                         <div class="media-body">
                                             <div class="t_title">
@@ -235,9 +236,7 @@
                     <div class="row pagination_inner">
                         <div class="col-lg-2">
                             {% if comments_count %}
-                            {% for count in comments_count %}
-                            <h6>Total: <span> {{ count }} </span></h6>
-                            {% endfor %}
+                            <h6>Total: <span> {{ comments_count }} </span></h6>
                             {% endif %}
                         </div>
                         <div class="col-lg-8 col-sm-2" style="text-align: center">
@@ -328,7 +327,7 @@
 {% endblock %}
 {% block js %}
 <script src="{% static 'js/jquery.parallax-scroll.js' %}"></script>
-<script src="{% static 'https://unpkg.com/ionicons@5.2.3/dist/ionicons.js' %}"></script>
+<script src="https://unpkg.com/ionicons@5.2.3/dist/ionicons.js"></script>
 <script src="{% static 'assets/magnify-pop/jquery.magnific-popup.min.js' %}"></script>
 <script src="{% static 'js/plugins.js' %}"></script>
 <script src="{% static 'js/theme.js' %}"></script>

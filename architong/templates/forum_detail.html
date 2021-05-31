@@ -4,6 +4,11 @@
 <link rel="stylesheet" href="{% static 'assets/slick/slick.css' %}">
 <link rel="stylesheet" href="{% static 'assets/slick/slick-theme.css' %}">
 <link rel="stylesheet" href="{% static 'assets/ionicons/css/ionicons.min.css' %}">
+<style>
+    .post-pagination > li > a {
+        cursor: pointer;
+    }
+</style>
 {% endblock %}
 {% block content %}
 <section class="doc_blog_grid_area sec_pad forum-single-content">
@@ -16,7 +21,8 @@
                     <div class="col-lg-9">
                         <div class="forum-post-top">
                             <a class="author-avatar" href="#">
-                                <img src="{% static 'img/forum/author-avatar.png' %}" alt="">
+                                <img src="{{ parent_comment.picture }}"
+                                     alt="{% static 'img/forum/author-avatar.png' %}" style="width: 50px;">
                             </a>
                             <div class="forum-post-author">
                                 <a class="author-name" href="#"> {{ parent_comment.username }} </a>
@@ -61,7 +67,6 @@
                                 <option value="3">Vote</option>
                             </select>
                         </div>
-                        <p>Page 1 of 4</p>
                     </div>
 
                     <div class="forum-comment">
@@ -69,7 +74,8 @@
                         {% for comment in child_comments %}
                         <div class="forum-post-top">
                             <a class="author-avatar" href="#">
-                                <img src="{% static 'img/forum/author-avatar.png' %}" alt="author avatar">
+                                <img src="{{ comment.picture }}"
+                                     alt="{% static 'img/forum/author-avatar.png' %}" style="width: 50px;">
                             </a>
                             <div class="forum-post-author">
                                 <a class="author-name" href="#">{{ comment.username }}</a>
@@ -101,17 +107,34 @@
                     <!-- Start of Paginavigator -->
                     <div class="pagination-wrapper">
                         <div class="view-post-of">
-                            <p>Viewing 4 Comments - 1 through 10 (of 96 total)</p>
+                            {% if comments_count %}
+                            <p>Total: {{ comments_count }}</p>
+                            {% endif %}
                         </div>
                         <ul class="post-pagination">
-                            <li class="prev-post pegi-disable"><a href="#"><i class="arrow_carrot-left"></i></a>
+                            {% if child_comments.has_previous %}
+                            <li class="prev-post pegi-disable">
+                                <a onclick='onclickPagination("{{ previous_page_number}}")'>
+                                    <i class="arrow_carrot-left"></i>
+                                </a>
                             </li>
-                            <li><a href="#" class="active">1</a></li>
-                            <li><a href="#">2</a></li>
-                            <li><a href="#">3</a></li>
-                            <li><a href="#">4</a></li>
-                            <li><a href="#">15</a></li>
-                            <li class="next-post"><a href="#"><i class="arrow_carrot-right"></i></a></li>
+                            {% endif %}
+                            {% for page_number in child_comments.paginator.page_range %}
+                            {% if page_number >= child_comments.number|add:-5 and page_number <= child_comments.number|add:5 %}
+                            {% if page_number == child_comments.number %}
+                            <li><a onclick='onclickPagination("{{ page_number}}")' class="active">{{ page_number}}</a></li>
+                            {% else %}
+                            <li><a onclick='onclickPagination("{{ page_number}}")'>{{ page_number}}</a></li>
+                            {% endif %}
+                            {% endif %}
+                            {% endfor %}
+                            {% if child_comments.has_next %}
+                            <li class="next-post">
+                                <a onclick='onclickPagination("{{ next_page_number}}")'>
+                                    <i class="arrow_carrot-right"></i>
+                                </a>
+                            </li>
+                            {% endif %}
                         </ul>
                     </div>
                     <!-- End of Paginavigator -->
@@ -150,7 +173,7 @@
 {% endblock %}
 {% block js %}
 <script src="{% static 'js/jquery.parallax-scroll.js' %}"></script>
-<script src="{% static 'https://unpkg.com/ionicons@5.2.3/dist/ionicons.js' %}"></script>
+<script src="https://unpkg.com/ionicons@5.2.3/dist/ionicons.js"></script>
 <script src="{% static 'assets/magnify-pop/jquery.magnific-popup.min.js' %}"></script>
 <script src="{% static 'js/plugins.js' %}"></script>
 <script src="{% static 'js/theme.js' %}"></script>
