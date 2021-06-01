@@ -1,0 +1,8 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<project version="4">
+  <component name="SqlDialectMappings">
+    <file url="file://$PROJECT_DIR$/architong/docs/ddl_20210525.sql" dialect="MySQL" />
+    <file url="file://$PROJECT_DIR$/architong/docs/insert_법규6종세트_20210514.sql" dialect="GenericSQL" />
+    <file url="PROJECT" dialect="MySQL" />
+  </component>
+</project>

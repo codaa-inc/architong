@@ -561,6 +561,7 @@
     window.matchMedia("(prefers-color-scheme: dark)").matches;
   var selectedNightTheme = readCookie("body_dark");
 
+  /**
   if (
     selectedNightTheme == "true" ||
     (selectedNightTheme === null && prefersDark)
@@ -571,6 +572,7 @@
     applyDay();
     $(".dark_mode_switcher").prop("checked", false);
   }
+   */
 
   function applyNight() {
     $("body").addClass("body_dark");
@@ -581,15 +583,17 @@
   }
 
   $(".dark_mode_switcher").change(function () {
+    /**
     if ($(this).is(":checked")) {
       applyNight();
       $(".tab-btns").css("color", "#6B707F");
       createCookie("body_dark", true, 999);
     } else {
+    */
       applyDay();
       $(".tab-btns").css("color", "#007CBA");
       createCookie("body_dark", false, 999);
-    }
+    /**}*/
   });
 
   $(".mobile_menu_btn").on("click", function () {
