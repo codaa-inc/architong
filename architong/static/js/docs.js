@@ -357,11 +357,11 @@ function viewUpdateComment(id) {
     // 수정취소일때
     else {
         let commentbox_html = '<div id="commentbox-' + id + '" class="blog_comment_box topic_comment" style="padding-top: 0px;">' +
-                                '<form id="form-' + id + '"  class="get_quote_form row"><div class="col-md-12 form-group">' +
-                                '<textarea id="textarea-' + id + '" name="content" class="form-control message" required>' + edit_comment.text() + '</textarea>' +
-                                '<label class="floating-label">Comment</label></div><div class="col-md-12 form-group" id="radio-group">' +
-                                '<a class="doc_border_btn btn_small" type="button" onclick="viewUpdateComment(' + "'" + id + "'" + ')" style="margin-right: 10px; font-size: 16px;">취소</a>' +
-                                '<a class="action_btn btn_small" type="button" onclick="updateComment(' + "'" + id + "'" + ')" style="color: #fff;">저장</a></div></form></div>';
+            '<form id="form-' + id + '"  class="get_quote_form row"><div class="col-md-12 form-group">' +
+            '<textarea id="textarea-' + id + '" name="content" class="form-control message" required>' + edit_comment.text() + '</textarea>' +
+            '<label class="floating-label">Comment</label></div><div class="col-md-12 form-group" id="radio-group">' +
+            '<a class="doc_border_btn btn_small" type="button" onclick="viewUpdateComment(' + "'" + id + "'" + ')" style="margin-right: 10px; font-size: 16px;">취소</a>' +
+            '<a class="action_btn btn_small" type="button" onclick="updateComment(' + "'" + id + "'" + ')" style="color: #fff;">저장</a></div></form></div>';
         // 댓글창 숨김, textarea 삽입
         edit_comment.hide();
         edit_comment.next().hide();
@@ -468,36 +468,3 @@ function deleteComment(id) {
         },
     });
 };
-
-/**
- * 작성일 표시형식 변경 함수
- * */
-function displayRegDt(reg_dt) {
-    const milliSeconds = new Date() - new Date(reg_dt);
-    const seconds = milliSeconds / 1000;
-    if (seconds < 60) {
-        return `방금 전`;
-    }
-    const minutes = seconds / 60;
-    if (minutes < 60) {
-        return `${Math.floor(minutes)}분 전`;
-    }
-    const hours = minutes / 60;
-    if (hours < 24) {
-        return `${Math.floor(hours)}시간 전`;
-    }
-    const days = hours / 24;
-    if (days < 7) {
-        return `${Math.floor(days)}일 전`
-    }
-    return moment(reg_dt).format('YYYY.MM.DD');
-}
-
-/**
- * 문자열 개행 함수
- * */
-function displayNewLine(str) {
-    if(typeof str == "string") {
-        return str.replace(/\n/g, '<br/>');
-    }
-}

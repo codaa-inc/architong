@@ -164,7 +164,9 @@ def forum_detail(request, comment_id):
     parent_comment.page_id = page.page_id
     parent_comment.page_title = page_title
     # 자식댓글 QuerySet
-    child_comments = comment.filter(parent_id=comment_id).order_by('-reg_dt')
+    status = Q()
+    status = status.add(Q(status="C") | Q(status="U"), status.AND)
+    child_comments = comment.filter(Q(parent_id=comment_id) & Q(rls_yn='Y') & status)
     for child_comment in child_comments:
         child_comment.picture = json.loads(socialaccount.get(
             user_id=user.get(username=child_comment.username).id).extra_data)['picture']

@@ -126,7 +126,9 @@
                                 </ul>
                             </li>
                             <li class="nav-item dropdown submenu">
-                                <a href="{% url 'logout' %}?next={{request.path}}" style="width: 120px"><i class="icon_lock" style="margin-right: 5px;"></i>로그아웃</a>
+                                <a href="{% url 'logout' %}?next={{request.path}}" style="width: 120px">
+                                    <i class="icon_lock" style="margin-right: 5px;"></i>로그아웃
+                                </a>
                             </li>
                         {% endfor %}
                     {% endif %}
@@ -196,7 +198,6 @@
 <script src="{% static 'js/main.js' %}"></script>
 </body>
 <script type="text/javascript" src="https://cdnjs.cloudflare.com/ajax/libs/moment.js/2.24.0/moment.min.js"></script>
-<script src="{% static 'js/docs.js' %}"></script>
 {% block js %}
 {% endblock %}
 </html>

@@ -61,11 +61,6 @@
     }
 </style>
 {% endblock %}
-{% block js %}
-<script src="{% static 'assets/font-size/js/rv-jquery-fontsize-2.0.3.min.js' %}"></script>
-<script src="{% static 'assets/magnify-pop/jquery.magnific-popup.min.js' %}"></script>
-<script src="{% static 'js/plugins.js' %}"></script>
-{% endblock %}
 
 {% block content %}
 <script>
@@ -195,4 +190,12 @@
 
 <!-- Back to top button -->
 <a id="back-to-top" title="Back to Top"></a>
+{% endblock %}
+
+{% block js %}
+<script src="{% static 'js/docs.js' %}"></script>
+<script src="{% static 'js/common.js' %}"></script>
+<script src="{% static 'assets/font-size/js/rv-jquery-fontsize-2.0.3.min.js' %}"></script>
+<script src="{% static 'assets/magnify-pop/jquery.magnific-popup.min.js' %}"></script>
+<script src="{% static 'js/plugins.js' %}"></script>
 {% endblock %}

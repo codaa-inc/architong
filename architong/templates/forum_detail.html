@@ -8,6 +8,20 @@
     .post-pagination > li > a {
         cursor: pointer;
     }
+    .action_btn btn-ans ask-btn {
+        cursor: pointer;
+    }
+    #radio-group {
+        vertical-align : middle;
+        justify-content: flex-end;
+        align-items: center;
+        display: flex;
+        flex-direction: row;
+        margin-bottom: 0px;
+    }
+    #radio-group > button {
+        margin: auto 10px;
+    }
 </style>
 {% endblock %}
 {% block content %}
@@ -50,7 +64,9 @@
                         </div>
                     </div>
                     <div class="action-button-container action-btns">
-                        <a href="#" class="action_btn btn-ans ask-btn reply-btn">Reply</a>
+                        <a onclick='onclickReply("{{ parent_comment.comment_id }}")' class="action_btn btn-ans ask-btn reply-btn"
+                        style="color: #fff !important; cursor:pointer!important;">Reply</a>
+                        <a href="#" class="action_btn btn-ans ask-btn too-btn">Helpful</a>
                     </div>
                 </div>
                 {% endif %}
@@ -68,14 +84,25 @@
                             </select>
                         </div>
                     </div>
-
+                    <div id="commentbox-{{ parent_comment.comment_id }}" class="blog_comment_box topic_comment"
+                         style="padding-top: 0px; display: none;">
+                        <form id="form-{{ parent_comment.comment_id }}" class="get_quote_form row">{% csrf_token %}
+                            <div class="col-md-12 form-group">
+                                <textarea id="textarea-{{ parent_comment.comment_id }}" name="content" class="form-control message" required></textarea>
+                            </div>
+                            <div id="radio-group" class="col-md-12 form-group">
+                                <button class="action_btn btn_small" type="button" onclick='addComment("{{ parent_comment.comment_id }}")'
+                                        style="color: #fff;">저장</button>
+                            </div>
+                        </form>
+                    </div>
                     <div class="forum-comment">
                         {% if child_comments  %}
                         {% for comment in child_comments %}
                         <div class="forum-post-top">
                             <a class="author-avatar" href="#">
                                 <img src="{{ comment.picture }}"
-                                     alt="{% static 'img/forum/author-avatar.png' %}" style="width: 50px;">
+                                     alt="{% static 'img/forum/author-avatar.png' %}" style="width: 45px;">
                             </a>
                             <div class="forum-post-author">
                                 <a class="author-name" href="#">{{ comment.username }}</a>
@@ -86,14 +113,24 @@
                                         {% else %}
                                         <a>{{ comment.created_string }}</a>
                                         {% endif %}
+                                        {% if comment.status == "U" %}
+                                        <a>&nbsp;수정됨</a>
+                                        {% endif %}
+                                        {% if comment.username == request.user.username %}
+                                        <a onclick='viewUpdateComment("{{ comment.comment_id }}")' style="cursor: pointer;">
+                                            &nbsp;&#183;&nbsp;수정
+                                        </a>
+                                        <a onclick='deleteComment("{{ comment.comment_id }}")' style="cursor: pointer;">
+                                            &nbsp;&#183;&nbsp;삭제
+                                        </a>
+                                        {% endif %}
                                     </div>
                                 </div>
                             </div>
                         </div>
-                        <div class="comment-content">
+                        <div id="comment-content-{{ comment.comment_id }}" class="comment-content">
                             <p>{{ comment.content | linebreaks }}</p>
                             <div class="action-button-container action-btns">
-                                <a href="#" class="action_btn btn-ans ask-btn reply-btn">Reply</a>
                                 <a href="#" class="action_btn btn-ans ask-btn too-btn">Helpful</a>
                             </div>
                         </div>
@@ -172,6 +209,8 @@
 <a id="back-to-top" title="Back to Top"></a>
 {% endblock %}
 {% block js %}
+<script src="{% static 'js/forum.js' %}"></script>
+<script src="{% static 'js/common.js' %}"></script>
 <script src="{% static 'js/jquery.parallax-scroll.js' %}"></script>
 <script src="https://unpkg.com/ionicons@5.2.3/dist/ionicons.js"></script>
 <script src="{% static 'assets/magnify-pop/jquery.magnific-popup.min.js' %}"></script>
