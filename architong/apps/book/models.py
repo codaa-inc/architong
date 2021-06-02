@@ -4,6 +4,7 @@ from martor.models import MartorField
 class Bookmark(models.Model):
     bookmark_id = models.AutoField(primary_key=True)
     page_id = models.IntegerField()
+    book_id = models.IntegerField()
     username = models.CharField(max_length=150)
     reg_dt = models.DateTimeField(auto_now_add=True, blank=True, null=True)
 

@@ -70,6 +70,20 @@ function addOrRemoveBookmark(pageId) {
 };
 
 /**
+ * 북마크 관리페이지 - 북마크 토글
+ * */
+function toggleBookmark(book_id) {
+    const bookmarks = $("div[id^=" + 'book-' + book_id  + "]")
+    if(bookmarks.css('display') == 'none') {
+        bookmarks.show(200);
+        $("#icon-" + book_id).attr('class', 'arrow_carrot-down')
+    } else {
+        bookmarks.hide(200);
+        $("#icon-" + book_id).attr('class', 'arrow_carrot-up')
+    }
+};
+
+/**
  * 북마크 관리페이지 - 북마크 삭제
  * */
 function removeBookmark(pageId) {
@@ -225,16 +239,15 @@ function viewCommentList(data, page_id, status) {
  * */
 function viewCommentBox(id) {
     const page_id = id.split("-")[1];
-    let commentbox_html = '<div id="commentbox-' + id + '" class="blog_comment_box topic_comment" style="padding-top: 0px;">' +
-                            '<form id="form-' + id + '"  class="get_quote_form row"><div class="col-md-12 form-group">' +
-                            '<textarea id="textarea-' + id + '" name="content" class="form-control message" required></textarea>' +
-                            '<label class="floating-label">Comment</label></div><div class="col-md-12 form-group" id="radio-group">' +
-                            '<input type="radio" class="rls_yn" name="rls_yn" value="Y" id="rls_y" onchange="onchangeRadio(' + "'" + "rls_y" + "'" + ')" checked><label>공개 댓글</label>' +
-                            '<input type="radio" class="rls_yn" name="rls_yn" value="N" id="rls_n" onchange="onchangeRadio(' + "'" + "rls_n" + "'" + ')" style="margin-left: 10px;"><label>비공개 메모</label>' +
-                            '<button class="action_btn btn_small" type="button" onclick="addComment(' + "'" + id + "'" + ')" style="color: #fff;">저장</button></div></form></div>';
 
     ////////////////////  Depth 2 ////////////////////
     if (id.indexOf("parent") == -1) {
+        let commentbox_html = '<div id="commentbox-' + id + '" class="blog_comment_box topic_comment" style="padding-top: 0px;">' +
+                            '<form id="form-' + id + '"  class="get_quote_form row"><div class="col-md-12 form-group">' +
+                            '<textarea id="textarea-' + id + '" name="content" class="form-control message" required></textarea>' +
+                            '<label class="floating-label">Comment</label></div><div class="col-md-12 form-group" id="radio-group">' +
+                            '<button class="action_btn btn_small" type="button" ' +
+                            'onclick="addComment(' + "'" + id + "'" + ')" style="color: #fff;">저장</button></div></form></div>';
         // 대댓글 창이 존재하지 않는 경우 생성
         if(!document.getElementById("commentbox-" + id)) {
             let targetId = "";
@@ -269,6 +282,14 @@ function viewCommentBox(id) {
 
     ////////////////////  Depth 1 ////////////////////
     } else {
+        let commentbox_html = '<div id="commentbox-' + id + '" class="blog_comment_box topic_comment" style="padding-top: 0px;">' +
+                            '<form id="form-' + id + '"  class="get_quote_form row"><div class="col-md-12 form-group">' +
+                            '<textarea id="textarea-' + id + '" name="content" class="form-control message" required></textarea>' +
+                            '<label class="floating-label">Comment</label></div><div class="col-md-12 form-group" id="radio-group">' +
+                            '<input type="radio" class="rls_yn" name="rls_yn" value="Y" id="rls_y" onchange="onchangeRadio(' + "'" + "rls_y" + "'" + ')" checked><label>공개 댓글</label>' +
+                            '<input type="radio" class="rls_yn" name="rls_yn" value="N" id="rls_n" onchange="onchangeRadio(' + "'" + "rls_n" + "'" + ')" style="margin-left: 10px;"><label>비공개 메모</label>' +
+                            '<button class="action_btn btn_small" type="button" ' +
+                            'onclick="addComment(' + "'" + id + "'" + ')" style="color: #fff;">저장</button></div></form></div>';
         $("#description-" + page_id).after(commentbox_html);
     }
 
@@ -298,47 +319,43 @@ function onchangeRadio(id) {
  * 댓글작성함수
  * */
 function addComment(id) {
-    // 글자수 체크
-    const textLength = $("#textarea-" + id).val().length;
-    if (textLength < 5) {
-        alert("댓글은 5글자 이상 입력해야 합니다.");
-        return;
-    }
     // 댓글 등록 POST 요청
-    $.ajax({
-        type: "POST",
-        url: "/comment/" + id,
-        dataType: "json", // 서버측에서 전송한 Response 데이터 형식 (json)
-        data: $("#form-" + id).serialize() + "&csrfmiddlewaretoken=" + $("input[name=csrfmiddlewaretoken]").val(),
-        success: function (response) { // 통신 성공시 - 동적으로 북마크 아이콘 변경
-            if (response.result == "fail") {
-                if (confirm(response.message)) {
-                    // 인증된 사용자가 아닌 경우 로그인 페이지로 이동
-                    document.location.href = "/accounts/google/login/?next=" + window.location.pathname;
+    if (checkMinLength("textarea-" + id, 5)) {
+        $.ajax({
+            type: "POST",
+            url: "/comment/" + id,
+            dataType: "json", // 서버측에서 전송한 Response 데이터 형식 (json)
+            data: $("#form-" + id).serialize() + "&csrfmiddlewaretoken=" + $("input[name=csrfmiddlewaretoken]").val(),
+            success: function (response) { // 통신 성공시 - 동적으로 북마크 아이콘 변경
+                if (response.result == "fail") {
+                    if (confirm(response.message)) {
+                        // 인증된 사용자가 아닌 경우 로그인 페이지로 이동
+                        document.location.href = "/accounts/google/login/?next=" + window.location.pathname;
+                    }
+                } else if (response.length > 0) {
+                    const data = response[0];
+                    // 부모댓글일 경우 comment box 내용을 삭제
+                    if (data.depth == 0 && document.getElementById("textarea-" + id)) {
+                        $("#textarea-" + id).val('');
+                    }
+                    // 자식댓글일 경우 comment box 요소를 삭제
+                    else if (data.depth == 1) {
+                        $("#commentbox-" + id).parent().remove();
+                    }
+                    // 해당 page의 comment count 증감
+                    const comment_count = Number($("#comment-" + data.page_id).text()) + 1;
+                    const comment_icon = '<ion-icon style="font-size: large" name="chatbubbles-outline"></ion-icon>&nbsp;';
+                    $("#comment-" + data.page_id).html(comment_icon + comment_count);
+                    // 댓글창 추가
+                    viewCommentList(response, id, "insert");
                 }
-            } else if (response.length > 0) {
-                const data = response[0];
-                // 부모댓글일 경우 comment box 내용을 삭제
-                if (data.depth == 0 && document.getElementById("textarea-" + id)) {
-                    $("#textarea-" + id).val('');
-                }
-                // 자식댓글일 경우 comment box 요소를 삭제
-                else if (data.depth == 1) {
-                    $("#commentbox-" + id).parent().remove();
-                }
-                // 해당 page의 comment count 증감
-                const comment_count = Number($("#comment-" + data.page_id).text()) + 1;
-                const comment_icon  = '<ion-icon style="font-size: large" name="chatbubbles-outline"></ion-icon>&nbsp;';
-                $("#comment-" + data.page_id).html(comment_icon + comment_count);
-                // 댓글창 추가
-                viewCommentList(response, id, "insert");
-            }
-        },
-        error: function (request, status, error) { // 통신 실패시 - 로그인 페이지 리다이렉트
-            console.log("code:"+request.status+"\n"+"message:"+request.responseText+"\n"+"error:"+error)
-            //window.location.replace("/accounts/google/login/")
-        },
-    });
+            },
+            error: function (request, status, error) { // 통신 실패시 - 로그인 페이지 리다이렉트
+                console.log("code:" + request.status + "\n" + "message:" + request.responseText + "\n" + "error:" + error)
+                //window.location.replace("/accounts/google/login/")
+            },
+        });
+    }
 };
 
 /**
@@ -375,49 +392,45 @@ function viewUpdateComment(id) {
  * 댓글수정함수
  * */
 function updateComment(id) {
-    // 글자수 체크
-    const textLength = $("#textarea-" + id).val().length;
-    if (textLength < 5) {
-        alert("댓글은 5글자 이상 입력해야 합니다.");
-        return;
-    }
     // 댓글 수정 POST 요청
-    $.ajax({
-    type: "POST",
-    url: "/comment/update/" + id,
-    dataType: "json", // 서버측에서 전송한 Response 데이터 형식 (json)
-    data: $("#form-" + id).serialize() + "&csrfmiddlewaretoken=" + $("input[name=csrfmiddlewaretoken]").val(),
-    success: function (response) { // 통신 성공시 - 동적으로 북마크 아이콘 변경
-        if (response.length > 0) {
-            let comment = response[0];
-            let comment_html = "";
-            if (comment.depth == 0) {
-                comment_html += '<div id=' + "parent-" + comment.comment_id + ' class="media comment_author">' +
-                     '<div class="media-body"><div class="comment_info"><div class="comment_date"><strong>' + comment.username + '</strong>' +
-                     '&nbsp;&nbsp;' + displayRegDt(comment.reg_dt) + '&nbsp;&nbsp;수정됨</div></div><p>' +
-                    displayNewLine(comment.content) + '</p>' +
-                     '<a onclick="deleteComment(' + "'parent-" + comment.comment_id + "'" + ')" class="comment_tag">&nbsp;삭제&nbsp;</a>' +
-                     '<a onclick="viewUpdateComment(' + "'parent-" + comment.comment_id + "'" + ')" class="comment_tag">&nbsp;수정&nbsp;</a>' +
-                     '<a onclick="viewCommentBox(' + "'child-" + comment.comment_id + "'" + ')" class="comment_reply">Reply ' +
-                     '<i class="arrow_right"></i></a></div></div>';
-            } else if (comment.depth == 1) {
-                comment_html += '<ul id="child-' + comment.comment_id + '" class="list-unstyled reply_comment">' +
-                    '<li><div class="media comment_author"><div class="media-body"><div class="comment_info">' +
-                    '<div class="comment_date"><strong>' + comment.username + '</strong>&nbsp;&nbsp;' +
-                    displayRegDt(comment.reg_dt) + '&nbsp;&nbsp;수정됨</div></div><p>' +
-                    displayNewLine(comment.content) + '</p>' +
-                    '<a onclick="deleteComment(' + "'child-" + comment.comment_id + "'" + ')" class="comment_tag">&nbsp;삭제&nbsp;</a>' +
-                    '<a onclick="viewUpdateComment(' + "'child-" + comment.comment_id + "'" + ')" class="comment_tag">&nbsp;수정&nbsp;</a>' +
-                    '</div></div></li></ul>';
-            }
-            $("#" + id).replaceWith(comment_html);
-        }
-    },
-    error: function (request, status, error) { // 통신 실패시 - 로그인 페이지 리다이렉트
-        console.log("code:"+request.status+"\n"+"message:"+request.responseText+"\n"+"error:"+error)
-        //window.location.replace("/accounts/google/login/")
-    },
-});
+    if (checkMinLength("textarea-" + id, 5)) {
+        $.ajax({
+            type: "POST",
+            url: "/comment/update/" + id,
+            dataType: "json", // 서버측에서 전송한 Response 데이터 형식 (json)
+            data: $("#form-" + id).serialize() + "&csrfmiddlewaretoken=" + $("input[name=csrfmiddlewaretoken]").val(),
+            success: function (response) { // 통신 성공시 - 동적으로 북마크 아이콘 변경
+                if (response.length > 0) {
+                    let comment = response[0];
+                    let comment_html = "";
+                    if (comment.depth == 0) {
+                        comment_html += '<div id=' + "parent-" + comment.comment_id + ' class="media comment_author">' +
+                             '<div class="media-body"><div class="comment_info"><div class="comment_date"><strong>' + comment.username + '</strong>' +
+                             '&nbsp;&nbsp;' + displayRegDt(comment.reg_dt) + '&nbsp;&nbsp;수정됨</div></div><p>' +
+                            displayNewLine(comment.content) + '</p>' +
+                             '<a onclick="deleteComment(' + "'parent-" + comment.comment_id + "'" + ')" class="comment_tag">&nbsp;삭제&nbsp;</a>' +
+                             '<a onclick="viewUpdateComment(' + "'parent-" + comment.comment_id + "'" + ')" class="comment_tag">&nbsp;수정&nbsp;</a>' +
+                             '<a onclick="viewCommentBox(' + "'child-" + comment.comment_id + "'" + ')" class="comment_reply">Reply ' +
+                             '<i class="arrow_right"></i></a></div></div>';
+                    } else if (comment.depth == 1) {
+                        comment_html += '<ul id="child-' + comment.comment_id + '" class="list-unstyled reply_comment">' +
+                            '<li><div class="media comment_author"><div class="media-body"><div class="comment_info">' +
+                            '<div class="comment_date"><strong>' + comment.username + '</strong>&nbsp;&nbsp;' +
+                            displayRegDt(comment.reg_dt) + '&nbsp;&nbsp;수정됨</div></div><p>' +
+                            displayNewLine(comment.content) + '</p>' +
+                            '<a onclick="deleteComment(' + "'child-" + comment.comment_id + "'" + ')" class="comment_tag">&nbsp;삭제&nbsp;</a>' +
+                            '<a onclick="viewUpdateComment(' + "'child-" + comment.comment_id + "'" + ')" class="comment_tag">&nbsp;수정&nbsp;</a>' +
+                            '</div></div></li></ul>';
+                    }
+                    $("#" + id).replaceWith(comment_html);
+                }
+            },
+            error: function (request, status, error) { // 통신 실패시 - 로그인 페이지 리다이렉트
+                console.log("code:"+request.status+"\n"+"message:"+request.responseText+"\n"+"error:"+error)
+                //window.location.replace("/accounts/google/login/")
+            },
+        });
+    }
 }
 
 /**

@@ -13,7 +13,7 @@ from django.db.models import Subquery
 from django.core.paginator import Paginator
 
 from .models import Comments
-from apps.book.models import Books, Pages
+from apps.book.models import Books, Pages, Bookmark
 from apps.common.models import SocialaccountSocialaccount as Socialaccount
 from apps.common.models import AuthUser
 
@@ -51,17 +51,31 @@ class CommentView(View):
             idstr = id.split('-')[1]
             comment = Comments()
             comment.username = username
-            comment.rls_yn = request.POST['rls_yn']
             comment.content = request.POST['content']
             comment.status = "C"
             if nodestr == 'parent':
                 comment.depth = 0
                 comment.parent_id = 0
+                page_id = idstr
                 comment.page_id = idstr
+                rls_yn = request.POST['rls_yn']
+                comment.rls_yn = rls_yn
             elif nodestr == 'child':
                 comment.depth = 1
                 comment.parent_id = idstr
                 comment.page_id = Comments.objects.filter(comment_id=idstr).values('page_id')
+                # 자식댓글의 공개여부는 부모댓글을 따라간다.
+                rls_yn = Comments.objects.filter(comment_id=idstr).values('rls_yn')
+                comment.rls_yn = rls_yn
+            # 비공개 메모 등록시 해당 페이지가 북마크에 없으면 북마크를 등록한다.
+            if rls_yn == "N":
+                bookmark_count = Bookmark.objects.filter(page_id=page_id, username=username).count()
+                if bookmark_count == 0:
+                    bookmark = Bookmark()
+                    bookmark.page_id = page_id
+                    bookmark.book_id = Pages.objects.get(page_id=page_id).book_id
+                    bookmark.username = username
+                    bookmark.save()
             comment.save()
             # 저장한 comment 객체를 return
             comment_id = Comments.objects.order_by('-pk')[0].comment_id

@@ -6,6 +6,19 @@
 <link href="{% static 'plugins/css/ace.min.css' %}" type="text/css" media="all" rel="stylesheet"/>
 <link href="{% static 'plugins/css/resizable.min.css' %}" type="text/css" media="all" rel="stylesheet"/>
 <link href="{% static 'martor/css/martor.bootstrap.min.css' %}" type="text/css" media="all" rel="stylesheet"/>
+<script src="{% static 'js/common.js' %}"></script>
+<script src="{% static 'js/docs.js' %}"></script>
+<script>
+    // 댓글 데이터를 임시 저장
+    let comment_data = "";
+    // 로그인 시 사용자 ID를 저장하는 전역변수 선언
+    let USERNAME = "";
+</script>
+{% for account in user.socialaccount_set.all %}
+{% if account.extra_data.given_name %}
+<script>USERNAME = "{{ account.extra_data.given_name }}";</script>
+{% endif %}
+{% endfor %}
 <style>
     .martor-preview:hover {
         background-color: #F9F9F9;
@@ -19,9 +32,51 @@
         visibility: hidden;
     }
     .bookmark_info {
-        margin-top: 25px !important;
+        margin-top: 20px !important;
+        margin-right: 10px !important;
         color: #a7a9ac;
         float: right;
+    }
+
+    .comment {
+        float: right;
+        cursor: pointer;
+        visibility: hidden;
+        margin-left: 10px;
+    }
+    #radio-group {
+        vertical-align : middle;
+        justify-content: flex-end;
+        align-items: center;
+        display: flex;
+        flex-direction: row;
+        margin-bottom: 0px;
+        font-family: 'NanumSquare', san-serif;
+    }
+    #radio-group > input, button {
+        margin: auto 10px;
+    }
+
+    .comment_tag {
+        color: #4c4cf1 !important;
+        cursor: pointer;
+        float: right;
+    }
+
+    .comment_inner {
+        padding-top: 0px;
+    }
+    .comment_inner > ul, li {
+        list-style: none !important;
+    }
+    .comment_author {
+        padding-top: 10px !important;
+    }
+    .media-body{
+        padding-bottom: 10px !important;
+    }
+    .comment_reply {
+        cursor: pointer;
     }
 </style>
 {% endblock %}
@@ -34,21 +89,50 @@
 <section class="doc_documentation_area" id="sticky_doc">
     <div class="container custom_container">
         <div class="row">
-            <div class="col-xl-9 doc-middle-content">
+            <div class="col-xl-9 doc-middle-content" style="padding-top : 30px;">
                 <article id="post" class="documentation_info">
                     <div class="documentation_body" id="documentation">
-                      {% if bookmarks %}
-                      {% for bookmark in bookmarks %}
-                        <div class="martor-content">
-                            <div class="martor-preview" id="page-{{ bookmark.page_id }}">
-                                <a id="bookmark-{{ bookmark.page_id }}" class="bookmark" title="북마크 삭제" onclick='removeBookmark("{{ bookmark.page_id }}")'>
-                                    <i class="icon_ribbon" style="font-size: larger"></i>
-                                </a>
-                                {{ bookmark.description|safe_markdown }}
-                                <p class="bookmark_info" style="margin-bottom: 0px !important;">Bookmarked by {{ bookmark.username }} | {{ bookmark.reg_dt | date:'Y.m.d a f' }}</p>
+                        {% if bookmarks %}
+                        {% for bookmark in bookmarks %}
+                        {% if bookmark.book_title %}
+                            <h4 style="margin-top: 30px; cursor: pointer;">
+                                <span onclick='toggleBookmark("{{ bookmark.book_id }}")' class="icon">
+                                    <i id="icon-{{ bookmark.book_id }}" class="arrow_carrot-down" style="color: #007bff"></i>
+                                </span>
+                                <a href="/book/{{ bookmark.book_id }}">{{ bookmark.book_title }}</a>
+                            </h4>
+                        {% endif %}
+                            <div id="book-{{ bookmark.book_id }}-{{ bookmark.page_id }}" class="martor-content" style="margin-bottom: 10px;">
+                                <div class="martor-preview" id="page-{{ bookmark.page_id }}">
+                                    <a id="bookmark-{{ bookmark.page_id }}" class="bookmark" title="북마크 삭제" onclick='removeBookmark("{{ bookmark.page_id }}")'>
+                                        <i class="icon_ribbon" style="font-size: larger"></i>
+                                    </a>
+                                    <div id="description-{{ bookmark.page_id }}">{% csrf_token %}
+                                        {{ bookmark.description|safe_markdown }}
+                                    </div>
+                                    {% if bookmark.comment %}
+                                        <script>
+                                            comment_data = {{ bookmark.comment|safe }};
+                                            viewCommentList(comment_data, {{ bookmark.page_id }}, "select");
+                                        </script>
+                                    {% endif %}
+                                    <div id="commentbox-' + {{ bookmark.page_id }} + '" class="blog_comment_box topic_comment" style="padding-top: 0px;">
+                                        <form id="form-' + {{ bookmark.page_id }} + '"  class="get_quote_form row">
+                                            <div class="col-md-12 form-group">
+                                                <textarea id="textarea-parent-{{ bookmark.page_id }}" name="content" class="form-control message" required></textarea>
+                                                <label class="floating-label">Comment</label>
+                                            </div>
+                                            <div class="col-md-12 form-group" id="radio-group">
+                                                <button class="action_btn btn_small" type="button" onclick="addComment('parent-{{ bookmark.page_id }}')" style="color: #fff;">저장</button>
+                                            </div>
+                                        </form>
+                                    </div>
+                                    <p class="bookmark_info" style="margin-bottom: 0px !important;">
+                                        Bookmarked by {{ bookmark.username }} | {{ bookmark.reg_dt | date:'Y.m.d a f' }}
+                                    </p>
+                                </div>
                             </div>
-                        </div>
-                      {% endfor %}
+                        {% endfor %}
                         {% else %}
                         <p style="margin: auto; padding: 20px 0; color: rgba(0, 0, 0, 0.4); text-align: center;">등록된 북마크가 없습니다.</p>
                         {% endif %}
@@ -74,8 +158,6 @@
 {% endblock %}
 
 {% block js %}
-<script src="{% static 'js/docs.js' %}"></script>
-<script src="{% static 'js/common.js' %}"></script>
 <script src="{% static 'assets/font-size/js/rv-jquery-fontsize-2.0.3.min.js' %}"></script>
 <script src="{% static 'assets/magnify-pop/jquery.magnific-popup.min.js' %}"></script>
 <script src="{% static 'js/plugins.js' %}"></script>

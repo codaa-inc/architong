@@ -1,15 +1,19 @@
 import requests
+import json
 
 from django.shortcuts import render
 from django.conf import settings
 from xml.etree import ElementTree
 from django.views import View
 from django.core.paginator import Paginator
+from django.core.serializers.json import DjangoJSONEncoder
 from django.views.decorators.csrf import csrf_exempt
 from django.contrib.auth.decorators import login_required
 from django.http import JsonResponse
+from django.db.models import Q
 
 from apps.book.models import Books, Bookmark, Pages
+from apps.forum.models import Comments
 
 
 # 메인 페이지 조회 / 문서 검색 function
@@ -43,11 +47,18 @@ def index(request):
 def view_bookmark(request):
     username = request.user  # 세션으로부터 유저 정보 가져오기
     if username is not None:
-        bookmarks = Bookmark.objects.filter(username=username)
-        pages = Pages.objects.filter(page_id__in=bookmarks.values_list('page_id', flat=True)).values('description')
-        for bookmark in bookmarks:
-            description = pages.get(page_id=bookmark.page_id)['description']
-            bookmark.description = description
+        bookmarks = Bookmark.objects.filter(username=username).order_by('book_id', 'page_id')
+        page_q = Q(page_id__in=bookmarks.values_list('page_id', flat=True))
+        status_q = Q(status="C") | Q(status="U")
+        pages = Pages.objects.filter(page_q).values()
+        comments = Comments.objects.filter(page_q & status_q & Q(rls_yn="N"))
+        for idx, bookmark in enumerate(bookmarks):
+            bookmark.description = pages.get(page_id=bookmark.page_id)['description']
+            comment = comments.filter(page_id=bookmark.page_id).values()
+            if len(comment) > 0:
+                bookmark.comment = json.dumps(list(comment), cls=DjangoJSONEncoder)
+            if idx == 0 or bookmark.book_id != bookmarks[idx - 1].book_id:
+                bookmark.book_title = Books.objects.get(book_id=bookmark.book_id).book_title
         return render(request, "bookmark.html", {"bookmarks": bookmarks})
 
 
@@ -247,10 +258,7 @@ class LawView(View):
             # 부모ID로 depth가 0인 것 중의 가장 마지막 row의 page_id를 넣는다
             # parent_id = Pages.objects.filter(depth=0).last().page_id
             page.parent_id = 594
-
         else:
             page.depth = 0
             page.parent_id = 0
         page.save()  # 모델 DB 저장
-
-

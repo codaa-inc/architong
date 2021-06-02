@@ -89,9 +89,9 @@ def view_page(request, page_id):
 def add_or_remove_bookmark(request, page_id):
     if request.user.is_authenticated:
         # 해당 북마크가 존재하는지 select
-        select_count = Bookmark.objects.filter(page_id=page_id, username=request.user).count()
+        bookmark = Bookmark.objects.filter(page_id=page_id, username=request.user)
         # 등록된 북마크가 있으면 delete
-        if select_count > 0:
+        if bookmark.count() > 0:
             delete_bm = Bookmark.objects.get(page_id=page_id, username=request.user)
             delete_bm.delete()
             result = 'delete'
@@ -99,6 +99,7 @@ def add_or_remove_bookmark(request, page_id):
         else:
             insert_bm = Bookmark()  # 모델 객체 생성
             insert_bm.page_id = page_id
+            insert_bm.book_id = Pages.objects.get(page_id=page_id).book_id
             insert_bm.username = request.user
             insert_bm.save()
             result = 'insert'
