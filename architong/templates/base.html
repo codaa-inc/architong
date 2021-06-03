@@ -111,26 +111,24 @@
                             <a href="{% provider_login_url 'google' %}?next={{request.path}}" style="width: 120px;"><i class="icon_lock-open" style="margin-right: 5px;"></i>로그인</a>
                         </li>
                     {% else %}
-                        {% for account in user.socialaccount_set.all %}
-                            <li class="nav-item dropdown submenu">
-                                <a href="/edit/" style="width: 100px"><i class="icon_documents_alt" style="margin-right: 5px;"></i>책만들기</a>
-                            </li>
-                            <li class="nav-item dropdown submenu active">
-                                <a class="nav-link dropdown-toggle" href="#"><i class="icon_profile"></i>{{ account.extra_data.given_name }}</a>
-                                <i class="arrow_carrot-down_alt2 mobile_dropdown_icon" aria-hidden="false" data-toggle="dropdown"></i>
-                                <ul class="dropdown-menu">
-                                    <li class="nav-item"><a href="/bookmark/" class="nav-link"><i class="icon_ribbon_alt"></i>&nbsp;북마크</a></li>
-                                    <li class="nav-item"><a href="#" class="nav-link"><i class="icon_comment_alt"></i>&nbsp;최근 댓글</a></li>
-                                    <li class="nav-item"><a href="#" class="nav-link"><i class="icon_pencil-edit"></i>&nbsp;저서</a></li>
-                                    <li class="nav-item"><a href="#" class="nav-link"><i class="icon_cog"></i>&nbsp;계정 설정</a></li>
-                                </ul>
-                            </li>
-                            <li class="nav-item dropdown submenu">
-                                <a href="{% url 'logout' %}?next={{request.path}}" style="width: 120px">
-                                    <i class="icon_lock" style="margin-right: 5px;"></i>로그아웃
-                                </a>
-                            </li>
-                        {% endfor %}
+                        <li class="nav-item dropdown submenu">
+                            <a href="/edit/" style="width: 100px"><i class="icon_documents_alt" style="margin-right: 5px;"></i>책만들기</a>
+                        </li>
+                        <li class="nav-item dropdown submenu active">
+                            <a class="nav-link dropdown-toggle" href="#"><i class="icon_profile"></i>{{ user.username }}</a>
+                            <i class="arrow_carrot-down_alt2 mobile_dropdown_icon" aria-hidden="false" data-toggle="dropdown"></i>
+                            <ul class="dropdown-menu">
+                                <li class="nav-item"><a href="/bookmark/" class="nav-link"><i class="icon_ribbon_alt"></i>&nbsp;북마크</a></li>
+                                <li class="nav-item"><a href="#" class="nav-link"><i class="icon_comment_alt"></i>&nbsp;최근 댓글</a></li>
+                                <li class="nav-item"><a href="#" class="nav-link"><i class="icon_pencil-edit"></i>&nbsp;저서</a></li>
+                                <li class="nav-item"><a href="/profile/" class="nav-link"><i class="icon_cog"></i>&nbsp;프로필</a></li>
+                            </ul>
+                        </li>
+                        <li class="nav-item dropdown submenu">
+                            <a href="{% url 'logout' %}?next={{ request.path }}" style="width: 120px">
+                                <i class="icon_lock" style="margin-right: 5px;"></i>로그아웃
+                            </a>
+                        </li>
                     {% endif %}
                     </ul>
                 </div>

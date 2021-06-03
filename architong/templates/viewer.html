@@ -82,11 +82,10 @@
 <script>PAGEID = "{{ page_id }}"; </script>
 {% endif %}
 
-{% for account in user.socialaccount_set.all %}
-{% if account.extra_data.given_name %}
-<script>USERNAME = "{{ account.extra_data.given_name }}";</script>
+{% if user.is_authenticated %}
+<script>USERNAME = "{{ user.get_username }}";</script>
 {% endif %}
-{% endfor %}
+
 
 <!--================Forum Breadcrumb Area =====================-->
 <div class="breadcrumb_area_three" style="padding: 0"></div>

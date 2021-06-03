@@ -9,7 +9,6 @@ from django.views.decorators.csrf import csrf_exempt
 from django.contrib.auth.decorators import login_required
 from django.shortcuts import render, redirect
 from django.db.models import Q
-
 from .models import Books, Pages, Bookmark
 from apps.forum.models import Comments
 from .forms import PostForm, PageForm
@@ -85,13 +84,22 @@ def view_page(request, page_id):
 
 # 북마크 등록 / 삭제 function
 @csrf_exempt
-@login_required(login_url="/account/google/login")
 def add_or_remove_bookmark(request, page_id):
+    del_comment = []
+    message = ""
     if request.user.is_authenticated:
+        username = request.user
         # 해당 북마크가 존재하는지 select
-        bookmark = Bookmark.objects.filter(page_id=page_id, username=request.user)
+        bookmark = Bookmark.objects.filter(page_id=page_id, username=username)
         # 등록된 북마크가 있으면 delete
         if bookmark.count() > 0:
+            # 북마크 하위 메모들을 삭제한다
+            private_comment = Comments.objects.filter(Q(page_id=page_id, username=username, rls_yn="N") & ~Q(status="D"))
+            del_comment = list(private_comment.values())
+            for data in private_comment:
+                data.status = "D"
+            Comments.objects.bulk_update(private_comment, ['status'])
+            # 북마크를 삭제한다
             delete_bm = Bookmark.objects.get(page_id=page_id, username=request.user)
             delete_bm.delete()
             result = 'delete'
@@ -105,5 +113,19 @@ def add_or_remove_bookmark(request, page_id):
             result = 'insert'
     else:
         result = 'false'
-    context = {"result": result}
+        print("result : ", result)
+        message = "로그인이 필요한 서비스입니다.\n로그인하시겠습니까?"
+    context = {"result": result, "del_comment": del_comment, "message": message}
     return JsonResponse(context)
+
+
+# 댓글 갯수를 리턴해주는 function
+@login_required
+def comment_count(request):
+    if request.method == 'GET':
+        page_id = request.GET['page_id']
+        rls_yn = request.GET['rls_yn']
+        username = request.user
+        count = Comments.objects.filter(
+            Q(page_id=page_id) & Q(rls_yn=rls_yn) & Q(username=username) & ~Q(status='D')).count()
+        return JsonResponse({"result": str(count)})

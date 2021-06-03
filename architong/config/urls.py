@@ -13,6 +13,7 @@ urlpatterns = [
     path('admin/', admin.site.urls),
     path('', index),
     path('accounts/', include('allauth.urls')),
+    path('profile/', profile),
     path('logout/', auth_views.LogoutView.as_view(), name="logout"),
     path('get_law/', LawView.as_view()),
 
@@ -23,6 +24,7 @@ urlpatterns = [
     path('page/<int:page_id>', view_page),
     path('bookmark/', view_bookmark),
     path('bookmark/<int:page_id>', delete_bookmark),
+    path('comment/count/', comment_count),
 
     # Forum
     path('comment/<str:id>', CommentView.as_view()),

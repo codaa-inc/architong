@@ -4,20 +4,6 @@
 let preSelId, preBmId = "" // 목록 클릭시 이전 선택값을 저장
 
 /**
- * 페이지 네비게이션 클릭 이벤트
- * */
-function onclickPagination(page_number) {
-    const searchbox = $("#searchbox").val()
-    // 검색어가 없으면 GET 요청, 검색어가 있으면 POST 요청(Form Submit)
-    if (searchbox == "" || searchbox == null) {
-        location.href ='?page=' + page_number;
-    } else {
-        $("#page").val(page_number);
-        document.searchForm.submit();
-    }
-};
-
-/**
  * 법규 목록 클릭시 스크롤을 이동시키는 함수
  * */
 function onclickChildList(id, behavior) {
@@ -49,18 +35,45 @@ function onclickChildList(id, behavior) {
  * : 북마크 X → 북마크 등록
  * */
 function addOrRemoveBookmark(pageId) {
+    // 삭제하려는 경우 북마크 하위 메모 삭제 여부를 확인한다.
+    if ($("#bookmark-" + pageId).prop("title") == "북마크 삭제") {
+        let commentCnt = getCommentCount(pageId, "N");
+        if(commentCnt > 0) {
+            if(!confirm("북마크를 삭제하시면 나의 비공개 메모 " + commentCnt +"건도 함께 삭제됩니다.\n진행하시겠습니까?")) {
+                return;
+            }
+        }
+    }
     $.ajax({
         type: "PUT",
         url: "bookmark/" + pageId,
         dataType: "json", // 서버측에서 전송한 Response 데이터 형식 (json)
         success: function (response) { // 통신 성공시 - 동적으로 북마크 아이콘 변경
             if (response.result == "insert") {
+                // 북마크 등록
                 $("#bookmark-" + pageId).children().attr("class", "icon_ribbon");
                 $("#bookmark-" + pageId).prop("title", "북마크 삭제");
             } else if (response.result == "delete"){
                 // 북마크 삭제
                 $("#bookmark-" + pageId).children().attr("class", "icon_ribbon_alt");
                 $("#bookmark-" + pageId).prop("title", "북마크 등록");
+                // 북마크 하위 메모 삭제
+                const del_comment = response.del_comment;
+                if (del_comment.length > 0) {
+                    for (let i in del_comment) {
+                        let comment = del_comment[i];
+                        if (comment.depth == 0) {
+                            $("div").remove("#parent-" + comment.comment_id);
+                        } else {
+                            $("ul").remove("#child-" + comment.comment_id);
+                        }
+                    }
+                }
+            } else if(response.result == "false") {
+                if (confirm(response.message)) {
+                    // 인증된 사용자가 아닌 경우 로그인 페이지로 이동
+                    document.location.href = "/accounts/google/login/?next=" + window.location.pathname;
+                }
             }
         },
         error: function (request, status, error) { // 통신 실패시 - 로그인 페이지 리다이렉트
@@ -87,6 +100,15 @@ function toggleBookmark(book_id) {
  * 북마크 관리페이지 - 북마크 삭제
  * */
 function removeBookmark(pageId) {
+    // 삭제하려는 경우 북마크 하위 메모 삭제 여부를 확인한다.
+    if ($("#bookmark-" + pageId).prop("title") == "북마크 삭제") {
+        let commentCnt = getCommentCount(pageId, "N");
+        if(commentCnt > 0) {
+            if(!confirm("북마크를 삭제하시면 나의 비공개 메모 " + commentCnt +"건도 함께 삭제됩니다.\n진행하시겠습니까?")) {
+                return;
+            }
+        }
+    }
     $.ajax({
         type: "DELETE",
         url: pageId,
@@ -287,7 +309,7 @@ function viewCommentBox(id) {
                             '<textarea id="textarea-' + id + '" name="content" class="form-control message" required></textarea>' +
                             '<label class="floating-label">Comment</label></div><div class="col-md-12 form-group" id="radio-group">' +
                             '<input type="radio" class="rls_yn" name="rls_yn" value="Y" id="rls_y" onchange="onchangeRadio(' + "'" + "rls_y" + "'" + ')" checked><label>공개 댓글</label>' +
-                            '<input type="radio" class="rls_yn" name="rls_yn" value="N" id="rls_n" onchange="onchangeRadio(' + "'" + "rls_n" + "'" + ')" style="margin-left: 10px;"><label>비공개 메모</label>' +
+                            '<input type="radio" class="rls_yn" name="rls_yn" value="N" id="rls_n" onchange="onchangeRadio(' + "'" + "rls_n" + "'" + ')" style="margin-left: 10px;"><label>북마크 메모</label>' +
                             '<button class="action_btn btn_small" type="button" ' +
                             'onclick="addComment(' + "'" + id + "'" + ')" style="color: #fff;">저장</button></div></form></div>';
         $("#description-" + page_id).after(commentbox_html);
@@ -341,6 +363,11 @@ function addComment(id) {
                     // 자식댓글일 경우 comment box 요소를 삭제
                     else if (data.depth == 1) {
                         $("#commentbox-" + id).parent().remove();
+                    }
+                    // 비공개 메모일 경우 북마크 등록 표시
+                    if(data.rls_yn == "N") {
+                        $("#bookmark-" + data.page_id).children().attr("class", "icon_ribbon");
+                        $("#bookmark-" + data.page_id).prop("title", "북마크 삭제");
                     }
                     // 해당 page의 comment count 증감
                     const comment_count = Number($("#comment-" + data.page_id).text()) + 1;
@@ -480,4 +507,26 @@ function deleteComment(id) {
             //window.location.replace("/accounts/google/login/")
         },
     });
+};
+
+/**
+ * 댓글 갯수 리턴하는 함수
+ * PARAM : page_id, rls_yn
+ * RETURN : comment count
+ * */
+function getCommentCount(page_id, rls_yn) {
+    let commentCount = "";
+    $.ajax({
+        type: "GET",
+        url: "/comment/count/?page_id=" + page_id + "&rls_yn=" + rls_yn,
+        async : false,
+        dataType: "json", // 서버측에서 전송한 Response 데이터 형식 (json)
+        success: function (response) { // 통신 성공시 - 동적으로 북마크 아이콘 변경
+            commentCount = Number(response.result);
+        },
+        error: function (request, status, error) { // 통신 실패시 - 로그인 페이지 리다이렉트
+            //window.location.replace("/accounts/google/login/")
+        },
+    });
+    return commentCount;
 };

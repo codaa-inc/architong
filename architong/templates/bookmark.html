@@ -6,19 +6,6 @@
 <link href="{% static 'plugins/css/ace.min.css' %}" type="text/css" media="all" rel="stylesheet"/>
 <link href="{% static 'plugins/css/resizable.min.css' %}" type="text/css" media="all" rel="stylesheet"/>
 <link href="{% static 'martor/css/martor.bootstrap.min.css' %}" type="text/css" media="all" rel="stylesheet"/>
-<script src="{% static 'js/common.js' %}"></script>
-<script src="{% static 'js/docs.js' %}"></script>
-<script>
-    // 댓글 데이터를 임시 저장
-    let comment_data = "";
-    // 로그인 시 사용자 ID를 저장하는 전역변수 선언
-    let USERNAME = "";
-</script>
-{% for account in user.socialaccount_set.all %}
-{% if account.extra_data.given_name %}
-<script>USERNAME = "{{ account.extra_data.given_name }}";</script>
-{% endif %}
-{% endfor %}
 <style>
     .martor-preview:hover {
         background-color: #F9F9F9;
@@ -81,6 +68,19 @@
 </style>
 {% endblock %}
 
+<script src="{% static 'js/common.js' %}"></script>
+<script src="{% static 'js/docs.js' %}"></script>
+<script>
+    // 댓글 데이터를 임시 저장
+    let comment_data = "";
+    // 로그인 시 사용자 ID를 저장하는 전역변수 선언
+    let USERNAME = "";
+</script>
+
+{% if user.is_authenticated %}
+<script>USERNAME = "{{ user.get_username }}";</script>
+{% endif %}
+
 {% block content %}
 <!--================Forum Breadcrumb Area =================-->
 <div class="breadcrumb_area_three" style="padding: 0"></div>
@@ -117,9 +117,10 @@
                                         </script>
                                     {% endif %}
                                     <div id="commentbox-' + {{ bookmark.page_id }} + '" class="blog_comment_box topic_comment" style="padding-top: 0px;">
-                                        <form id="form-' + {{ bookmark.page_id }} + '"  class="get_quote_form row">
+                                        <form id="form-parent-{{ bookmark.page_id }}"  class="get_quote_form row">
                                             <div class="col-md-12 form-group">
                                                 <textarea id="textarea-parent-{{ bookmark.page_id }}" name="content" class="form-control message" required></textarea>
+                                                <input type="hidden" name="rls_yn" value="N">
                                                 <label class="floating-label">Comment</label>
                                             </div>
                                             <div class="col-md-12 form-group" id="radio-group">

@@ -1,4 +1,5 @@
 from django.db import models
+from django.contrib.auth.models import AbstractUser
 
 class AuthUser(models.Model):
     password = models.CharField(max_length=128)
@@ -30,8 +31,3 @@ class SocialaccountSocialaccount(models.Model):
         managed = False
         db_table = 'socialaccount_socialaccount'
         unique_together = (('provider', 'uid'),)
-
-
-
-
-

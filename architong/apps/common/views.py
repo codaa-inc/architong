@@ -14,6 +14,8 @@ from django.db.models import Q
 
 from apps.book.models import Books, Bookmark, Pages
 from apps.forum.models import Comments
+from .models import AuthUser
+from .models import SocialaccountSocialaccount as Socialaccount
 
 
 # 메인 페이지 조회 / 문서 검색 function
@@ -68,9 +70,25 @@ def view_bookmark(request):
 def delete_bookmark(request, page_id):
     username = request.user  # 세션으로부터 유저 정보 가져오기
     if username is not None:
+        # 북마크 하위 메모들을 삭제한다
+        private_comment = Comments.objects.filter(page_id=page_id, username=username, rls_yn="N")
+        for data in private_comment:
+            data.status = "D"
+        Comments.objects.bulk_update(private_comment, ['status'])
+        # 북마크를 삭제한다
         bookmark = Bookmark.objects.get(page_id=page_id, username=username)
         bookmark.delete()
         return JsonResponse({"result": "success"})
+
+
+# 유저 프로필 페이지 function
+@login_required(login_url="/account/google/login")
+def profile(request):
+    if request.method == 'GET':
+        status = Q(status="C") | Q(status="U")
+        comment_count = Comments.objects.filter(Q(username=request.user) & status).count()
+        context = {"comment_count": str(comment_count)}
+        return render(request, "profile.html", context)
 
 
 # 법규 데이터를 처리하는 class
