@@ -150,9 +150,8 @@ USE_TZ = False
 
 DEFAULT_AUTO_FIELD = 'django.db.models.BigAutoField'
 
-'''
 AUTH_USER_MODEL = 'common.UserInfo'
-'''
+
 
 """--------------------------------
 ---------- 정적파일 관리 ------------

@@ -1,3 +1,4 @@
+from django.conf import settings
 from django.db import models
 from datetime import datetime, timedelta, timezone
 
@@ -12,6 +13,7 @@ class Comments(models.Model):
     rls_yn = models.CharField(max_length=10, blank=True, null=True)
     reg_dt = models.DateTimeField(auto_now_add=True, blank=True, null=True)
     status = models.CharField(max_length=10, blank=True, null=True)
+    like_users = models.ManyToManyField(settings.AUTH_USER_MODEL, related_name='like_comments')
 
     @property
     def created_string(self):

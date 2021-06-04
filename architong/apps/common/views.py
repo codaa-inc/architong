@@ -14,8 +14,7 @@ from django.db.models import Q
 
 from apps.book.models import Books, Bookmark, Pages
 from apps.forum.models import Comments
-from .models import AuthUser
-from .models import SocialaccountSocialaccount as Socialaccount
+from .models import UserInfo
 
 
 # 메인 페이지 조회 / 문서 검색 function
@@ -85,9 +84,11 @@ def delete_bookmark(request, page_id):
 @login_required(login_url="/account/google/login")
 def profile(request):
     if request.method == 'GET':
+        username = request.user
+        act_point = UserInfo.objects.get(username=username).act_point
         status = Q(status="C") | Q(status="U")
-        comment_count = Comments.objects.filter(Q(username=request.user) & status).count()
-        context = {"comment_count": str(comment_count)}
+        comment_count = Comments.objects.filter(Q(username=username) & status).count()
+        context = {"act_point": str(act_point), "comment_count": str(comment_count)}
         return render(request, "profile.html", context)
 
 

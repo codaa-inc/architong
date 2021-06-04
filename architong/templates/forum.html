@@ -222,7 +222,13 @@
                                             {% endif %}
                                         </div>
                                         <div class="media-right">
-                                            <a class="count" href="#"><ion-icon name="heart-outline"></ion-icon>5</a>
+                                            {% if comment.is_liked == true %}
+                                            <a class="count" href="comment/like/{{ comment.comment_id }}">
+                                            <ion-icon name="heart" style=""></ion-icon>{{ comment.like_user_count }}</a>
+                                            {% else %}
+                                            <a class="count" href="comment/like/{{ comment.comment_id }}">
+                                            <ion-icon name="heart-outline" style=""></ion-icon>{{ comment.like_user_count }}</a>
+                                            {% endif %}
                                             <a class="count" href="#"><ion-icon name="chatbubbles-outline"></ion-icon>{{ comment.child_count }}</a>
                                             <a class="count" href="#"><ion-icon name="eye-outline"></ion-icon>420</a>
                                         </div>

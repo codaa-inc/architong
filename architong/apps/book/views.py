@@ -1,5 +1,4 @@
 import json
-
 from django.contrib.sessions.models import Session
 from django.contrib.auth.models import User
 from django.conf import settings
@@ -50,7 +49,6 @@ def view_book(request, book_id):
                 page.is_bookmarked = 1
             else:
                 page.is_bookmarked = 0
-
     context = {'books': books, 'pages': pages}
     return render(request, 'viewer.html', context)
 

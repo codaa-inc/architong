@@ -2,7 +2,7 @@ import json
 import datetime
 
 from django.contrib.auth.decorators import login_required
-from django.shortcuts import render
+from django.shortcuts import render, get_object_or_404
 from django.http import HttpResponse
 from django.http import JsonResponse
 from django.views import View
@@ -15,7 +15,7 @@ from django.core.paginator import Paginator
 from .models import Comments
 from apps.book.models import Books, Pages, Bookmark
 from apps.common.models import SocialaccountSocialaccount as Socialaccount
-from apps.common.models import AuthUser
+from apps.common.models import UserInfo
 
 
 # 댓글 조회 / 등록 / 삭제 class
@@ -76,6 +76,11 @@ class CommentView(View):
                     bookmark.book_id = Pages.objects.get(page_id=page_id).book_id
                     bookmark.username = username
                     bookmark.save()
+            # 공개 댓글 등록시 작성자의 활동점수를 +2 증감시킨다.
+            else:
+                user_info = UserInfo.objects.get(username=username)
+                user_info.act_point = user_info.act_point + 2
+                user_info.save()
             comment.save()
             # 저장한 comment 객체를 return
             comment_id = Comments.objects.order_by('-pk')[0].comment_id
@@ -147,12 +152,22 @@ def forum(request):
     # comments 객체에 Books, Pages 속성 추가
     for comment in comments:
         page = pages.get(page_id=comment.page_id)
+        socialaccount = Socialaccount.objects.get(
+            user_id=UserInfo.objects.get(username=comment.username).id).extra_data
+        comment.picture = json.loads(socialaccount)['picture']
         page_title = "[" + str(books.get(book_id=page.book_id).book_title).replace(" ", "") + "] " + page.page_title
         comment.page_title = page_title
         comment.page_id = page.page_id
-        socialaccount = Socialaccount.objects.get(user_id=AuthUser.objects.get(username=comment.username).id).extra_data
-        comment.picture = json.loads(socialaccount)['picture']
+        like = get_object_or_404(Comments, pk=comment.comment_id)
+        # TODO: "Table 'architong.comments_like_users' doesn't exist"
+        # makemigrations 중개 테이블이 생성되지 않는 문제
+        if request.user in list(like.like_users.all()):
+            comment.is_liked = "true"
+        else:
+            comment.is_liked = "false"
+        comment.like_user_count = like.like_users.all().count()
         comment.child_count = Comments.objects.filter(depth=1, rls_yn='Y', parent_id=comment.comment_id).count()
+        is_liked = comment.like_users.filter(id=request.user.pk).exists()
     # 페이징 처리
     if request.GET.get('page') is None:
         page = 1
@@ -168,7 +183,7 @@ def forum_detail(request, comment_id):
     # 부모,자식 공통 QuerySet
     comment = Comments.objects.all()
     socialaccount = Socialaccount.objects.all()
-    user = AuthUser.objects.all()
+    user = UserInfo.objects.all()
     # 부모댓글 QuerySet
     parent_comment = comment.get(comment_id=comment_id)
     parent_comment.picture = json.loads(socialaccount.get(
@@ -192,3 +207,14 @@ def forum_detail(request, comment_id):
     paginator = Paginator(child_comments, 10).get_page(page)
     context = {"parent_comment": parent_comment, "child_comments": paginator, "comments_count": str(child_comments.count())}
     return render(request, "forum_detail.html", context)
+
+@login_required
+def like_comment(request, comment_id):
+    comment = get_object_or_404(Comments, id=comment_id)
+    if request.user in comment.like_users.all():
+        comment_id.like_users.remove(request.user)
+        result = "true"
+    else:
+        comment_id.like_users.add(request.user)
+        result = "false"
+    return JsonResponse({"result": result})

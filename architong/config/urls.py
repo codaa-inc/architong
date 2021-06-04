@@ -29,6 +29,7 @@ urlpatterns = [
     # Forum
     path('comment/<str:id>', CommentView.as_view()),
     path('comment/update/<str:id>', comment_update),
+    path('comment/like/<str:comment_id>', like_comment),
     path('forum/', forum),
     path('forum/<int:comment_id>', forum_detail),
 ]
