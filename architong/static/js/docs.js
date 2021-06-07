@@ -476,7 +476,7 @@ function deleteComment(id) {
                 // 해당 page의 comment count 증감
                 const comment_count = Number($("#comment-" + id).text()) - 1;
                 const comment_icon  = '<ion-icon style="font-size: large" name="chatbubbles-outline"></ion-icon>&nbsp;';
-                $("#comment-" + id).html(comment_icon + comment_count);
+                $("#comment-" + id).html(commeauthor-avatarnt_icon + comment_count);
                 // delete → 해당 댓글란 삭제
                 if (response.result == "delete") {
                     $("#" + id).remove();

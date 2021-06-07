@@ -22,6 +22,18 @@
     #radio-group > button {
         margin: auto 10px;
     }
+    .count {
+        cursor: pointer;
+    }
+    .forum-post-top {
+        margin-top: 20px;
+    }
+    .col-lg-3 {
+        display: flex;
+        justify-content: center;
+        align-items: flex-end;
+        flex-direction: column;
+    }
 </style>
 {% endblock %}
 {% block content %}
@@ -52,6 +64,15 @@
                             </div>
                         </div>
                     </div>
+                    <div class="col-lg-3">
+                        {% if parent_comment.is_liked == "true" %}
+                        <a id="like-count-{{ parent_comment.comment_id }}" class="count" onclick="onclickLikeComment('{{ parent_comment.comment_id }}')">
+                        <ion-icon name="heart"></ion-icon>&nbsp;{{ parent_comment.like_user_count }}</a>
+                        {% else %}
+                        <a id="like-count-{{ parent_comment.comment_id }}" class="count" onclick="onclickLikeComment('{{ parent_comment.comment_id }}')">
+                        <ion-icon name="heart-outline"></ion-icon>&nbsp;{{ parent_comment.like_user_count }}</a>
+                        {% endif %}
+                    </div>
                 </div>
                 <div class="q-title">
                     <a href="/page/{{ parent_comment.page_id }}"><h6>{{ parent_comment.page_title }}</h6></a>
@@ -66,7 +87,6 @@
                     <div class="action-button-container action-btns">
                         <a onclick='onclickReply("{{ parent_comment.comment_id }}")' class="action_btn btn-ans ask-btn reply-btn"
                         style="color: #fff !important; cursor:pointer!important;">Reply</a>
-                        <a href="#" class="action_btn btn-ans ask-btn too-btn">Helpful</a>
                     </div>
                 </div>
                 {% endif %}
@@ -100,39 +120,47 @@
                         {% if child_comments  %}
                         {% for comment in child_comments %}
                         <div class="forum-post-top">
-                            <a class="author-avatar" href="#">
-                                <img src="{{ comment.picture }}"
-                                     alt="{% static 'img/forum/author-avatar.png' %}" style="width: 45px;">
-                            </a>
-                            <div class="forum-post-author">
-                                <a class="author-name" href="#">{{ comment.username }}</a>
-                                <div class="forum-author-meta">
-                                    <div class="author-badge">
-                                        {% if comment.created_string == False %}
-                                        <a>{{ comment.reg_dt | date:'Y.m.d' }}</a>
-                                        {% else %}
-                                        <a>{{ comment.created_string }}</a>
-                                        {% endif %}
-                                        {% if comment.status == "U" %}
-                                        <a>&nbsp;수정됨</a>
-                                        {% endif %}
-                                        {% if comment.username == request.user.username %}
-                                        <a onclick='viewUpdateComment("{{ comment.comment_id }}")' style="cursor: pointer;">
-                                            &nbsp;&#183;&nbsp;수정
-                                        </a>
-                                        <a onclick='deleteComment("{{ comment.comment_id }}")' style="cursor: pointer;">
-                                            &nbsp;&#183;&nbsp;삭제
-                                        </a>
-                                        {% endif %}
+                            <div class="col-lg-9" style="display: inline-block;">
+                                <a class="author-avatar" href="#" style="display: inline-block;">
+                                    <img src="{{ comment.picture }}"
+                                         alt="{% static 'img/forum/author-avatar.png' %}" style="width: 45px;">
+                                </a>
+                                <div class="forum-post-author" style="display: inline-block;">
+                                    <a class="author-name" href="#">{{ comment.username }}</a>
+                                    <div class="forum-author-meta">
+                                        <div class="author-badge">
+                                            {% if comment.created_string == False %}
+                                            <a>{{ comment.reg_dt | date:'Y.m.d' }}</a>
+                                            {% else %}
+                                            <a>{{ comment.created_string }}</a>
+                                            {% endif %}
+                                            {% if comment.status == "U" %}
+                                            <a>&nbsp;수정됨</a>
+                                            {% endif %}
+                                            {% if comment.username == request.user.username %}
+                                            <a onclick='viewUpdateComment("{{ comment.comment_id }}")' style="cursor: pointer;">
+                                                &nbsp;&#183;&nbsp;수정
+                                            </a>
+                                            <a onclick='deleteComment("{{ comment.comment_id }}")' style="cursor: pointer;">
+                                                &nbsp;&#183;&nbsp;삭제
+                                            </a>
+                                            {% endif %}
+                                        </div>
                                     </div>
                                 </div>
+                            </div>
+                            <div class="col-lg-3">
+                                {% if comment.is_liked == "true" %}
+                                <a id="like-count-{{ comment.comment_id }}" class="count" onclick="onclickLikeComment('{{ comment.comment_id }}')">
+                                <ion-icon name="heart"></ion-icon>&nbsp;{{ parent_comment.like_user_count }}</a>
+                                {% else %}
+                                <a id="like-count-{{ comment.comment_id }}" class="count" onclick="onclickLikeComment('{{ comment.comment_id }}')">
+                                <ion-icon name="heart-outline"></ion-icon>&nbsp;{{ comment.like_user_count }}</a>
+                                {% endif %}
                             </div>
                         </div>
                         <div id="comment-content-{{ comment.comment_id }}" class="comment-content">
                             <p>{{ comment.content | linebreaks }}</p>
-                            <div class="action-button-container action-btns">
-                                <a href="#" class="action_btn btn-ans ask-btn too-btn">Helpful</a>
-                            </div>
                         </div>
                         {% endfor %}
                         {% else %}

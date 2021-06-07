@@ -13,7 +13,7 @@ class Comments(models.Model):
     rls_yn = models.CharField(max_length=10, blank=True, null=True)
     reg_dt = models.DateTimeField(auto_now_add=True, blank=True, null=True)
     status = models.CharField(max_length=10, blank=True, null=True)
-    like_users = models.ManyToManyField(settings.AUTH_USER_MODEL, related_name='like_comments')
+    like_users = models.ManyToManyField(settings.AUTH_USER_MODEL, through='UserLikeComment')
 
     @property
     def created_string(self):
@@ -33,3 +33,14 @@ class Comments(models.Model):
     class Meta:
         managed = False
         db_table = 'comments'
+
+
+class UserLikeComment(models.Model):
+    like_id = models.AutoField(primary_key=True)
+    comment = models.ForeignKey(Comments, models.DO_NOTHING)
+    user = models.ForeignKey(settings.AUTH_USER_MODEL, models.DO_NOTHING)
+    reg_dt = models.DateTimeField(auto_now_add=True, blank=True, null=True)
+
+    class Meta:
+        managed = False
+        db_table = 'user_like_comment'
