@@ -2,6 +2,9 @@
 {% load static %}
 {% block css %}
 <style>
+.info_list {
+    padding-top: 0px !important;
+}
 .author_img {
     text-align: center;
     display: table-cell;
@@ -22,27 +25,23 @@
                                 aria-labelledby="home-tab">
                                 <div class="profile_info">
                                     <div class="row p_info_item_innerstyle">
+                                        {% if user_info %}
                                         <div class="col-sm-4" style="display: table">
                                             <div class="author_img">
-                                                {% if user.socialaccount_set %}
-                                                {% for account in user.socialaccount_set.all %}
-                                                <img class="rounded-circle" src="{{ account.extra_data.picture }}" alt="">
-                                                {% endfor %}
-                                                {% else %}
-                                                <img class="rounded-circle" src="{% static 'img/forum/author-1.jpg' %}" alt="">
-                                                {% endif %}
+                                                <img class="rounded-circle" src="{{ user_info.picture }}" alt="">
                                             </div>
                                         </div>
                                         <div class="col-sm-8">
                                             <ul class="navbar-nav info_list">
-                                                <li><span>아이디:</span>{{ user.username }}</li>
-                                                {% if user.last_name or first_name %}
-                                                <li><span>이름:</span>{{ user.last_name }}{{ user.first_name }}</li>
+                                                <li><span>아이디:</span>{{ user_info.username }}</li>
+                                                {% if user_info.last_name or first_name %}
+                                                <li><span>이름:</span>{{ user_info.last_name }}{{ user_info.first_name }}</li>
                                                 {% endif %}
-                                                <li><span>이메일:</span>{{ user.email }}</li>
-                                                <li><span>가입일:</span>{{ user.date_joined | date:'Y.m.d' }}</li>
+                                                <li><span>이메일:</span>{{ user_info.email }}</li>
+                                                <li><span>가입일:</span>{{ user_info.date_joined | date:'Y.m.d' }}</li>
                                             </ul>
                                         </div>
+                                    {% endif %}
                                     </div>
                                     <div class="row p_info_item_inner">
                                         <div class="col-sm-4">
@@ -69,7 +68,7 @@
                                                 <a href="#">
                                                     <h4>좋아요</h4>
                                                 </a>
-                                                <a class="info_number" style="background-color: #E7F8F3; color: #1BBC8D;" href="#">76</a>
+                                                <a class="info_number" style="background-color: #E7F8F3; color: #1BBC8D;" href="#">{{ like_count }}</a>
                                             </div>
                                         </div>
                                     </div>

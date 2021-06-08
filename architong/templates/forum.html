@@ -10,113 +10,9 @@
 <section class="forum_sidebar_area" id="sticky_doc">
     <div class="container-fluid pl-60 pr-60">
         <div class="row">
-            <div class="col-xl-2 d-none d-xl-block">
-                <div class="left_side_forum">
-                    <aside class="l_widget l_tags_wd">
-                        <h3 class="wd_title">Tags</h3>
-                        <ul class="list-unstyled w_tag_list style-light">
-                            <li><a href="#">Swagger</a></li>
-                            <li><a href="#">Docy</a></li>
-                            <li><a href="#">weCare</a></li>
-                            <li><a href="#">Business</a></li>
-                            <li><a href="#">Download</a></li>
-                            <li><a href="#">Doc</a></li>
-                            <li><a href="#">Product board</a></li>
-                            <li><a href="#">WordPress</a></li>
-                            <li><a href="#">Design</a></li>
-                            <li><a href="#">ui/ux</a></li>
-                            <li><a href="#">Doc Design</a></li>
-                            <li><a href="#">DocAll</a></li>
-                        </ul>
-                    </aside>
-                    <aside class="l_widget comment_list">
-                        <h3 class="wd_title">Recent Topics</h3>
-                        <ul class="navbar-nav">
-                            <li>
-                                <div class="media">
-                                    <div class="d-flex">
-                                        <i class="icon_chat_alt"></i>
-                                    </div>
-                                    <div class="media-body">
-                                        <a href="#">
-                                            <h4>Intégration 300 by</h4>
-                                        </a>
-                                        <a href="#">
-                                            <h5><img src="{% static 'img/forum/r-topic-user.png' %}" alt=""> Jean Conner</h5>
-                                        </a>
-                                        <p>4 days, 3 hours ago</p>
-                                    </div>
-                                </div>
-                            </li>
-                            <li>
-                                <div class="media">
-                                    <div class="d-flex">
-                                        <i class="icon_chat_alt"></i>
-                                    </div>
-                                    <div class="media-body">
-                                        <a href="#">
-                                            <h4>how by</h4>
-                                        </a>
-                                        <a href="#">
-                                            <h5><img src="{% static 'img/forum/r-topic-user.png' %}" alt=""> Lucile Barber</h5>
-                                        </a>
-                                        <p>1 week ago</p>
-                                    </div>
-                                </div>
-                            </li>
-                            <li>
-                                <div class="media">
-                                    <div class="d-flex">
-                                        <i class="icon_chat_alt"></i>
-                                    </div>
-                                    <div class="media-body">
-                                        <a href="#">
-                                            <h4>testing by</h4>
-                                        </a>
-                                        <a href="#">
-                                            <h5><img src="{% static 'img/forum/r-topic-user.png' %}" alt=""> Dwain Cherry</h5>
-                                        </a>
-                                        <p>3 days, 20 hours ago</p>
-                                    </div>
-                                </div>
-                            </li>
-                            <li>
-                                <div class="media">
-                                    <div class="d-flex">
-                                        <i class="icon_chat_alt"></i>
-                                    </div>
-                                    <div class="media-body">
-                                        <a href="#">
-                                            <h4>Title by</h4>
-                                        </a>
-                                        <a href="#">
-                                            <h5><img src="{% static 'img/forum/r-topic-user.png' %}" alt=""> Kati Burch</h5>
-                                        </a>
-                                        <p>1 month ago</p>
-                                    </div>
-                                </div>
-                            </li>
-                            <li>
-                                <div class="media">
-                                    <div class="d-flex">
-                                        <i class="icon_chat_alt"></i>
-                                    </div>
-                                    <div class="media-body">
-                                        <a href="#">
-                                            <h4>Green Planet by</h4>
-                                        </a>
-                                        <a href="#">
-                                            <h5><img src="{% static 'img/forum/r-topic-user.png' %}" alt=""> Morris Ruiz</h5>
-                                        </a>
-                                        <p>1 week, 2 days ago</p>
-                                    </div>
-                                </div>
-                            </li>
-                        </ul>
-                    </aside>
-                </div>
-            </div>
-            <div class="col-xl-7 col-lg-8">
+            <div class="col-xl-1 d-none d-xl-block">
+           </div>
+            <div class="col-xl-10 col-lg-8">
                 <div class="forum_topic_list_inner">
                     <div class="topics-filter d-xl-none">
                         <ul class="nav">
@@ -156,41 +52,20 @@
                                     <div class="dropdown right_dir">
                                         <button class="btn dropdown-toggle" type="button" data-toggle="dropdown"
                                             aria-haspopup="true" aria-expanded="false">
-                                            Label <i class="arrow_carrot-down"></i>
-                                        </button>
-                                        <div class="dropdown-menu">
-                                            <h3 class="title">Filter by label</h3>
-                                            <form action="#" class="cate-search-form">
-                                                <input type="text" placeholder="Search Users">
-                                            </form>
-                                            <div class="all_users scroll">
-                                                <a class="dropdown-item" href="#"><span class="color red"></span>bugs</a>
-                                                <a class="dropdown-item" href="#"><span class="color blue"></span>request/feature</a>
-                                                <a class="dropdown-item" href="#"><span class="color dark_blue"></span> Developer Edition</a>
-                                            </div>
-                                        </div>
-                                    </div>
-                                </li>
-                                <li>
-                                    <div class="dropdown right_dir">
-                                        <button class="btn dropdown-toggle" type="button" data-toggle="dropdown"
-                                            aria-haspopup="true" aria-expanded="false">
                                             Sort <i class="arrow_carrot-down"></i>
                                         </button>
                                         <div class="dropdown-menu">
-                                            <h3 class="title">Filter by author</h3>
+                                            <h3 class="title">작성자명으로 검색</h3>
                                             <form action="#" class="cate-search-form">
-                                                <input type="text" placeholder="Search users">
+                                                <input type="text" placeholder="작성자명을 입력하세요">
                                             </form>
                                             <div class="all_users short-by scroll">
                                                 <a class="dropdown-item active-short" href="#">
-                                                    <ion-icon name="checkmark-outline"></ion-icon> Newest
+                                                    <ion-icon name="checkmark-outline"></ion-icon> 최신순
                                                 </a>
-                                                <a class="dropdown-item" href="#"> Oldest </a>
-                                                <a class="dropdown-item" href="#"> Most commented </a>
-                                                <a class="dropdown-item" href="#"> Least commented </a>
-                                                <a class="dropdown-item" href="#"> Recently updated </a>
-                                                <a class="dropdown-item" href="#"> Recently updated </a>
+                                                <a class="dropdown-item" href="#"> 추천순 </a>
+                                                <a class="dropdown-item" href="#"> 댓글순 </a>
+                                                <a class="dropdown-item" href="#"> 조회순 </a>
                                             </div>
                                         </div>
                                     </div>
@@ -204,17 +79,17 @@
                                 <li>
                                     <div class="media">
                                         <div class="d-flex">
-                                            <img class="rounded-circle" src="{{ comment.picture }}"
-                                                 alt="{% static 'img/forum/f-user-2.png' %}" style="width: 45px;">
+                                            <a href="/profile/{{ comment.username }}"><img class="rounded-circle" src="{{ comment.picture }}"
+                                                 alt="{% static 'img/forum/f-user-2.png' %}" style="width: 45px;"></a>
                                         </div>
                                         <div class="media-body">
                                             <div class="t_title">
                                                 <a href="/forum/{{ comment.comment_id }}">
-                                                    <h4>{{ comment.content  | truncatechars:35 }}</h4>
+                                                    <h4>{{ comment.content  | truncatechars:60 }}</h4>
                                                 </a>
                                             </div>
-                                            <a href="/page/{{ comment.page_id }}"><h6 style="margin-right: 0px;">{{ comment.page_title | truncatechars:20 }} |</h6></a>
-                                            <a href="#"><h6 style="margin-right: 0px;">{{ comment.username }} | </h6></a>
+                                            <a href="/page/{{ comment.page_id }}"><h6 style="margin-right: 0px;">{{ comment.page_title | truncatechars:40 }} |</h6></a>
+                                            <a href="/profile/{{ comment.username }}"><h6 style="margin-right: 0px;">{{ comment.username }} | </h6></a>
                                             {% if comment.created_string == False %}
                                             <h6>{{ comment.reg_dt | date:'Y.m.d' }}</h6>
                                             {% else %}
@@ -269,60 +144,7 @@
                     </div>
                 </div>
             </div>
-            <div class="col-xl-3 col-lg-4">
-                <div class="right_side_forum">
-                    <aside class="r_widget question_list_wd">
-                        <div class="r_heading d-flex justify-content-between">
-                            <h3>Top</h3>
-                            <ul class="nav nav-tabs" id="myTab" role="tablist">
-                                <li class="nav-item" role="presentation">
-                                    <a class="nav-link active" id="home-tab" data-toggle="tab" href="#home"
-                                       role="tab" aria-controls="home" aria-selected="true">7 days</a>
-                                </li>
-                                <li class="nav-item" role="presentation">
-                                    <a class="nav-link" id="profile-tab" data-toggle="tab" href="#profile"
-                                       role="tab" aria-controls="profile" aria-selected="false">30 days</a>
-                                </li>
-                            </ul>
-                        </div>
-                        <div class="tab-content" id="myTabContent">
-                            <div class="tab-pane fade show active" id="home" role="tabpanel"
-                                 aria-labelledby="home-tab">
-                                <ul class="navbar-nav">
-                                    <li><a href="#"><span>01</span>Example of NearBy Place Search - SITE KIT</a>
-                                    </li>
-                                    <li><a href="#"><span>02</span>Example of Direction Steps - MAP KIT</a></li>
-                                    <li><a href="#"><span>03</span>Introduction to AppGallery Connect Crash
-                                        Service</a>
-                                    </li>
-                                    <li><a href="#"><span>04</span>Bank Card Recognition and Payment Screen - ML
-                                        KIT</a>
-                                    </li>
-                                    <li><a href="#"><span>05</span>Example of Direction Steps - MAP KIT</a></li>
-                                    <li><a href="#"><span>06</span>Example of NearBy Place Search - SITE KIT</a>
-                                    </li>
-                                </ul>
-                            </div>
-                            <div class="tab-pane fade" id="profile" role="tabpanel"
-                                 aria-labelledby="profile-tab">
-                                <ul class="navbar-nav">
-                                    <li><a href="#"><span>01</span>Example of NearBy Place Search - SITE KIT</a>
-                                    </li>
-                                    <li><a href="#"><span>02</span>Example of Direction Steps - MAP KIT</a></li>
-                                    <li><a href="#"><span>03</span>Introduction to AppGallery Connect Crash
-                                        Service</a>
-                                    </li>
-                                    <li><a href="#"><span>04</span>Bank Card Recognition and Payment Screen - ML
-                                        KIT</a>
-                                    </li>
-                                    <li><a href="#"><span>05</span>Example of Direction Steps - MAP KIT</a></li>
-                                    <li><a href="#"><span>06</span>Example of NearBy Place Search - SITE KIT</a>
-                                    </li>
-                                </ul>
-                            </div>
-                        </div>
-                    </aside>
-                </div>
+            <div class="col-xl-1 col-lg-4">
             </div>
         </div>
     </div>

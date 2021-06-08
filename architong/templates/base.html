@@ -56,56 +56,24 @@
                 <ul class="navbar-nav menu ml-auto">
                     <li class="nav-item dropdown submenu">
                         <a href="#" class="nav-link dropdown-toggle" style="font-weight: 700; font-family:'Roboto', sans-serif;">CODES</a>
-                        <i class="arrow_carrot-down_alt2 mobile_dropdown_icon" aria-hidden="false"
-                           data-toggle="dropdown"></i>
-                        <ul class="dropdown-menu">
-                            <li class="nav-item"><a href="#" class="nav-link">Creative Helpdesk</a></li>
-                            <li class="nav-item"><a href="#" class="nav-link">Multi Helpdesk</a></li>
-                            <li class="nav-item"><a href="#" class="nav-link">Classic Helpdesk</a></li>
-                        </ul>
                     </li>
                     <li class="nav-item dropdown submenu">
                         <a class="nav-link dropdown-toggle" href="#" role="button" data-toggle="dropdown"
                            style="font-weight: 700; font-family:'Roboto', sans-serif;" aria-haspopup="true" aria-expanded="false">
                             DOCS
                         </a>
-                        <i class="arrow_carrot-down_alt2 mobile_dropdown_icon" aria-hidden="false"
-                           data-toggle="dropdown"></i>
-                        <ul class="dropdown-menu">
-                            <li class="nav-item"><a href="#" class="nav-link">Onepage Doc</a></li>
-                            <li class="nav-item"><a href="#" class="nav-link">Contact</a></li>
-                            <li class="nav-item"><a href="#" class="nav-link">Forum</a></li>
-                            <li class="nav-item"><a href="#" class="nav-link">Typography</a></li>
-                            <li class="nav-item"><a href="#" class="nav-link">404 Error</a></li>
-                        </ul>
                     </li>
                     <li class="nav-item dropdown submenu">
                         <a class="nav-link dropdown-toggle" href="/forum/" role="button" data-toggle="dropdown"
                            style="font-weight: 700; font-family:'Roboto', sans-serif;" aria-haspopup="true" aria-expanded="false">
                             FORUM
                         </a>
-                        <i class="arrow_carrot-down_alt2 mobile_dropdown_icon" aria-hidden="false"
-                           data-toggle="dropdown"></i>
-                        <ul class="dropdown-menu">
-                            <li class="nav-item"><a href="#" class="nav-link">Forums Root</a></li>
-                            <li class="nav-item active"><a href="#" class="nav-link">Forum Topics</a></li>
-                            <li class="nav-item"><a href="#" class="nav-link">Topic Details</a></li>
-                            <li class="nav-item"><a href="#" class="nav-link">User Profile</a></li>
-                        </ul>
                     </li>
                     <li class="nav-item dropdown submenu">
                         <a class="nav-link dropdown-toggle" href="#" role="button" data-toggle="dropdown"
                            style="font-weight: 700; font-family:'Roboto', sans-serif;" aria-haspopup="true" aria-expanded="false">
                             CALCULATOR
                         </a>
-                        <i class="arrow_carrot-down_alt2 mobile_dropdown_icon" aria-hidden="false"
-                           data-toggle="dropdown"></i>
-                        <ul class="dropdown-menu">
-                            <li class="nav-item"><a href="#" class="nav-link">Forums Root</a></li>
-                            <li class="nav-item active"><a href="#" class="nav-link">Forum Topics</a></li>
-                            <li class="nav-item"><a href="#" class="nav-link">Topic Details</a></li>
-                            <li class="nav-item"><a href="#" class="nav-link">User Profile</a></li>
-                        </ul>
                     </li>
                 </ul>
                 <div class="right-nav">
@@ -125,7 +93,7 @@
                                 <li class="nav-item"><a href="/bookmark/" class="nav-link"><i class="icon_ribbon_alt"></i>&nbsp;북마크</a></li>
                                 <li class="nav-item"><a href="#" class="nav-link"><i class="icon_comment_alt"></i>&nbsp;최근 댓글</a></li>
                                 <li class="nav-item"><a href="#" class="nav-link"><i class="icon_pencil-edit"></i>&nbsp;저서</a></li>
-                                <li class="nav-item"><a href="/profile/" class="nav-link"><i class="icon_cog"></i>&nbsp;프로필</a></li>
+                                <li class="nav-item"><a href="/profile/{{ request.user }}" class="nav-link"><i class="icon_cog"></i>&nbsp;프로필</a></li>
                             </ul>
                         </li>
                         <li class="nav-item dropdown submenu">

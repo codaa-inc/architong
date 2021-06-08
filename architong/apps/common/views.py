@@ -3,6 +3,7 @@ import json
 
 from django.shortcuts import render
 from django.conf import settings
+from django.contrib.auth import get_user_model
 from xml.etree import ElementTree
 from django.views import View
 from django.core.paginator import Paginator
@@ -12,9 +13,9 @@ from django.contrib.auth.decorators import login_required
 from django.http import JsonResponse
 from django.db.models import Q
 
+from apps.common.models import SocialaccountSocialaccount as Socialaccount
 from apps.book.models import Books, Bookmark, Pages
-from apps.forum.models import Comments
-from .models import UserInfo
+from apps.forum.models import Comments, UserLikeComment
 
 
 # 메인 페이지 조회 / 문서 검색 function
@@ -81,14 +82,21 @@ def delete_bookmark(request, page_id):
 
 
 # 유저 프로필 페이지 function
-@login_required(login_url="/account/google/login")
-def profile(request):
+def profile(request, username):
     if request.method == 'GET':
-        username = request.user
-        act_point = UserInfo.objects.get(username=username).act_point
-        status = Q(status="C") | Q(status="U")
-        comment_count = Comments.objects.filter(Q(username=username) & status).count()
-        context = {"act_point": str(act_point), "comment_count": str(comment_count)}
+        # 사용자정보, 활동점수, 댓글수, 작성한 댓글의 좋아요 합계
+        user_info = get_user_model().objects.get(username=username)
+        user_info.picture = json.loads(Socialaccount.objects.get(user_id=user_info.id).extra_data)['picture']
+        act_point = get_user_model().objects.get(username=username).act_point
+        comments = Comments.objects.filter(Q(username=username) & (Q(status="C") | Q(status="U")))
+        like_count = 0
+        for comment in comments:
+            like_count += comment.like_users.all().count()
+
+        context = {"user_info": user_info,
+                   "act_point": str(act_point),
+                   "comment_count": str(comments.count()),
+                   "like_count": str(like_count)}
         return render(request, "profile.html", context)
 
 

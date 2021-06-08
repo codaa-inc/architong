@@ -2,21 +2,20 @@ import json
 import datetime
 from typing import List
 
+from django.contrib.auth import get_user_model
 from django.contrib.auth.decorators import login_required
+from django.core import serializers
+from django.core.serializers.json import DjangoJSONEncoder
+from django.core.paginator import Paginator
+from django.db.models import Q, Subquery
 from django.shortcuts import render, get_object_or_404
 from django.http import HttpResponse
 from django.http import JsonResponse
 from django.views import View
-from django.core import serializers
-from django.core.serializers.json import DjangoJSONEncoder
-from django.db.models import Q
-from django.db.models import Subquery
-from django.core.paginator import Paginator
 
-from .models import Comments
+from apps.forum.models import Comments, UserLikeComment
 from apps.book.models import Books, Pages, Bookmark
 from apps.common.models import SocialaccountSocialaccount as Socialaccount
-from apps.common.models import UserInfo
 
 
 # 댓글 조회 / 등록 / 삭제 class
@@ -25,6 +24,8 @@ class CommentView(View):
     def get(self, request, id):
         comments = []
         username = request.user
+
+        # 부모,자식 댓글 QuerySet
         q = Q(page_id=id) & ~Q(status="D")
         if username is not None:
             q.add(Q(rls_yn="Y") | Q(rls_yn="N", username=username), q.AND)
@@ -32,15 +33,24 @@ class CommentView(View):
             q.add(Q(rls_yn="Y"), q.AND)
         parent_node = Comments.objects.filter(Q(depth=0) & q).values()
         child_node = Comments.objects.filter(Q(depth=1) & q).values()
-        # 부모 댓글 >> 자식 댓글 : 계층형 데이터 정렬
+
+        # 부모 댓글 > 자식 댓글 : 계층형 데이터 정렬
         for parent in parent_node:
             if parent['status'] == "TD":
-                parent['content'] = "이 댓글은 삭제되었습니다."
-                # TODO: 법규 내 댓글창 좋아요 구현
+                parent.content = "이 댓글은 삭제되었습니다."
             comments.append(parent)
-            childs = child_node.filter(parent_id=parent['comment_id'])
-            for child in childs:
-                comments.append(child)
+            for child in child_node:
+                if child['parent_id'] == parent['comment_id']:
+                    comments.append(child)
+
+        # 좋아요 관련 정보 추가 : is_liked, like_user_count
+        for comment in comments:
+            like_comment = Comments.objects.get(comment_id=comment['comment_id']).like_users.all()
+            if request.user in like_comment:
+                comment['is_liked'] = "true"
+            else:
+                comment['is_liked'] = "false"
+            comment['like_user_count'] = len(like_comment)
 
         context = json.dumps(comments, cls=DjangoJSONEncoder)
         return HttpResponse(context, content_type="text/json")
@@ -89,17 +99,27 @@ class CommentView(View):
 
             # 공개 댓글 등록시 작성자의 활동점수를 +2 증감시킨다.
             else:
-                user_info = UserInfo.objects.get(username=username)
+                user_info = get_user_model().objects.get(username=username)
                 user_info.act_point = user_info.act_point + 2
                 user_info.save()
             comment.save()
 
             # 저장한 comment 객체를 return
             comment_id = Comments.objects.order_by('-pk')[0].comment_id
-            new_comment = Comments.objects.filter(comment_id=comment_id).values()
+            new_comment_obj = Comments.objects.filter(comment_id=comment_id).values()
 
-            context = json.dumps(list(new_comment), cls=DjangoJSONEncoder)
+            # 좋아요 관련 정보 추가 : is_liked, like_user_count
+            for new_comment in new_comment_obj:
+                like_comment = Comments.objects.get(comment_id=comment_id).like_users.all()
+                if request.user in like_comment:
+                    new_comment['is_liked'] = "true"
+                else:
+                    new_comment['is_liked'] = "false"
+                new_comment['like_user_count'] = len(like_comment)
+
+            context = json.dumps(list(new_comment_obj), cls=DjangoJSONEncoder)
             return HttpResponse(context, content_type="text/json")
+
         else:
             # 비인가 접근은 로그인 페이지로 redirect
             message = "로그인이 필요한 서비스입니다.\n로그인하시겠습니까?"
@@ -157,8 +177,18 @@ def comment_update(request, id):
         comment.save()
 
         # 저장한 comment 객체를 return 한다.
-        update_comment = Comments.objects.filter(comment_id=comment_id).values()
-        update_comment = json.dumps(list(update_comment), cls=DjangoJSONEncoder)
+        update_comment_obj = Comments.objects.filter(comment_id=comment_id).values()
+
+        # 좋아요 관련 정보 추가 : is_liked, like_user_count
+        for update_comment in update_comment_obj:
+            like_comment = Comments.objects.get(comment_id=comment_id).like_users.all()
+            if request.user in like_comment:
+                update_comment['is_liked'] = "true"
+            else:
+                update_comment['is_liked'] = "false"
+            update_comment['like_user_count'] = len(like_comment)
+
+        update_comment = json.dumps(update_comment, cls=DjangoJSONEncoder)
         return HttpResponse(update_comment, content_type="text/json")
 
 
@@ -176,7 +206,7 @@ def forum(request):
         page = [page for page in pages if page.page_id == comment.page_id]
 
         # 댓글 객체 작성자 프로필 사진 정보 추가 : picture
-        user_id = UserInfo.objects.get(username=comment.username).id
+        user_id = get_user_model().objects.get(username=comment.username).id
         extra_data = [account.extra_data for account in socialaccount if account.user_id == user_id][0]
         comment.picture = json.loads(extra_data)['picture']
 
@@ -213,7 +243,7 @@ def forum(request):
 def forum_detail(request, comment_id):
     # 부모,자식 공통 QuerySet 호출
     socialaccounts: List[Socialaccount] = list(Socialaccount.objects.all().only('user_id', 'extra_data'))
-    users: List[UserInfo] = list(UserInfo.objects.all().only('id', 'username'))
+    users = list(get_user_model().objects.all().only('id', 'username'))
 
     # 부모댓글 QuerySet
     parent_comment = Comments.objects.get(comment_id=comment_id)
@@ -271,16 +301,21 @@ def forum_detail(request, comment_id):
 # 댓글 좋아요 토글 function
 @login_required
 def like_comment(request, comment_id):
-    # 댓글 QuerySet 선언
+    # 댓글, 작성자 QuerySet 선언
     comment = Comments.objects.get(comment_id=comment_id)
+    author = get_user_model().objects.get(username=comment.username)
 
-    # 좋아요 등록
+    # 좋아요 삭제, 댓글 작성자 활동점수 -1
     if request.user in comment.like_users.all():
         comment.like_users.remove(request.user)
+        author.act_point = int(author.act_point) - 1
+        author.save()
         result = "remove"
 
-    # 좋아요 삭제
+    # 좋아요 등록, 댓글 작성자 활동점수 +1
     else:
         comment.like_users.add(request.user)
+        author.act_point = int(author.act_point) + 1
+        author.save()
         result = "add"
     return JsonResponse({"result": result})

@@ -13,7 +13,7 @@ urlpatterns = [
     path('admin/', admin.site.urls),
     path('', index),
     path('accounts/', include('allauth.urls')),
-    path('profile/', profile),
+    path('profile/<str:username>', profile),
     path('logout/', auth_views.LogoutView.as_view(), name="logout"),
     path('get_law/', LawView.as_view()),
 
