@@ -4,11 +4,11 @@ from typing import List
 
 from django.contrib.auth import get_user_model
 from django.contrib.auth.decorators import login_required
-from django.core import serializers
 from django.core.serializers.json import DjangoJSONEncoder
 from django.core.paginator import Paginator
-from django.db.models import Q, Subquery
-from django.shortcuts import render, get_object_or_404
+from django.db.models import Q, Subquery, OuterRef, Count
+from django.db.models.functions import Coalesce
+from django.shortcuts import render
 from django.http import HttpResponse
 from django.http import JsonResponse
 from django.views import View
@@ -195,12 +195,31 @@ def comment_update(request, id):
 # 포럼 리스트 조회 function
 def forum(request):
     # 쿼리셋 호출
+    keyword = request.GET.get('keyword', '')        # 검색어 쿼리스트링을 가져온다, 없는 경우 공백
+    sort = request.GET.get('sort', 'recent')        # 정렬기준 쿼리스트링을 가져온다, 없는 경우 default 최신순
+    q = Q(depth=0) & Q(rls_yn='Y') & (Q(status="C") | Q(status="U")) & Q(content__icontains=keyword)
+    q_child = Q(depth=1) & Q(rls_yn='Y') & (Q(status="C") | Q(status="U"))
+
+    if sort == 'popular':       # 인기순
+        comments = Comments.objects.annotate(like_user_count=Coalesce(Subquery(
+            UserLikeComment.objects.filter(comment_id=OuterRef('pk')).values('comment_id').annotate(
+                count=Count('pk')).values('count')
+        ), 0)).filter(q).order_by('-like_user_count', '-reg_dt')
+    elif sort == 'comments':     # 댓글순
+        comments = Comments.objects.annotate(comments=Coalesce(Subquery(
+            Comments.objects.filter(parent_id=OuterRef('pk')).values('parent_id').annotate(
+                count=Count('pk')).values('count')
+        ), 0)).filter(q).order_by('-comments', '-reg_dt')
+    elif sort == 'views':       # 조회순
+        comments = Comments.objects.filter(q).order_by('-reg_dt')
+    else:
+        comments = Comments.objects.filter(q).order_by('-reg_dt')
+
+    comments: List[Comments] = list(comments)
+    child_comments: List[Comments] = list(Comments.objects.filter(q_child).only('parent_id'))
+    socialaccount: List[Socialaccount] = list(Socialaccount.objects.all().only('user_id', 'extra_data'))
     books: List[Books] = list(Books.objects.all().only('book_id', 'book_title'))
     pages: List[Pages] = list(Pages.objects.all())
-    q = Q(depth=0) & Q(rls_yn='Y') & (Q(status="C") | Q(status="U"))
-    comments: List[Comments] = list(Comments.objects.filter(q).order_by('-reg_dt'))
-    child_comments: List[Comments] = list(Comments.objects.filter(depth=1, rls_yn='Y'))
-    socialaccount: List[Socialaccount] = list(Socialaccount.objects.all().only('user_id', 'extra_data'))
 
     for comment in comments:
         page = [page for page in pages if page.page_id == comment.page_id]
@@ -221,11 +240,25 @@ def forum(request):
             comment.is_liked = "true"
         else:
             comment.is_liked = "false"
-        comment.like_user_count = len(like_comment)
+        if sort != "popular":
+            comment.like_user_count = len(like_comment)
 
         # 자식댓글 갯수 추가
-        child_count = [child for child in child_comments if child.parent_id == comment.comment_id]
-        comment.child_count = len(child_count)
+        if sort != "comments":
+            child_count = [child for child in child_comments if child.parent_id == comment.comment_id]
+            comment.child_count = len(child_count)
+
+    # 정렬기준 (템플릿에서 정렬기준을 selectbox 대신 div > a로 표현하기 위함)
+    sort_list = [{'value': 'recent', 'label': '최신순'},
+                 {'value': 'popular', 'label': '인기순'},
+                 {'value': 'comments', 'label': '댓글순'},
+                 {'value': 'views', 'label': '조회순'}]
+    if sort != 'recent':
+        for idx, item in enumerate(sort_list):
+            if item.get('value') == sort:
+                sel_item = sort_list[idx]
+                sort_list.remove(sel_item)
+                sort_list.insert(0, sel_item)
 
     # 페이징 처리
     if request.GET.get('page') is None:
@@ -235,15 +268,17 @@ def forum(request):
     paginator = Paginator(comments, 10).get_page(page)
 
     context = {"comments": paginator,
-               "comments_count": str(len(comments))}
+               "comments_count": str(len(comments)),
+               "keyword": keyword,
+               "sort_list": sort_list}
     return render(request, 'forum.html', context)
 
 
 # 포럼 상세 조회 function
 def forum_detail(request, comment_id):
     # 부모,자식 공통 QuerySet 호출
-    socialaccounts: List[Socialaccount] = list(Socialaccount.objects.all().only('user_id', 'extra_data'))
     users = list(get_user_model().objects.all().only('id', 'username'))
+    socialaccounts: List[Socialaccount] = list(Socialaccount.objects.all().only('user_id', 'extra_data'))
 
     # 부모댓글 QuerySet
     parent_comment = Comments.objects.get(comment_id=comment_id)
@@ -268,8 +303,18 @@ def forum_detail(request, comment_id):
     parent_comment.like_user_count = len(like_parent_comment)
 
     # 자식댓글 QuerySet
+    sort = request.GET.get('sort', 'registered')  # 정렬기준 쿼리스트링을 가져온다, 없는 경우 default 최신순
     q = Q(parent_id=comment_id) & Q(rls_yn='Y') & (Q(status="C") | Q(status="U"))
-    child_comments: List[Comments] = list(Comments.objects.filter(q))
+    if sort == "popular":       # 인기순
+        child_comments = Comments.objects.annotate(like_user_count=Coalesce(Subquery(
+            UserLikeComment.objects.filter(comment_id=OuterRef('pk')).values('comment_id').annotate(
+                count=Count('pk')).values('count')
+        ), 0)).filter(q).order_by('-like_user_count', 'reg_dt')
+    elif sort == "recent":      # 최신순
+        child_comments = Comments.objects.filter(q).order_by('-reg_dt')
+    else:                       # 등록순
+        child_comments = Comments.objects.filter(q).order_by('reg_dt')
+    child_comments: List[Comments] = list(child_comments)
 
     for child_comment in child_comments:
         # 자식댓글 작성자 프로필 사진 정보 추가 : picture
@@ -283,7 +328,8 @@ def forum_detail(request, comment_id):
             child_comment.is_liked = "true"
         else:
             child_comment.is_liked = "false"
-        child_comment.like_user_count = len(like_child_comment)
+        if sort != "popular":
+            child_comment.like_user_count = len(like_child_comment)
 
     # 페이징 처리
     if request.GET.get('page') is None:
@@ -292,9 +338,21 @@ def forum_detail(request, comment_id):
         page = request.GET.get('page')
     paginator = Paginator(child_comments, 10).get_page(page)
 
+    # 정렬기준 (템플릿에서 정렬기준을 selectbox 대신 div > a로 표현하기 위함)
+    sort_list = [{'value': 'registered', 'label': '등록순'},
+                 {'value': 'popular', 'label': '인기순'},
+                 {'value': 'recent', 'label': '최신순'}]
+    if sort != 'registered':
+        for idx, item in enumerate(sort_list):
+            if item.get('value') == sort:
+                sel_item = sort_list[idx]
+                sort_list.remove(sel_item)
+                sort_list.insert(0, sel_item)
+
     context = {"parent_comment": parent_comment,
                "child_comments": paginator,
-               "comments_count": str(len(child_comments))}
+               "comments_count": str(len(child_comments)),
+               "sort_list": sort_list}
     return render(request, "forum_detail.html", context)
 
 
@@ -304,6 +362,8 @@ def like_comment(request, comment_id):
     # 댓글, 작성자 QuerySet 선언
     comment = Comments.objects.get(comment_id=comment_id)
     author = get_user_model().objects.get(username=comment.username)
+
+    #TODO: 등록 및 삭제 로직 확인하기, 2개씩 늘어나는 케이스 존재, 화면쪽도 확인
 
     # 좋아요 삭제, 댓글 작성자 활동점수 -1
     if request.user in comment.like_users.all():

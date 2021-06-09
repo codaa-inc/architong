@@ -101,3 +101,20 @@ function onclickLikeComment(commend_id) {
         },
     });
 };
+
+/**
+ * 현재 페이지의 URL 파라미터를 추출하는 함수
+ * Param : 값을 추출하려고 하는 파라미터명
+ * Return : 대상 파라미터의 값
+ * */
+function getUrlParam(sname) {
+    let sval = "";
+    const params = location.search.substr(location.search.indexOf("?") + 1).split("&");
+    for (let i = 0; i < params.length; i++) {
+        let temp = params[i].split("=");
+        if ([temp[0]] == sname) {
+            sval = temp[1];
+        }
+    }
+    return sval;
+};

@@ -55,24 +55,24 @@
             <div class="collapse navbar-collapse" id="navbarSupportedContent">
                 <ul class="navbar-nav menu ml-auto">
                     <li class="nav-item dropdown submenu">
-                        <a href="#" class="nav-link dropdown-toggle" style="font-weight: 700; font-family:'Roboto', sans-serif;">CODES</a>
+                        <a href="#" class="nav-link dropdown-toggle" style="font-weight: 700; font-family:'Roboto', sans-serif;">건축법규</a>
                     </li>
                     <li class="nav-item dropdown submenu">
                         <a class="nav-link dropdown-toggle" href="#" role="button" data-toggle="dropdown"
                            style="font-weight: 700; font-family:'Roboto', sans-serif;" aria-haspopup="true" aria-expanded="false">
-                            DOCS
+                            건축위키
                         </a>
                     </li>
                     <li class="nav-item dropdown submenu">
                         <a class="nav-link dropdown-toggle" href="/forum/" role="button" data-toggle="dropdown"
                            style="font-weight: 700; font-family:'Roboto', sans-serif;" aria-haspopup="true" aria-expanded="false">
-                            FORUM
+                            포럼
                         </a>
                     </li>
                     <li class="nav-item dropdown submenu">
                         <a class="nav-link dropdown-toggle" href="#" role="button" data-toggle="dropdown"
                            style="font-weight: 700; font-family:'Roboto', sans-serif;" aria-haspopup="true" aria-expanded="false">
-                            CALCULATOR
+                            계산기
                         </a>
                     </li>
                 </ul>
@@ -80,14 +80,14 @@
                     <ul class="navbar-nav menu ml-auto">
                     {% if user.is_anonymous %}
                         <li class="nav-item dropdown submenu">
-                            <a href="{% provider_login_url 'google' %}?next={{request.path}}" style="width: 120px;"><i class="icon_lock-open" style="margin-right: 5px;"></i>로그인</a>
+                            <a href="{% provider_login_url 'google' %}?next={{ request.path }}" style="width: 120px;"><i class="icon_lock-open" style="margin-right: 5px;"></i>로그인</a>
                         </li>
                     {% else %}
                         <li class="nav-item dropdown submenu">
                             <a href="/edit/" style="width: 100px"><i class="icon_documents_alt" style="margin-right: 5px;"></i>책만들기</a>
                         </li>
                         <li class="nav-item dropdown submenu active">
-                            <a class="nav-link dropdown-toggle" href="#"><i class="icon_profile"></i>{{ user.username }}</a>
+                            <a class="nav-link dropdown-toggle" href="#"><i class="icon_profile"></i>&nbsp;{{ user.username }}</a>
                             <i class="arrow_carrot-down_alt2 mobile_dropdown_icon" aria-hidden="false" data-toggle="dropdown"></i>
                             <ul class="dropdown-menu">
                                 <li class="nav-item"><a href="/bookmark/" class="nav-link"><i class="icon_ribbon_alt"></i>&nbsp;북마크</a></li>

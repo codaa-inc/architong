@@ -24,12 +24,13 @@ urlpatterns = [
     path('page/<int:page_id>', view_page),
     path('bookmark/', view_bookmark),
     path('bookmark/<int:page_id>', delete_bookmark),
-    path('comment/count/', comment_count),
+
 
     # Forum
     path('comment/<str:id>', CommentView.as_view()),
     path('comment/update/<str:id>', comment_update),
+    path('comment/count/', comment_count),
     path('comment/like/<str:comment_id>', like_comment),
     path('forum/', forum),
-    path('forum/<int:comment_id>', forum_detail),
+    path('forum/<str:comment_id>', forum_detail),
 ]
