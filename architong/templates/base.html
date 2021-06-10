@@ -83,17 +83,13 @@
                             <a href="{% provider_login_url 'google' %}?next={{ request.path }}" style="width: 120px;"><i class="icon_lock-open" style="margin-right: 5px;"></i>로그인</a>
                         </li>
                     {% else %}
-                        <li class="nav-item dropdown submenu">
-                            <a href="/edit/" style="width: 100px"><i class="icon_documents_alt" style="margin-right: 5px;"></i>책만들기</a>
-                        </li>
                         <li class="nav-item dropdown submenu active">
-                            <a class="nav-link dropdown-toggle" href="#"><i class="icon_profile"></i>&nbsp;{{ user.username }}</a>
+                            <a class="nav-link dropdown-toggle" href="/profile/{{ request.user }}"><i class="icon_profile"></i>&nbsp;{{ user.username }}</a>
                             <i class="arrow_carrot-down_alt2 mobile_dropdown_icon" aria-hidden="false" data-toggle="dropdown"></i>
                             <ul class="dropdown-menu">
                                 <li class="nav-item"><a href="/bookmark/" class="nav-link"><i class="icon_ribbon_alt"></i>&nbsp;북마크</a></li>
-                                <li class="nav-item"><a href="#" class="nav-link"><i class="icon_comment_alt"></i>&nbsp;최근 댓글</a></li>
-                                <li class="nav-item"><a href="#" class="nav-link"><i class="icon_pencil-edit"></i>&nbsp;저서</a></li>
-                                <li class="nav-item"><a href="/profile/{{ request.user }}" class="nav-link"><i class="icon_cog"></i>&nbsp;프로필</a></li>
+                                <li class="nav-item"><a href="/edit/" class="nav-link"><i class="icon_pencil-edit"></i> 책 만들기</a></li>
+                                <li class="nav-item"><a href="#" class="nav-link"><i class="icon_documents_alt"></i>&nbsp;나의 책 관리</a></li>
                             </ul>
                         </li>
                         <li class="nav-item dropdown submenu">
@@ -113,7 +109,7 @@
         <div class="container">
             <div class="forum_footer_inner">
                 <div class="row">
-                    <div class="col-lg-8 col-sm-6">
+                    <div class="col-lg-9 col-sm-6">
                         <div class="f_widget doc_about_widget wow fadeInUp" data-wow-delay="0.2s">
                             <a href="#">
                                 <img src="{% static 'img/f_logo.png' %}" srcset="{% static 'img/f_logo.png' %}" alt="" >

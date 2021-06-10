@@ -195,23 +195,24 @@ def comment_update(request, id):
 # 포럼 리스트 조회 function
 def forum(request):
     # 쿼리셋 호출
-    keyword = request.GET.get('keyword', '')        # 검색어 쿼리스트링을 가져온다, 없는 경우 공백
-    sort = request.GET.get('sort', 'recent')        # 정렬기준 쿼리스트링을 가져온다, 없는 경우 default 최신순
+    keyword = request.GET.get('keyword', '')  # 검색어 쿼리스트링을 가져온다, 없는 경우 공백
+    sort = request.GET.get('sort', 'recent')  # 정렬기준 쿼리스트링을 가져온다, 없는 경우 default 최신순
     q = Q(depth=0) & Q(rls_yn='Y') & (Q(status="C") | Q(status="U")) & Q(content__icontains=keyword)
     q_child = Q(depth=1) & Q(rls_yn='Y') & (Q(status="C") | Q(status="U"))
 
-    if sort == 'popular':       # 인기순
-        comments = Comments.objects.annotate(like_user_count=Coalesce(Subquery(
-            UserLikeComment.objects.filter(comment_id=OuterRef('pk')).values('comment_id').annotate(
-                count=Count('pk')).values('count')
-        ), 0)).filter(q).order_by('-like_user_count', '-reg_dt')
-    elif sort == 'comments':     # 댓글순
+    if sort == 'popular':  # 인기순
+        comments = Comments.objects.annotate(
+            like_user_count=Coalesce(Subquery(
+                UserLikeComment.objects.filter(comment_id=OuterRef('pk')).values('comment_id').annotate(
+                    count=Count('pk')).values('count')
+            ), 0)).filter(q).order_by('-like_user_count', '-reg_dt')
+    elif sort == 'comments':  # 댓글순
         comments = Comments.objects.annotate(comments=Coalesce(Subquery(
             Comments.objects.filter(parent_id=OuterRef('pk')).values('parent_id').annotate(
                 count=Count('pk')).values('count')
         ), 0)).filter(q).order_by('-comments', '-reg_dt')
-    elif sort == 'views':       # 조회순
-        comments = Comments.objects.filter(q).order_by('-reg_dt')
+    elif sort == 'views':  # 조회순
+        comments = Comments.objects.filter(q).order_by('-hit_count', '-reg_dt')
     else:
         comments = Comments.objects.filter(q).order_by('-reg_dt')
 
@@ -244,9 +245,8 @@ def forum(request):
             comment.like_user_count = len(like_comment)
 
         # 자식댓글 갯수 추가
-        if sort != "comments":
-            child_count = [child for child in child_comments if child.parent_id == comment.comment_id]
-            comment.child_count = len(child_count)
+        child_count = [child for child in child_comments if child.parent_id == comment.comment_id]
+        comment.child_count = len(child_count)
 
     # 정렬기준 (템플릿에서 정렬기준을 selectbox 대신 div > a로 표현하기 위함)
     sort_list = [{'value': 'recent', 'label': '최신순'},
@@ -305,14 +305,14 @@ def forum_detail(request, comment_id):
     # 자식댓글 QuerySet
     sort = request.GET.get('sort', 'registered')  # 정렬기준 쿼리스트링을 가져온다, 없는 경우 default 최신순
     q = Q(parent_id=comment_id) & Q(rls_yn='Y') & (Q(status="C") | Q(status="U"))
-    if sort == "popular":       # 인기순
+    if sort == "popular":  # 인기순
         child_comments = Comments.objects.annotate(like_user_count=Coalesce(Subquery(
             UserLikeComment.objects.filter(comment_id=OuterRef('pk')).values('comment_id').annotate(
                 count=Count('pk')).values('count')
         ), 0)).filter(q).order_by('-like_user_count', 'reg_dt')
-    elif sort == "recent":      # 최신순
+    elif sort == "recent":  # 최신순
         child_comments = Comments.objects.filter(q).order_by('-reg_dt')
-    else:                       # 등록순
+    else:  # 등록순
         child_comments = Comments.objects.filter(q).order_by('reg_dt')
     child_comments: List[Comments] = list(child_comments)
 
@@ -353,6 +353,27 @@ def forum_detail(request, comment_id):
                "child_comments": paginator,
                "comments_count": str(len(child_comments)),
                "sort_list": sort_list}
+
+    # Cookie 생성 후 조회수 증감
+    session_cookie = request.user
+    cookie_name = F'comment_hits:{session_cookie}'
+    target_comment = Comments.objects.get(comment_id=comment_id)
+    response = render(request, "forum_detail.html", context)
+
+    if request.COOKIES.get(cookie_name) is not None:
+        cookies = request.COOKIES.get(cookie_name)
+        cookies_list = cookies.split('|')
+        if str(comment_id) not in cookies_list:
+            response.set_cookie(cookie_name, cookies + f'|{comment_id}', expires=None)
+            target_comment.hit_count += 1
+            target_comment.save()
+            return response
+    else:
+        response.set_cookie(cookie_name, comment_id, expires=None)
+        target_comment.hit_count += 1
+        target_comment.save()
+        return response
+
     return render(request, "forum_detail.html", context)
 
 
@@ -362,8 +383,6 @@ def like_comment(request, comment_id):
     # 댓글, 작성자 QuerySet 선언
     comment = Comments.objects.get(comment_id=comment_id)
     author = get_user_model().objects.get(username=comment.username)
-
-    #TODO: 등록 및 삭제 로직 확인하기, 2개씩 늘어나는 케이스 존재, 화면쪽도 확인
 
     # 좋아요 삭제, 댓글 작성자 활동점수 -1
     if request.user in comment.like_users.all():

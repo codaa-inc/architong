@@ -6,9 +6,9 @@ from django.contrib.auth.decorators import login_required
 from django.shortcuts import render, redirect
 from django.db.models import Q
 
-from .models import Books, Pages, Bookmark
 from apps.forum.models import Comments
 from .forms import PostForm, PageForm
+from .models import Books, Pages, Bookmark
 
 
 # 마크다운 편집 페이지 렌더링 function

@@ -16634,7 +16634,7 @@ input[type=number] {
   z-index: 1;
 }
 .forum_footer_area .forum_footer_inner {
-  max-width: 1065px;
+  /**max-width: 1065px;*/
 }
 .forum_footer_area .forum_footer_inner .col-lg-4 .f_widget {
   margin-left: 20px;

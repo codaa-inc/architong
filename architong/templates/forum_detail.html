@@ -22,7 +22,7 @@
     #radio-group > button {
         margin: auto 10px;
     }
-    .count {
+    .count-like {
         cursor: pointer;
     }
     .forum-post-top {
@@ -32,7 +32,7 @@
         display: flex;
         justify-content: center;
         align-items: flex-end;
-        flex-direction: column;
+        flex-direction: row;
     }
 </style>
 {% endblock %}
@@ -68,12 +68,13 @@
                     </div>
                     <div class="col-lg-3">
                         {% if parent_comment.is_liked == "true" %}
-                        <a id="like-count-{{ parent_comment.comment_id }}" class="count" onclick="onclickLikeComment('{{ parent_comment.comment_id }}')">
+                        <a id="like-count-{{ parent_comment.comment_id }}" class="count-like" onclick="onclickLikeComment('{{ parent_comment.comment_id }}')">
                         <ion-icon name="heart"></ion-icon>&nbsp;{{ parent_comment.like_user_count }}</a>
                         {% else %}
-                        <a id="like-count-{{ parent_comment.comment_id }}" class="count" onclick="onclickLikeComment('{{ parent_comment.comment_id }}')">
-                        <ion-icon name="heart-outline"></ion-icon>&nbsp;{{ parent_comment.like_user_count }}</a>
+                        <a id="like-count-{{ parent_comment.comment_id }}" class="count-like" onclick="onclickLikeComment('{{ parent_comment.comment_id }}')">
+                        <ion-icon name="heart-outline"></ion-icon>&nbsp;{{ parent_comment.like_user_count }} like</a>
                         {% endif %}
+                        <a class="count" style="margin-left: 10px;"><ion-icon name="eye-outline"></ion-icon> {{ parent_comment.hit_count }} view</a>
                     </div>
                 </div>
                 <div class="q-title">
