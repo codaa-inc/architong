@@ -118,3 +118,12 @@ function getUrlParam(sname) {
     }
     return sval;
 };
+
+/**
+ * 컴포넌트 위치로 scroll을 이동시키는 함수
+ * Param : 컴포넌트 ID, behavior 옵션
+ * */
+function moveScroll(id, behavior) {
+    const point = document.querySelector('#' + id).offsetTop;      // 해당 컴포넌트의 좌표
+    window.scrollTo({top: point, behavior: behavior});               // 해당 좌표로 스크롤 이동
+};

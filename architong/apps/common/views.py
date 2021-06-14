@@ -2,7 +2,7 @@ import requests
 import json
 
 from django.shortcuts import render
-from django.conf import settings
+from django.contrib.admin.views.decorators import staff_member_required
 from django.contrib.auth import get_user_model
 from xml.etree import ElementTree
 from django.views import View
@@ -20,7 +20,7 @@ from apps.forum.models import Comments, UserLikeComment
 
 # 메인 페이지 조회 / 문서 검색 function
 def index(request):
-    books = Books.objects.all().order_by('book_title')  # 전체 쿼리셋
+    books = Books.objects.filter(codes_yn="Y").order_by('book_title')  # 전체 쿼리셋
     # GET 요청일때 전체 쿼리셋을 가져온다
     if request.method == 'GET':
         page = request.GET.get('page')  # 이동할 페이지
@@ -84,56 +84,65 @@ def delete_bookmark(request, page_id):
 # 유저 프로필 페이지 function
 def profile(request, username):
     if request.method == 'GET':
-        # 사용자정보, 활동점수, 댓글수, 작성한 댓글의 좋아요 합계
+        # 사용자정보, 활동점수, 댓글수, 작성한 댓글의 좋아요 합계 QuerySet
         user_info = get_user_model().objects.get(username=username)
         user_info.picture = json.loads(Socialaccount.objects.get(user_id=user_info.id).extra_data)['picture']
         act_point = get_user_model().objects.get(username=username).act_point
-        comments = Comments.objects.filter(Q(username=username) & (Q(status="C") | Q(status="U")))
+
+        # 최근활동 QuerySet
+        comments = Comments.objects.filter(Q(username=username) & (Q(status="C") | Q(status="U"))).order_by('-reg_dt')
         like_count = 0
         for comment in comments:
             like_count += comment.like_users.all().count()
 
+        # 최근활동 페이징 처리
+        page = request.GET.get('page')
+        paginator = Paginator(comments, 10).get_page(page)
+
         context = {"user_info": user_info,
                    "act_point": str(act_point),
                    "comment_count": str(comments.count()),
-                   "like_count": str(like_count)}
+                   "like_count": str(like_count),
+                   "comments": paginator}
         return render(request, "profile.html", context)
 
 
 # 법규 데이터를 처리하는 class
 class LawView(View):
-    '''
-    [ 법령 MST ]
-        - 216215 : 건축법
-        - 228443 : 건축법 시행령
-        - 228701 : 건축법 시행규칙
-        - 217375 : 녹색건축물 조성 지원법
-        - 223893 : 녹색건축물 조성 지원법 시행령
-        - 224171 : 녹색건축물 조성 지원법 시행규칙
-
-    [ 별표/서식 ]
-        - target : licby
-        - search : 2
-        - query : 건축법 시행령 / 건축법 시행규칙 / 녹색건축물 조성 지원법 시행령 / 녹색건축물 조성 지원법 시행규칙
-        - full url : http://www.law.go.kr/DRF/lawSearch.do?OC=mediaquery1&target=licbyl&type=XML&search=2&query=
-    '''
-    # 법규 API 호출 function
+    # 관리자 법규등록 페이지 렌더링 function
     def get(self, request):
-        # Request : 국가법령정보 API call
-        # Response : 법령 본문
-        host = "http://www.law.go.kr/DRF/lawService.do?"
-        OC = 'mediaquery1'
-        target = 'law'  # 현행법령 본문 조항호목
-        MST = '224171'
-        type = 'XML'    # type : HTML / XML
-        url = host + "OC=" + OC + "&target=" + target + "&MST=" + MST + "&type=" + type
-        try:
-            res = requests.get(url)
-            print(res.url)
-            if res.status_code == 200:
-                self.xml_to_markdown_attachments(res.text)
-        except Exception as e:
-            print(e)
+        if request.user.is_staff:
+            return render(request, "law_add.html")
+
+    # 법규 API 호출 function
+    def post(self, request):
+        if request.user.is_staff:
+            host = "http://www.law.go.kr/DRF/lawService.do?"
+            OC = 'mediaquery1'
+            type = 'XML'
+            target = request.POST['target']
+            url = host + "OC=" + OC + "&target=" + target + "&type=" + type
+            if target == 'law' or target == 'ordin':        # 일반법, 자치법규
+                url += "&MST=" + request.POST['target_no']
+            elif target == 'admrul':                        # 행정규칙
+                url += "&LID=" + request.POST['target_no']
+            try:
+                res = requests.get(url)
+                print("url : ", res.url)
+                if res.status_code == 200:
+                    # 법규 정보 Books 테이블 등록
+                    book = Books()
+                    book.book_title = request.POST['book_title']
+                    book.enfc_dt = request.POST['enfc_dt']
+                    book.author_id = request.user.username
+                    book.codes_yn = "Y"
+                    book.rls_yn = "Y"
+                    book.save()
+
+                    # 마크다운 파싱
+                    # self.xml_to_markdown_attachments(res.text)
+            except Exception as e:
+                print(e)
 
     '''
     법령 마크다운 디자인 적용
@@ -177,7 +186,7 @@ class LawView(View):
                             break
                 else:                       # 전문 → H2 + 구분선
                     markdown_text = "\n\n##" + title + "\n----------"
-            self.insert_law(is_jomun, title, markdown_text)
+            self.insert_page(is_jomun, title, markdown_text)
 
     '''
     시행령, 시행규칙 마크다운 디자인 적용
@@ -237,7 +246,7 @@ class LawView(View):
                             break
                 else:                       # 전문 → H2 + 구분선
                     markdown_text = "\n\n##" + title + "\n----------"
-            self.insert_law(is_jomun, title, markdown_text)
+            self.insert_page(is_jomun, title, markdown_text)
 
     '''
     별표/서식 마크다운 디자인 적용
@@ -271,10 +280,10 @@ class LawView(View):
             hwp = "[![](https://www.law.go.kr/LSW/images/button/btn_han.gif)](http://www.law.go.kr" + attachment.find("별표서식파일링크").text + ")"
             pdf = "[![](https://www.law.go.kr/LSW/images/button/btn_pdf.gif)](http://www.law.go.kr" + attachment.find("별표서식PDF파일링크").text + ")"
             markdown_text = title + "&nbsp;&nbsp;&nbsp;&nbsp;" + hwp + "&nbsp;&nbsp;" + pdf + "\n"
-            self.insert_law("별표", title, markdown_text)
+            self.insert_page("별표", title, markdown_text)
 
     # 법규 마크다운 저장 function
-    def insert_law(is_jomun, title, markdown_text):
+    def insert_page(is_jomun, title, markdown_text):
         page = Pages()  # 모델 객체 생성
         page.book_id = 6
         page.page_title = title
@@ -289,3 +298,17 @@ class LawView(View):
             page.depth = 0
             page.parent_id = 0
         page.save()  # 모델 DB 저장
+
+
+# 법규관리 페이지를 렌더링 하는 function
+@staff_member_required
+def manage_law(request):
+    context = {"books": Books.objects.filter(codes_yn="Y")}
+    return render(request, "law_admin.html", context)
+
+
+# 회원관리 페이지를 렌더링 하는 function
+@staff_member_required
+def manage_user(request):
+    context = {"users": get_user_model().objects.all()}
+    return render(request, "user_admin.html", context)

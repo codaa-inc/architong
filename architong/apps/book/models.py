@@ -1,17 +1,6 @@
 from django.db import models
 from martor.models import MartorField
 
-class Bookmark(models.Model):
-    bookmark_id = models.AutoField(primary_key=True)
-    page_id = models.IntegerField()
-    book_id = models.IntegerField()
-    username = models.CharField(max_length=150)
-    reg_dt = models.DateTimeField(auto_now_add=True, blank=True, null=True)
-
-    class Meta:
-        managed = False
-        db_table = 'bookmark'
-
 
 class Books(models.Model):
     book_id = models.AutoField(primary_key=True)
@@ -21,6 +10,8 @@ class Books(models.Model):
     rls_yn = models.CharField(max_length=10)
     like_cnt = models.IntegerField(blank=True, null=True)
     wrt_dt = models.DateTimeField(auto_now_add=True, blank=True, null=True)
+    enfc_dt = models.DateTimeField(blank=True, null=True)
+    codes_yn = models.CharField(max_length=10, blank=True, null=True)
 
     class Meta:
         managed = False
@@ -40,3 +31,15 @@ class Pages(models.Model):
     class Meta:
         managed = False
         db_table = 'pages'
+
+
+class Bookmark(models.Model):
+    bookmark_id = models.AutoField(primary_key=True)
+    page_id = models.IntegerField()
+    book_id = models.IntegerField()
+    username = models.CharField(max_length=150)
+    reg_dt = models.DateTimeField(auto_now_add=True, blank=True, null=True)
+
+    class Meta:
+        managed = False
+        db_table = 'bookmark'

@@ -4,17 +4,15 @@
 let preSelId, preBmId = "" // 목록 클릭시 이전 선택값을 저장
 
 /**
- * 법규 목록 클릭시 스크롤을 이동시키는 함수
+ * 법규 목록 클릭 이벤트
  * */
 function onclickChildList(id, behavior) {
-    if (behavior == "") {
-        // 문서내 이동시 behavior default = 'smooth'
-        behavior = 'smooth';
-    }
-    const selId = 'page-' + id.replace('child-list-', '');                       // 해당 조문 ID
+    const selId = 'page-' + id.replace('child-list-', '');                    // 해당 조문 ID
     const bmId = selId.replace("page", "bookmark")     // 해당 조문 북마크 ID
-    const point = document.querySelector('#' + selId).offsetTop;      // 해당 조문의 좌표
-    window.scrollTo({top: point, behavior: behavior});                  // 해당 좌표로 스크롤 이동
+    if (behavior == "") {
+        behavior = 'smooth';    // 문서내 이동시 behavior default = 'smooth'
+    }
+    moveScroll(selId, behavior); // 해당 위치로 스크롤 이동
 
     // css toggle
     if (preSelId != "" && preBmId != "") {

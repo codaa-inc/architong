@@ -15,7 +15,9 @@ urlpatterns = [
     path('accounts/', include('allauth.urls')),
     path('profile/<str:username>', profile),
     path('logout/', auth_views.LogoutView.as_view(), name="logout"),
-    path('get_law/', LawView.as_view()),
+    path('manage/get_law', LawView.as_view()),
+    path('manage/law', manage_law),
+    path('manage/user', manage_user),
 
     # Book
     path('edit/', editor),

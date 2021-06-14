@@ -75,6 +75,20 @@
                             계산기
                         </a>
                     </li>
+                    {% if user.is_staff == 1 %}
+                    <li class="nav-item dropdown submenu">
+                        <a class="nav-link dropdown-toggle" href="#" role="button" data-toggle="dropdown"
+                           style="color: #4c4cf1; font-weight: 700; font-family:'Roboto', sans-serif;" aria-haspopup="true" aria-expanded="false">
+                            관리자메뉴
+                        </a>
+                        <i class="arrow_carrot-down_alt2 mobile_dropdown_icon" aria-hidden="false" data-toggle="dropdown"></i>
+                        <ul class="dropdown-menu">
+                            <li class="nav-item"><a href="/manage/get_law" class="nav-link">법규등록</a></li>
+                            <li class="nav-item"><a href="/manage/law" class="nav-link">법규관리</a></li>
+                            <li class="nav-item"><a href="/manage/user" class="nav-link">회원관리</a></li>
+                        </ul>
+                    </li>
+                    {% endif %}
                 </ul>
                 <div class="right-nav">
                     <ul class="navbar-nav menu ml-auto">
@@ -88,8 +102,8 @@
                             <i class="arrow_carrot-down_alt2 mobile_dropdown_icon" aria-hidden="false" data-toggle="dropdown"></i>
                             <ul class="dropdown-menu">
                                 <li class="nav-item"><a href="/bookmark/" class="nav-link"><i class="icon_ribbon_alt"></i>&nbsp;북마크</a></li>
-                                <li class="nav-item"><a href="/edit/" class="nav-link"><i class="icon_pencil-edit"></i> 책 만들기</a></li>
-                                <li class="nav-item"><a href="#" class="nav-link"><i class="icon_documents_alt"></i>&nbsp;나의 책 관리</a></li>
+                                <li class="nav-item"><a href="/edit/" class="nav-link"><i class="icon_pencil-edit"></i> 책만들기</a></li>
+                                <li class="nav-item"><a href="#" class="nav-link"><i class="icon_documents_alt"></i>&nbsp;나의책</a></li>
                             </ul>
                         </li>
                         <li class="nav-item dropdown submenu">
@@ -109,7 +123,7 @@
         <div class="container">
             <div class="forum_footer_inner">
                 <div class="row">
-                    <div class="col-lg-9 col-sm-6">
+                    <div class="col-lg-8 col-sm-6">
                         <div class="f_widget doc_about_widget wow fadeInUp" data-wow-delay="0.2s">
                             <a href="#">
                                 <img src="{% static 'img/f_logo.png' %}" srcset="{% static 'img/f_logo.png' %}" alt="" >
@@ -121,7 +135,7 @@
                             E. codaaxyz@naver.com </p>
                         </div>
                     </div>
-                    <div class="col-lg-3 col-sm-6" style="text-align: right">
+                    <div class="col-lg-4 col-sm-6" style="text-align: right">
                         <h3>CODAA</h3>
                         <p style="line-height: 1.6rem;">WE SHAPE A BETTER WORLD<br>LET’S SHAPE TOGETHER</p>
                         <div class="f_widget doc_about_widget wow fadeInUp" data-wow-delay="0.2s" style="padding-right: 0px;">
@@ -150,7 +164,6 @@
 <!-- Optional JavaScript -->
 <!-- jQuery first, then Popper.js, then Bootstrap JS -->
 <script src="{% static 'js/jquery-3.5.1.min.js' %}"></script>
-<script src="{% static 'js/pre-loader.js' %}"></script>
 <script src="{% static 'assets/bootstrap/js/popper.min.js' %}"></script>
 <script src="{% static 'assets/bootstrap/js/bootstrap.min.js' %}"></script>
 <script src="{% static 'js/parallaxie.js' %}"></script>

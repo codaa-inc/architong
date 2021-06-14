@@ -63,7 +63,7 @@ def view_page(request, page_id):
     for page in pages:
         q = Q(page_id=page.page_id)
         q.add(~Q(status="D") & ~Q(status="TD"), q.AND)
-        q.add(Q(page_id=page.page_id, rls_yn="Y") | Q(page_id=page.page_id, rls_yn="N", username=username), q.AND)
+        q.add(Q(rls_yn="Y") | Q(rls_yn="N", username=username), q.AND)
         comment_count = Comments.objects.filter(q).count()
         page.comment_count = comment_count
 

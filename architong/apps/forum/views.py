@@ -276,12 +276,21 @@ def forum(request):
 
 # 포럼 상세 조회 function
 def forum_detail(request, comment_id):
+    # 자식댓글 조회 여부 초기값 false
+    child_view = False
+
     # 부모,자식 공통 QuerySet 호출
     users = list(get_user_model().objects.all().only('id', 'username'))
     socialaccounts: List[Socialaccount] = list(Socialaccount.objects.all().only('user_id', 'extra_data'))
 
     # 부모댓글 QuerySet
     parent_comment = Comments.objects.get(comment_id=comment_id)
+    if parent_comment.depth == 1:
+        # 자식댓글로 호출이 들어온 경우 부모댓글을 찾아가고, 자식조회 flag 설정함
+        parent_id = parent_comment.parent_id
+        parent_comment = Comments.objects.get(comment_id=parent_id)
+        child_view = comment_id
+        comment_id = parent_id
 
     # 부모댓글 작성자 프로필 사진 정보 추가 : picture
     user_id = [user.id for user in users if user.username == parent_comment.username][0]
@@ -352,7 +361,8 @@ def forum_detail(request, comment_id):
     context = {"parent_comment": parent_comment,
                "child_comments": paginator,
                "comments_count": str(len(child_comments)),
-               "sort_list": sort_list}
+               "sort_list": sort_list,
+               "child_view": child_view}
 
     # Cookie 생성 후 조회수 증감
     session_cookie = request.user

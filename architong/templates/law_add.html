@@ -1,0 +1,61 @@
+{% extends 'base.html' %}
+{% block content %}
+<section class="signup_area signup_area_height">
+    <div class="row ml-0 mr-0">
+        <div class="sign_right signup_right" style="margin-top: 20px;">
+            <div class="sign_inner signup_inner">
+                <div class="text-center">
+                    <h5>법규 등록</h5>
+                </div>
+                <div class="divider"></div>
+                <form action="/manage/get_law" method="post" class="row login_form">{% csrf_token %}
+                    <div class="col-sm-6 form-group">
+                        <div class="small_text">구분</div>
+                        <select type="select" class="form-control" name="target" id="target" onchange="onchangeTarget(this.value)">
+                            <option value="law" selected>현행법령</option>
+                            <option value="admrul">행정규칙</option>
+                            <option value="ordin">자치법규</option>
+                        </select>
+                    </div>
+                    <div class="col-sm-6 form-group">
+                        <div class="small_text" id="target_no_label">MST</div>
+                        <input type="number" class="form-control" name="target_no" id="target_no">
+                    </div>
+                    <div class="col-lg-12 form-group">
+                        <div class="small_text">법규명</div>
+                        <input type="text" class="form-control" id="book_title" name="book_title">
+                    </div>
+                    <div class="col-lg-12 form-group">
+                        <div class="small_text">시행일</div>
+                        <input id="enfc_dt" name="enfc_dt" type="date" class="form-control">
+                    </div>
+                    <div class="col-lg-12 text-center">
+                        <button type="submit" class="btn action_btn thm_btn">등록</button>
+                    </div>
+                </form>
+                <div class="divider"></div>
+                <ul>
+                    <li><a target="_blank" href="https://law.go.kr/LSO/lab/lawListSupport.do">
+                        국가법령정보 링크</a></li>
+                    <li><a target="_blank" href="http://kkharchitects.com/%ea%b1%b4%ec%b6%95%eb%b2%95%ea%b7%9c%eb%a7%81%ed%81%ac/">
+                        건축법규 링크</a></li>
+                </ul>
+            </div>
+        </div>
+    </div>
+</section>
+{% endblock %}
+
+{% block js %}
+<script>
+    // 법규구분 선택에 따라 입력해야할 변수 label 변경
+    function onchangeTarget(value) {
+        if (value == "admrul") {
+            $("#target_no_label").text("LID");
+        } else {
+            $("#target_no_label").text("MST");
+        }
+    };
+
+</script>
+{% endblock %}
