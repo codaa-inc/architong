@@ -1,4 +1,13 @@
 {% extends 'base.html' %}
+
+{% block css %}
+    <style>
+        .divider {
+            margin-top: 10px !important;
+        }
+    </style>
+{% endblock %}
+
 {% block content %}
 <section class="signup_area signup_area_height">
     <div class="row ml-0 mr-0">
@@ -8,29 +17,29 @@
                     <h5>법규 등록</h5>
                 </div>
                 <div class="divider"></div>
-                <form action="/manage/get_law" method="post" class="row login_form">{% csrf_token %}
+                <form id="law_form" name="law_form" class="row login_form">{% csrf_token %}
                     <div class="col-sm-6 form-group">
                         <div class="small_text">구분</div>
                         <select type="select" class="form-control" name="target" id="target" onchange="onchangeTarget(this.value)">
-                            <option value="law" selected>현행법령</option>
+                            <option value="law" selected>법령</option>
                             <option value="admrul">행정규칙</option>
                             <option value="ordin">자치법규</option>
                         </select>
                     </div>
                     <div class="col-sm-6 form-group">
-                        <div class="small_text" id="target_no_label">MST</div>
+                        <div class="small_text" id="target_no_label">법령 MST</div>
                         <input type="number" class="form-control" name="target_no" id="target_no">
                     </div>
-                    <div class="col-lg-12 form-group">
+                    <!--<div class="col-lg-12 form-group">
                         <div class="small_text">법규명</div>
                         <input type="text" class="form-control" id="book_title" name="book_title">
                     </div>
                     <div class="col-lg-12 form-group">
-                        <div class="small_text">시행일</div>
+                        <div class="small_text">시행일자</div>
                         <input id="enfc_dt" name="enfc_dt" type="date" class="form-control">
-                    </div>
+                    </div>-->
                     <div class="col-lg-12 text-center">
-                        <button type="submit" class="btn action_btn thm_btn">등록</button>
+                        <button type="button" class="btn action_btn thm_btn" onclick="onclickInsertLaw()">등록</button>
                     </div>
                 </form>
                 <div class="divider"></div>
@@ -51,10 +60,42 @@
     // 법규구분 선택에 따라 입력해야할 변수 label 변경
     function onchangeTarget(value) {
         if (value == "admrul") {
-            $("#target_no_label").text("LID");
+            $("#target_no_label").text("행정규칙 LID");
+        } else if (value == "ordin"){
+            $("#target_no_label").text("자치법규 MST");
         } else {
-            $("#target_no_label").text("MST");
+            $("#target_no_label").text("법령 MST");
         }
+    };
+
+    /**
+     * 법규 등록 이벤트
+     * */
+    function onclickInsertLaw() {
+        $.ajax({
+            type: "POST",
+            url: "/law/insert",
+            dataType: "json", // 서버측에서 전송한 Response 데이터 형식 (json)
+            data: $("#law_form").serialize() + "&csrfmiddlewaretoken=" + $("input[name=csrfmiddlewaretoken]").val(),
+            success: function (response) { // 통신 성공시 - 동적으로 북마크 아이콘 변경
+                console.log("response : ", response)
+                if (response.result == "success") {
+                    // 해당 법규 법제처 페이지 open
+                    window.open(response.html_url);
+                    // 등록된 법규 뷰어로 redirect
+                    document.location.href = "/book/" + response.book_id
+                } else if(response.result == "exist") {
+                    alert(response.message);
+                } else {
+                    // 해당 법규 법제처 페이지 open
+                    window.open(response.html_url);
+                }
+            },
+            error: function (request, status, error) { // 통신 실패시 - 로그인 페이지 리다이렉트
+                console.log("code:" + request.status + "\n" + "message:" + request.responseText + "\n" + "error:" + error)
+                //window.location.replace("/accounts/google/login/")
+            },
+        });
     };
 
 </script>

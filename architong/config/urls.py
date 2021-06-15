@@ -15,9 +15,9 @@ urlpatterns = [
     path('accounts/', include('allauth.urls')),
     path('profile/<str:username>', profile),
     path('logout/', auth_views.LogoutView.as_view(), name="logout"),
-    path('manage/get_law', LawView.as_view()),
-    path('manage/law', manage_law),
-    path('manage/user', manage_user),
+    path('law/insert', LawView.as_view()),
+    path('law/manage', manage_law),
+    path('user/manage', manage_user),
 
     # Book
     path('edit/', editor),
@@ -26,7 +26,6 @@ urlpatterns = [
     path('page/<int:page_id>', view_page),
     path('bookmark/', view_bookmark),
     path('bookmark/<int:page_id>', delete_bookmark),
-
 
     # Forum
     path('comment/<str:id>', CommentView.as_view()),
