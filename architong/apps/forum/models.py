@@ -11,7 +11,7 @@ class Comments(models.Model):
     depth = models.IntegerField()
     username = models.CharField(max_length=150)
     content = models.TextField(blank=True, null=True)
-    rls_yn = models.CharField(max_length=10, blank=True, null=True)
+    rls_yn = models.CharField(max_length=10)
     reg_dt = models.DateTimeField(auto_now_add=True, blank=True, null=True)
     status = models.CharField(max_length=10, blank=True, null=True)
     like_users = models.ManyToManyField(settings.AUTH_USER_MODEL, through='UserLikeComment')

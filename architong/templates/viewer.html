@@ -38,7 +38,7 @@
     }
 
     .comment_tag {
-        color: #4c4cf1 !important;
+        color: #0C0E72 !important;
         cursor: pointer;
         float: right;
     }
@@ -61,6 +61,11 @@
     .count {
         cursor: pointer;
         float: right;
+    }
+    .mCustomScrollBox {
+        overflow-y: auto;
+        overscroll-behavior: contain;
+        scroll-behavior: smooth;
     }
 </style>
 {% endblock %}
@@ -95,7 +100,7 @@
 <div class="breadcrumb_area_three" style="padding: 0"></div>
 <!--================End Forum Breadcrumb Area =================-->
 <!--================Topic Area =================================-->
-<section class="doc_documentation_area" id="sticky_doc">
+<section>
     <div class="container custom_container">
         <div class="row">
             <div class="col-lg-3 doc_mobile_menu display_none">

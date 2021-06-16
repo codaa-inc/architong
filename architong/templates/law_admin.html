@@ -9,22 +9,44 @@
         padding-top: 0px;
         float: right;
     }
+    .sign_right signup_right{
+        padding-left: 15px !important;
+    }
+    form{
+        background-color: #F7F8F9;
+        border-radius: 10px;
+        margin-bottom: 20px;
+        padding-left: 20px;
+    }
+    .small_text {
+        margin-top: 5px;
+    }
     </style>
 {% endblock %}
 {% block content %}
     <div class="row" style="margin-top: 60px;">
         <div class="col-lg-1"></div>
         <div class="col-lg-10 doc-middle-content">
-            <div class="row">
-                <div class="col-lg-10">
-                    <h5 class="s_title load-order-2" id="data-table">법규 목록</h5>
+            <h5 class="s_title">법규 등록</h5>
+            <form id="law_form" onsubmit="return false;" name="law_form" class="row login_form">{% csrf_token %}
+                <div class="col-sm-5 form-group">
+                    <div class="small_text">구분</div>
+                    <select type="select" class="form-control" name="target" id="target" onchange="onchangeTarget(this.value)">
+                        <option value="law" selected>법령</option>
+                        <option value="admrul">행정규칙</option>
+                        <option value="ordin">자치법규</option>
+                    </select>
                 </div>
-                <div class="col-lg-2">
-                    <div class="feedback_link">
-                        <a href="#" class="h_btn">법규 등록</a>
-                    </div>
+                <div class="col-sm-5 form-group">
+                    <div class="small_text" id="target_no_label">법령 MST</div>
+                    <input type="number" class="form-control" name="target_no" id="target_no">
                 </div>
-            </div>
+                <div class="col-sm-2 form-group text-center" style="position: relative">
+                    <button type="button" class="btn action_btn thm_btn" onclick="onclickInsertLaw()"
+                    style="transform: translate(-20%, 90%)">등록</button>
+                </div>
+            </form>
+            <h5 class="s_title load-order-2" id="data-table">법규 목록</h5>
             <div class="data_table_area table-responsive">
                 <table id="dtMaterialDesignExample" class="table">
                     <thead>
@@ -32,6 +54,7 @@
                         <th class="th-sm">No.</th>
                         <th class="th-sm">법규명</th>
                         <th class="th-sm">시행일</th>
+                        <th class="th-sm">등록일</th>
                     </tr>
                     </thead>
                     <tbody>
@@ -39,8 +62,9 @@
                     {% for book in books %}
                     <tr>
                         <td>{{ forloop.counter }}</td>
-                        <td>{{ book.book_title }}</td>
+                        <td><a style="color: #6b707f;" href="/book/{{ book.book_id }}">{{ book.book_title }}</a></td>
                         <td>{{ book.enfc_dt | date:'Y.m.d' }}</td>
+                        <td>{{ book.wrt_dt | date:'Y.m.d' }}</td>
                     </tr>
                     {% endfor %}
                     {% else %}
@@ -51,7 +75,12 @@
                     </tbody>
                 </table>
             </div>
-        </div>
+            <ul>
+                <li><a target="_blank" href="https://law.go.kr/LSO/lab/lawListSupport.do">
+                    국가법령정보 링크</a></li>
+                <li><a target="_blank" href="http://kkharchitects.com/%ea%b1%b4%ec%b6%95%eb%b2%95%ea%b7%9c%eb%a7%81%ed%81%ac/">
+                    건축법규 링크</a></li>
+            </ul>
         </div>
         <div class="col-lg-1"></div>
     </div>
@@ -60,4 +89,53 @@
     <script src="{% static 'assets/bootstrap/js/bootstrap-select.min.js' %}"></script>
     <script type="text/javascript" src="https://cdn.datatables.net/v/dt/dt-1.10.23/sl-1.3.1/datatables.min.js"></script>
     <script src="{% static 'js/theme.js' %}"></script>
+    <script>
+        // 법규구분 선택에 따라 입력해야할 변수 label 변경
+        function onchangeTarget(value) {
+            if (value == "admrul") {
+                $("#target_no_label").text("행정규칙 LID");
+            } else if (value == "ordin"){
+                $("#target_no_label").text("자치법규 MST");
+            } else {
+                $("#target_no_label").text("법령 MST");
+            }
+        };
+
+        // inputbox 엔터키 감지
+        $(document).ready(function(){
+            $("#target_no").keypress(function (e) {
+                if (e.which == 13) {
+                    onclickInsertLaw();
+                }
+            });
+        });
+
+        /**
+         * 법규 등록 이벤트
+         * */
+        function onclickInsertLaw() {
+            $.ajax({
+                type: "POST",
+                url: "/law/insert",
+                dataType: "json", // 서버측에서 전송한 Response 데이터 형식 (json)
+                data: $("#law_form").serialize() + "&csrfmiddlewaretoken=" + $("input[name=csrfmiddlewaretoken]").val(),
+                success: function (response) { // 통신 성공시 - 동적으로 북마크 아이콘 변경
+                    if(response.result == "exist") {
+                        alert(response.message);
+                    } else if (response.result == "fail"){
+                        alert("등록 실패");
+                        // 해당 법규 법제처 페이지 open
+                        window.open(response.html_url);
+                    } else if(response.result == "success") {
+                        alert("등록 되었습니다.");
+                        document.location.href = "/law/manage";
+                    }
+                },
+                error: function (request, status, error) { // 통신 실패시 - 로그인 페이지 리다이렉트
+                    console.log("code:" + request.status + "\n" + "message:" + request.responseText + "\n" + "error:" + error)
+                    //window.location.replace("/accounts/google/login/")
+                },
+            });
+        };
+    </script>
 {% endblock %}

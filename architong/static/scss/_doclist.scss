@@ -1285,7 +1285,7 @@ body:not(.onepage-doc) .body_fixed #font-switcher {
         a {
           color: #6b707f;
           i {
-            color: #4c4cf1;
+            color: #0C0E72;
           }
         }
         &:hover {
@@ -1712,9 +1712,9 @@ body:not(.onepage-doc) .body_fixed #font-switcher {
       transition: border-color 0.15s ease-in-out, box-shadow 0.15s ease-in-out;
       transition: border-color 0.15s ease-in-out, box-shadow 0.15s ease-in-out, -webkit-box-shadow 0.15s ease-in-out;
       &:focus {
-        border-bottom: 1px solid #4c4cf1;
-        -webkit-box-shadow: 0 1px 0 0 #4c4cf1;
-        box-shadow: 0 1px 0 0 #4c4cf1;
+        border-bottom: 1px solid #0C0E72;
+        -webkit-box-shadow: 0 1px 0 0 #0C0E72;
+        box-shadow: 0 1px 0 0 #0C0E72;
       }
     }
   }

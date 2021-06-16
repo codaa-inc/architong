@@ -6,7 +6,7 @@
     <!-- Required meta tags -->
     <meta charset="utf-8">
     <meta name="viewport" content="width=device-width, initial-scale=1, shrink-to-fit=no">
-    <link rel="shortcut icon" href="{% static 'img/favicon.ico' %}" type="image/x-icon">
+    <link rel="shortcut icon" href="{% static 'img/custom/favicon.ico' %}" type="image/x-icon">
     <!-- Bootstrap CSS -->
     <link rel="stylesheet" href="{% static 'assets/bootstrap/css/bootstrap.min.css' %}">
     <!-- icon css-->
@@ -16,13 +16,20 @@
     <link rel="stylesheet" href="{% static 'assets/mcustomscrollbar/jquery.mCustomScrollbar.min.css' %}">
     <link rel="stylesheet" href="{% static 'css/style-main.css' %}">
     <link rel="stylesheet" href="{% static 'css/responsive.css' %}">
+    <style>
+        .user-menu {
+            font-size: 14px;
+            font-weight: bolder;
+            font-family: 'Roboto', sans-serif;
+        }
+    </style>
     <!-- jquery cdn -->
     <script src="//cdnjs.cloudflare.com/ajax/libs/jquery/3.2.1/jquery.min.js"></script>
     {% block css %}
     {% endblock %}
     <!-- Font -->
     <link rel="stylesheet" type="text/css" href="https://cdn.rawgit.com/moonspam/NanumSquare/master/nanumsquare.css">
-    <title>Architong</title>
+    <title>Codetect</title>
 </head>
 <script>
     const copyright = "Copyright ⓒ " + new Date().getFullYear() + " 건축환경그룹 코다 All rights reserved. CODAA";
@@ -34,8 +41,8 @@
     <nav class="navbar navbar-expand-lg menu_one dark_menu sticky-nav">
         <div class="container">
             <a class="navbar-brand header_logo" href="/">
-                <img class="first_logo sticky_logo main_logo" src="{% static 'img/logo_w.png' %}" srcset="{% static 'img/custom/custom_logo.png'%}" alt="logo">
-                <img class="white_logo" src="{% static 'img/logo_w.png' %}" srcset="{% static 'img/custom/custom_logo.png' %}" alt="logo">
+                <img class="first_logo sticky_logo main_logo" src="{% static 'img/logo_w.png' %}" srcset="{% static 'img/custom/logo.png'%}" alt="logo">
+                <img class="white_logo" src="{% static 'img/logo_w.png' %}" srcset="{% static 'img/custom/logo.png' %}" alt="logo">
             </a>
             <button class="navbar-toggler collapsed" type="button" data-toggle="collapse"
                     data-target="#navbarSupportedContent" aria-controls="navbarSupportedContent" aria-expanded="false"
@@ -74,16 +81,19 @@
                            style="font-weight: 700; font-family:'Roboto', sans-serif;" aria-haspopup="true" aria-expanded="false">
                             계산기
                         </a>
+                        <i class="arrow_carrot-down_alt2 mobile_dropdown_icon" aria-hidden="false" data-toggle="dropdown"></i>
+                        <ul class="dropdown-menu">
+                            <li class="nav-item"><a href="#" class="nav-link">열관류율계산기</a></li>
+                        </ul>
                     </li>
                     {% if user.is_staff == 1 %}
                     <li class="nav-item dropdown submenu">
                         <a class="nav-link dropdown-toggle" href="#" role="button" data-toggle="dropdown"
-                           style="color: #4c4cf1; font-weight: 700; font-family:'Roboto', sans-serif;" aria-haspopup="true" aria-expanded="false">
+                           style="color: #0C0E72; font-weight: 700; font-family:'Roboto', sans-serif;" aria-haspopup="true" aria-expanded="false">
                             관리자메뉴
                         </a>
                         <i class="arrow_carrot-down_alt2 mobile_dropdown_icon" aria-hidden="false" data-toggle="dropdown"></i>
                         <ul class="dropdown-menu">
-                            <li class="nav-item"><a href="/law/insert" class="nav-link">법규등록</a></li>
                             <li class="nav-item"><a href="/law/manage" class="nav-link">법규관리</a></li>
                             <li class="nav-item"><a href="/user/manage" class="nav-link">회원관리</a></li>
                         </ul>
@@ -98,7 +108,8 @@
                         </li>
                     {% else %}
                         <li class="nav-item dropdown submenu active">
-                            <a class="nav-link dropdown-toggle" href="/profile/{{ request.user }}"><i class="icon_profile"></i>&nbsp;{{ user.username }}</a>
+                            <a class="nav-link dropdown-toggle user-menu" href="/profile/{{ request.user }}"
+                            style="font-weight: bolder; font-family: 'Roboto', sans-serif;"><i class="icon_profile"></i>&nbsp;{{ user.username }}</a>
                             <i class="arrow_carrot-down_alt2 mobile_dropdown_icon" aria-hidden="false" data-toggle="dropdown"></i>
                             <ul class="dropdown-menu">
                                 <li class="nav-item"><a href="/bookmark/" class="nav-link"><i class="icon_ribbon_alt"></i>&nbsp;북마크</a></li>
@@ -107,7 +118,7 @@
                             </ul>
                         </li>
                         <li class="nav-item dropdown submenu">
-                            <a href="{% url 'logout' %}?next={{ request.path }}" style="width: 120px">
+                            <a class="user-menu" href="{% url 'logout' %}?next={{ request.path }}">
                                 <i class="icon_lock" style="margin-right: 5px;"></i>로그아웃
                             </a>
                         </li>

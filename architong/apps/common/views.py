@@ -1,5 +1,6 @@
 import requests
 import json
+import datetime
 
 from django.shortcuts import render
 from django.contrib.admin.views.decorators import staff_member_required
@@ -21,7 +22,7 @@ from apps.forum.models import Comments, UserLikeComment
 
 # 메인 페이지 조회 / 문서 검색 function
 def index(request):
-    books = Books.objects.filter(codes_yn="Y").order_by('-wrt_dt')  # 전체 쿼리셋
+    books = Books.objects.filter(codes_yn="Y", rls_yn="Y").order_by('-wrt_dt')  # 전체 쿼리셋
     # GET 요청일때 전체 쿼리셋을 가져온다
     if request.method == 'GET':
         page = request.GET.get('page')  # 이동할 페이지
@@ -110,11 +111,6 @@ def profile(request, username):
 
 # 법규 데이터를 처리하는 class
 class LawView(View):
-    # 관리자 법규등록 페이지 렌더링 function
-    def get(self, request):
-        if request.user.is_staff:
-            return render(request, "law_add.html")
-
     # 법규 API 호출 function
     def post(self, request):
         if request.user.is_staff:
@@ -134,21 +130,17 @@ class LawView(View):
                     xml_text = ElementTree.fromstring(res.text)
                     html_url = str(res.url.replace("XML", "HTML"))
                     book_title = xml_text.find('기본정보').find('법령명_한글').text
+                    enfc_dt = datetime.datetime.strptime(xml_text.find('기본정보').find('시행일자').text, "%Y%m%d").date()
                     book_count = Books.objects.filter(book_title=book_title).count()
                     # 이미 등록되어있는지 중복체크
                     if book_count < 1:
-                        book = Books()
-                        book.book_title = book_title
-                        book.enfc_dt = xml_text.find('기본정보').find('시행일자').text
-                        book.author_id = request.user.username
-                        book.codes_yn = "Y"
-                        book.rls_yn = "Y"
-                        # 법규정보 Books 테이블 등록
-                        book.create()
+                        book = Books(book_title=book_title, enfc_dt=enfc_dt,
+                                     author_id=request.user.username, codes_yn="Y", rls_yn="Y")
+                        book.save()     # 법규정보 Books 테이블 등록
                         book_id = Books.objects.last().book_id
                         # 마크다운 파싱
                         self.xml_to_markdown_law(xml_text, book_id)
-                        return JsonResponse({"result": "success", "book_id": book_id, "html_url": html_url})
+                        return JsonResponse({"result": "success", "html_url": html_url})
                     else:
                         return JsonResponse({"result": "exist", "message": "이미 등록된 법규입니다."})
             except Exception as e:
@@ -161,8 +153,8 @@ class LawView(View):
      - 조문 → H3
      - 항 → 디자인 없음
      - 호 → blockquote, ordered list 제거
-     - 목 → dluble blockquote
-     - 목 하위 텍스트(tab으로 구분) → triple blockquote
+     - 목 → blockquote * 2
+     - 목 하위 텍스트(tab으로 구분) → blockquote * 3
      - 이미지 → 이미지링크
      - 별표제목 → 별표제목 + 파일링크
      - 별표서식파일링크, 별표서식PDF파일링크 → 이미지링크
@@ -262,7 +254,7 @@ class LawView(View):
         page.book_id = book_id
         page.page_title = title
         page.description = markdown_text
-        if is_jomun == "조문":
+        if is_jomun == "조문" or is_jomun == "Y":
             page.depth = 1
             parent_queryset = Pages.objects.filter(book_id=book_id, depth=0).last()
             # 부모 id로 가장 최근의 depth=0인 페이지의 id를 넣는다
@@ -303,7 +295,7 @@ class LawView(View):
 # 법규관리 페이지를 렌더링 하는 function
 @staff_member_required
 def manage_law(request):
-    context = {"books": Books.objects.filter(codes_yn="Y")}
+    context = {"books": Books.objects.filter(codes_yn="Y").order_by('-wrt_dt')}
     return render(request, "law_admin.html", context)
 
 
