@@ -118,10 +118,3 @@ function deleteComment(commentId) {
         },
     });
 };
-
-/**
- * 댓글 상세 페이지 정렬 이벤트
- * */
-function onchangeSort(value) {
-    location.href = window.location.pathname + "?sort=" + value;
-};

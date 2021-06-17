@@ -1,5 +1,5 @@
 /*
--- Query: select * from architong.books
+-- Query: select * from architong.book
 LIMIT 0, 1000
 
 -- Date: 2021-05-13 10:03

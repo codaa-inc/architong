@@ -17,7 +17,7 @@ CREATE SCHEMA IF NOT EXISTS `architong` DEFAULT CHARACTER SET utf8 ;
 USE `architong` ;
 
 -- -----------------------------------------------------
--- Table `architong`.`books`
+-- Table `architong`.`book`
 -- -----------------------------------------------------
 DROP TABLE IF EXISTS `architong`.`books` ;
 

@@ -1,4 +1,4 @@
-{% extends 'base.html' %}
+{% extends 'common/base.html' %}
 {% load static %}
 {% load martortags %}
 {% block css %}
@@ -159,6 +159,7 @@
 {% endblock %}
 
 {% block js %}
+<script src="{% static 'js/docs.js' %}"></script>
 <script src="{% static 'assets/font-size/js/rv-jquery-fontsize-2.0.3.min.js' %}"></script>
 <script src="{% static 'assets/magnify-pop/jquery.magnific-popup.min.js' %}"></script>
 <script src="{% static 'js/plugins.js' %}"></script>

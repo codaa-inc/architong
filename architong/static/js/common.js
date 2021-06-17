@@ -127,3 +127,11 @@ function moveScroll(id, behavior) {
     const point = document.querySelector('#' + id).offsetTop;      // 해당 컴포넌트의 좌표
     window.scrollTo({top: point, behavior: behavior});               // 해당 좌표로 스크롤 이동
 };
+
+/**
+ * 정렬 콤보박스 변경 이벤트
+ * */
+function onchangeSort(value) {
+    location.href = window.location.pathname + "?sort=" + value;
+};
+

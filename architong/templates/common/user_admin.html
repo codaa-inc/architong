@@ -1,9 +1,14 @@
-{% extends 'base.html' %}
+{% extends 'common/base.html' %}
 {% load static %}
 {% block css %}
     <link rel="stylesheet" href="{% static 'assets/bootstrap/css/bootstrap-select.min.css' %}">
     <link rel="stylesheet" type="text/css" href="https://cdn.datatables.net/v/dt/dt-1.10.23/sl-1.3.1/datatables.min.css"/>
     <link rel="stylesheet" href="{% static 'assets/magnify-pop/magnific-popup.css' %}">
+    <style>
+        .paginate_button {
+            padding: 0px !important;
+        }
+    </style>
 {% endblock %}
 {% block content %}
     <div class="row" style="margin-top: 60px;">
@@ -56,5 +61,5 @@
 {% block js %}
     <script src="{% static 'assets/bootstrap/js/bootstrap-select.min.js' %}"></script>
     <script type="text/javascript" src="https://cdn.datatables.net/v/dt/dt-1.10.23/sl-1.3.1/datatables.min.js"></script>
-    <script src="{% static 'js/theme.js' %}"></script>
+    <script src="{% static 'js/theme.js' %}"></script>s
 {% endblock %}

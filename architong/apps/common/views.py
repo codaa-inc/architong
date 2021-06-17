@@ -9,25 +9,29 @@ from xml.etree import ElementTree
 
 from django.views import View
 from django.core.paginator import Paginator
-from django.core.serializers.json import DjangoJSONEncoder
-from django.views.decorators.csrf import csrf_exempt
-from django.contrib.auth.decorators import login_required
 from django.http import JsonResponse
 from django.db.models import Q
 
 from apps.common.models import SocialaccountSocialaccount as Socialaccount
-from apps.book.models import Books, Bookmark, Pages
+from apps.book.models import Books, Pages
 from apps.forum.models import Comments, UserLikeComment
 
 
 # 메인 페이지 조회 / 문서 검색 function
 def index(request):
-    books = Books.objects.filter(codes_yn="Y", rls_yn="Y").order_by('-wrt_dt')  # 전체 쿼리셋
+    books = Books.objects.filter(rls_yn="Y").order_by('-wrt_dt')  # 전체 쿼리셋
     # GET 요청일때 전체 쿼리셋을 가져온다
     if request.method == 'GET':
-        page = request.GET.get('page')  # 이동할 페이지
+        # 작성자가 일반회원인 경우에만 소셜계정 프로필 출력, 관리자는 기본이미지를 출력함
+        for book in books:
+            user_info = get_user_model().objects.get(username=book.author_id)
+            if user_info.is_staff == 0:
+                book.picture = json.loads(Socialaccount.objects.get(user_id=user_info.id).extra_data)['picture']
+        # 페이징처리
+        page = request.GET.get('page')
         paginator = Paginator(books, 6).get_page(page)
-        return render(request, 'index.html', {"books": paginator})
+        context = {"books": paginator}
+        return render(request, 'common/index.html', context)
 
     # POST 요청일때 해당 검색조건을 적용한 쿼리셋을 가져온다.
     elif request.method == 'POST':
@@ -43,44 +47,7 @@ def index(request):
         elif option == '2':
             books = books.filter(author_id__icontains=text)
         paginator = Paginator(books, 6).get_page(page)
-        return render(request, 'index.html', {"books": paginator, "search_term": text})
-
-
-# 북마크 관리 페이지 조회 function
-@login_required(login_url="/account/google/login")
-def view_bookmark(request):
-    username = request.user  # 세션으로부터 유저 정보 가져오기
-    if username is not None:
-        bookmarks = Bookmark.objects.filter(username=username).order_by('book_id', 'page_id')
-        page_q = Q(page_id__in=bookmarks.values_list('page_id', flat=True))
-        status_q = Q(status="C") | Q(status="U")
-        pages = Pages.objects.filter(page_q).values()
-        comments = Comments.objects.filter(page_q & status_q & Q(rls_yn="N"))
-        for idx, bookmark in enumerate(bookmarks):
-            bookmark.description = pages.get(page_id=bookmark.page_id)['description']
-            comment = comments.filter(page_id=bookmark.page_id).values()
-            if len(comment) > 0:
-                bookmark.comment = json.dumps(list(comment), cls=DjangoJSONEncoder)
-            if idx == 0 or bookmark.book_id != bookmarks[idx - 1].book_id:
-                bookmark.book_title = Books.objects.get(book_id=bookmark.book_id).book_title
-        return render(request, "bookmark.html", {"bookmarks": bookmarks})
-
-
-# 북마크 관리 페이지 삭제 function
-@login_required(login_url="/account/google/login")
-@csrf_exempt
-def delete_bookmark(request, page_id):
-    username = request.user  # 세션으로부터 유저 정보 가져오기
-    if username is not None:
-        # 북마크 하위 메모들을 삭제한다
-        private_comment = Comments.objects.filter(page_id=page_id, username=username, rls_yn="N")
-        for data in private_comment:
-            data.status = "D"
-        Comments.objects.bulk_update(private_comment, ['status'])
-        # 북마크를 삭제한다
-        bookmark = Bookmark.objects.get(page_id=page_id, username=username)
-        bookmark.delete()
-        return JsonResponse({"result": "success"})
+        return render(request, 'common/index.html', {"book": paginator, "search_term": text})
 
 
 # 유저 프로필 페이지 function
@@ -106,7 +73,7 @@ def profile(request, username):
                    "comment_count": str(comments.count()),
                    "like_count": str(like_count),
                    "comments": paginator}
-        return render(request, "profile.html", context)
+        return render(request, "common/profile.html", context)
 
 
 # 법규 데이터를 처리하는 class
@@ -296,11 +263,11 @@ class LawView(View):
 @staff_member_required
 def manage_law(request):
     context = {"books": Books.objects.filter(codes_yn="Y").order_by('-wrt_dt')}
-    return render(request, "law_admin.html", context)
+    return render(request, "common/law_admin.html", context)
 
 
 # 회원관리 페이지를 렌더링 하는 function
 @staff_member_required
 def manage_user(request):
     context = {"users": get_user_model().objects.all()}
-    return render(request, "user_admin.html", context)
+    return render(request, "common/user_admin.html", context)

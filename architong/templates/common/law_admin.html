@@ -1,4 +1,4 @@
-{% extends 'base.html' %}
+{% extends 'common/base.html' %}
 {% load static %}
 {% block css %}
     <link rel="stylesheet" href="{% static 'assets/bootstrap/css/bootstrap-select.min.css' %}">
@@ -12,7 +12,7 @@
     .sign_right signup_right{
         padding-left: 15px !important;
     }
-    form{
+    form {
         background-color: #F7F8F9;
         border-radius: 10px;
         margin-bottom: 20px;
@@ -21,13 +21,16 @@
     .small_text {
         margin-top: 5px;
     }
+    .paginate_button {
+        padding: 0px !important;
+    }
     </style>
 {% endblock %}
 {% block content %}
     <div class="row" style="margin-top: 60px;">
         <div class="col-lg-1"></div>
         <div class="col-lg-10 doc-middle-content">
-            <h5 class="s_title">법규 등록</h5>
+            <h5>법규 등록</h5>
             <form id="law_form" onsubmit="return false;" name="law_form" class="row login_form">{% csrf_token %}
                 <div class="col-sm-5 form-group">
                     <div class="small_text">구분</div>
@@ -46,7 +49,7 @@
                     style="transform: translate(-20%, 90%)">등록</button>
                 </div>
             </form>
-            <h5 class="s_title load-order-2" id="data-table">법규 목록</h5>
+            <h5 id="data-table" style="margin-bottom: -10px;">법규 목록</h5>
             <div class="data_table_area table-responsive">
                 <table id="dtMaterialDesignExample" class="table">
                     <thead>

@@ -43,6 +43,7 @@ INSTALLED_APPS = [
 
     # application
     'apps.common',
+    'apps.calculator',
     'apps.book',
     'apps.forum',
 

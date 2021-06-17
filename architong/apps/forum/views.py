@@ -271,7 +271,7 @@ def forum(request):
                "comments_count": str(len(comments)),
                "keyword": keyword,
                "sort_list": sort_list}
-    return render(request, 'forum.html', context)
+    return render(request, 'forum/forum.html', context)
 
 
 # 포럼 상세 조회 function
@@ -368,7 +368,7 @@ def forum_detail(request, comment_id):
     session_cookie = request.user
     cookie_name = F'comment_hits:{session_cookie}'
     target_comment = Comments.objects.get(comment_id=comment_id)
-    response = render(request, "forum_detail.html", context)
+    response = render(request, "forum/forum_detail.html", context)
 
     if request.COOKIES.get(cookie_name) is not None:
         cookies = request.COOKIES.get(cookie_name)
@@ -384,7 +384,7 @@ def forum_detail(request, comment_id):
         target_comment.save()
         return response
 
-    return render(request, "forum_detail.html", context)
+    return render(request, "forum/forum_detail.html", context)
 
 
 # 댓글 좋아요 토글 function

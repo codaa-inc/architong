@@ -1,4 +1,4 @@
-{% extends 'base.html' %}
+{% extends 'common/base.html' %}
 {% load static %}
 {% load martortags %}
 {% block css %}
@@ -67,6 +67,17 @@
         overscroll-behavior: contain;
         scroll-behavior: smooth;
     }
+    .doc_left_sidebarlist {
+        padding-top: 0px;
+    }
+    .doc-middle-content {
+        padding-top: 0px;
+    }
+    .book_title {
+        font-weight: bolder;
+        padding-bottom: 16px;
+        padding-left: 16px;
+    }
 </style>
 {% endblock %}
 
@@ -110,12 +121,7 @@
                         <i class="arrow_carrot-left"></i>
                     </div>
                     <div class="scroll">
-                        {% for book in books %}
                         <ul class="list-unstyled nav-sidebar">
-                            <li class="nav-item">
-                                <a href="#" class="nav-link" style="display: inline-block">
-                                    <img src="{% static 'img/side-nav/document2.png' %}" style="padding-right: 5px;">{{ book.book_title }}</a>
-                            </li>
                             {% for page in pages %}
                             {% if page.parent_id == 0 %}
                             <li class="nav-item active">
@@ -132,14 +138,14 @@
                             {% endif %}
                             {% endfor %}
                         </ul>
-                        {% endfor %}
                     </div>
                 </aside>
             </div>
             <div class="col-xl-9 doc-middle-content">{% csrf_token %}
+                <h4 class="book_title">{{ book.book_title }}</h4>
                 <article id="post" class="documentation_info">
                     <div class="documentation_body" id="documentation">
-                      {% for page in pages %}
+                        {% for page in pages %}
                         <div class="martor-content">
                             <div class="martor-preview" id="page-{{ page.page_id }}">
                                 {% if page.depth == 1 %}
@@ -177,15 +183,22 @@
                                 <!----------------------- End Comment Area ------------------------->
                             </div>
                         </div>
-                      {% endfor %}
+                        {% endfor %}
                         <!--================ Martor JS =================-->
                         <script type="text/javascript" src="{% static 'plugins/js/jquery.min.js' %}"></script>
                         <script type="text/javascript" src="{% static 'plugins/js/bootstrap.min.js' %}"></script>
                         <script type="text/javascript" src="{% static 'plugins/js/highlight.min.js' %}"></script>
                         <script>
+                            // 마크다운 뷰어 함수
                             $('.martor-preview pre').each(function (i, block) {
                                 hljs.highlightBlock(block);
                             });
+
+                            // 1개의 장으로 구성되어 있는 경우 제목 보여주지 않음
+                            const law_count = "{{ law_count }}";
+                            if (law_count < 2) {
+                                $("#documentation").children().first().remove();
+                            }
                         </script>
                     </div>
                 </article>

@@ -6,6 +6,7 @@ from django.views.generic import TemplateView
 from apps.common.views import *
 from apps.book.views import *
 from apps.forum.views import *
+from apps.calculator.views import *
 
 
 urlpatterns = [
@@ -21,6 +22,8 @@ urlpatterns = [
 
     # Book
     path('edit/', editor),
+    path('book/law', law_list),
+    path('book/doc', doc_list),
     path('book/<int:book_id>', view_book),
     path('book/bookmark/<int:page_id>', add_or_remove_bookmark),
     path('page/<int:page_id>', view_page),
@@ -34,4 +37,10 @@ urlpatterns = [
     path('comment/like/<str:comment_id>', like_comment),
     path('forum/', forum),
     path('forum/<str:comment_id>', forum_detail),
+
+    # Calculator
+    path('calc/uvalue', uvalue),
+    path('m.calc/uvalue', uvalue_m),
+    path('calc/uvalue/data', uvalue_data),
+
 ]

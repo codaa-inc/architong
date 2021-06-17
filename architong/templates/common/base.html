@@ -62,10 +62,10 @@
             <div class="collapse navbar-collapse" id="navbarSupportedContent">
                 <ul class="navbar-nav menu ml-auto">
                     <li class="nav-item dropdown submenu">
-                        <a href="#" class="nav-link dropdown-toggle" style="font-weight: 700; font-family:'Roboto', sans-serif;">건축법규</a>
+                        <a href="/book/law" class="nav-link dropdown-toggle" style="font-weight: 700; font-family:'Roboto', sans-serif;">건축법규</a>
                     </li>
                     <li class="nav-item dropdown submenu">
-                        <a class="nav-link dropdown-toggle" href="#" role="button" data-toggle="dropdown"
+                        <a class="nav-link dropdown-toggle" href="/book/doc" role="button" data-toggle="dropdown"
                            style="font-weight: 700; font-family:'Roboto', sans-serif;" aria-haspopup="true" aria-expanded="false">
                             건축위키
                         </a>
@@ -83,13 +83,13 @@
                         </a>
                         <i class="arrow_carrot-down_alt2 mobile_dropdown_icon" aria-hidden="false" data-toggle="dropdown"></i>
                         <ul class="dropdown-menu">
-                            <li class="nav-item"><a href="#" class="nav-link">열관류율계산기</a></li>
+                            <li class="nav-item"><a href="/calc/uvalue" class="nav-link">열관류율계산기</a></li>
                         </ul>
                     </li>
                     {% if user.is_staff == 1 %}
                     <li class="nav-item dropdown submenu">
                         <a class="nav-link dropdown-toggle" href="#" role="button" data-toggle="dropdown"
-                           style="color: #0C0E72; font-weight: 700; font-family:'Roboto', sans-serif;" aria-haspopup="true" aria-expanded="false">
+                           style="font-weight: 700; font-family:'Roboto', sans-serif;" aria-haspopup="true" aria-expanded="false">
                             관리자메뉴
                         </a>
                         <i class="arrow_carrot-down_alt2 mobile_dropdown_icon" aria-hidden="false" data-toggle="dropdown"></i>
@@ -104,7 +104,8 @@
                     <ul class="navbar-nav menu ml-auto">
                     {% if user.is_anonymous %}
                         <li class="nav-item dropdown submenu">
-                            <a href="{% provider_login_url 'google' %}?next={{ request.path }}" style="width: 120px;"><i class="icon_lock-open" style="margin-right: 5px;"></i>로그인</a>
+                            <a href="{% provider_login_url 'google' %}?next={{ request.path }}"
+                               style="width: 120px;" class="user-menu"><i class="icon_lock-open" style="margin-right: 5px;"></i>로그인</a>
                         </li>
                     {% else %}
                         <li class="nav-item dropdown submenu active">

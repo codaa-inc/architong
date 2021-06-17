@@ -8161,13 +8161,13 @@ body:not(.onepage-doc) .body_fixed #font-switcher {
   border: none !important;
 }
 .data_table_area .dataTables_paginate .paginate_button:hover {
-  border-color: #e6edf0 !important;
+  border-color: #e6edf0;
   background: transparent;
   color: #54595d !important;
 }
 .data_table_area .dataTables_paginate .paginate_button.current {
   box-shadow: none !important;
-  background: #0C0E72 !important;
+  background: #0C0E72;
   color: #fff !important;
   border-color: #0C0E72 !important;
 }
