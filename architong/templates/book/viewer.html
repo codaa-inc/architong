@@ -36,13 +36,11 @@
     #radio-group > input, button {
         margin: auto 10px;
     }
-
     .comment_tag {
         color: #0C0E72 !important;
         cursor: pointer;
         float: right;
     }
-
     .comment_inner {
         padding-top: 0px;
     }
@@ -62,21 +60,24 @@
         cursor: pointer;
         float: right;
     }
-    .mCustomScrollBox {
-        overflow-y: auto;
+
+    .doc_left_sidebarlist {
+        padding-top: 0px !important;
+        position: fixed;
+        width: 250px;
+        overflow: auto !important;
         overscroll-behavior: contain;
         scroll-behavior: smooth;
-    }
-    .doc_left_sidebarlist {
-        padding-top: 0px;
+
     }
     .doc-middle-content {
         padding-top: 0px;
     }
     .book_title {
         font-weight: bolder;
-        padding-bottom: 16px;
-        padding-left: 16px;
+        padding: 16px;
+        background-color: #fdfdfd;
+        margin-bottom: 0px !important;
     }
 </style>
 {% endblock %}
@@ -114,37 +115,35 @@
 <section>
     <div class="container custom_container">
         <div class="row">
-            <div class="col-lg-3 doc_mobile_menu display_none">
+            <div class="col-lg-3 doc_mobile_menu display_none" style="z-index: 0;">
                 <aside class="doc_left_sidebarlist">
                     <div class="open_icon" id="left">
                         <i class="arrow_carrot-right"></i>
                         <i class="arrow_carrot-left"></i>
                     </div>
-                    <div class="scroll">
-                        <ul class="list-unstyled nav-sidebar">
-                            {% for page in pages %}
-                            {% if page.parent_id == 0 %}
-                            <li class="nav-item active">
-                                <a onclick='onclickChildList("{{ page.page_id }}")' class="nav-link">{{ page.page_title }}</a>
-                                <span class="icon"><i class="arrow_carrot-down"></i></span>
-                                <ul class="list-unstyled dropdown_nav" id="parent-list-{{ page.page_id }}" ></ul>
-                            </li>
-                            {% elif page.depth == 1 %}
-                            <script>
-                                $("#" + "parent-list-" + "{{ page.parent_id }}").append(
-                                    `<li><a id='child-list-{{ page.page_id }}' onclick='onclickChildList(this.id)'>` + "{{ page.page_title }}" + `</a></li>`
-                                );
-                            </script>
-                            {% endif %}
-                            {% endfor %}
-                        </ul>
-                    </div>
+                    <ul class="list-unstyled nav-sidebar">
+                        {% for page in pages %}
+                        {% if page.parent_id == 0 %}
+                        <li class="nav-item active">
+                            <a onclick='onclickChildList("{{ page.page_id }}")' class="nav-link">{{ page.page_title }}</a>
+                            <span class="icon"><i class="arrow_carrot-down"></i></span>
+                            <ul class="list-unstyled dropdown_nav" id="parent-list-{{ page.page_id }}" ></ul>
+                        </li>
+                        {% elif page.depth == 1 %}
+                        <script>
+                            $("#" + "parent-list-" + "{{ page.parent_id }}").append(
+                                `<li><a id='child-list-{{ page.page_id }}' onclick='onclickChildList(this.id)'>` + "{{ page.page_title }}" + `</a></li>`
+                            );
+                        </script>
+                        {% endif %}
+                        {% endfor %}
+                    </ul>
                 </aside>
             </div>
-            <div class="col-xl-9 doc-middle-content">{% csrf_token %}
-                <h4 class="book_title">{{ book.book_title }}</h4>
+            <div class="col-xl-9 doc-middle-content" style="z-index: 1;">{% csrf_token %}
                 <article id="post" class="documentation_info">
                     <div class="documentation_body" id="documentation">
+                        <h4 class="book_title">{{ book.book_title }}</h4>
                         {% for page in pages %}
                         <div class="martor-content">
                             <div class="martor-preview" id="page-{{ page.page_id }}">

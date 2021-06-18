@@ -16010,9 +16010,10 @@ input[type=number] {
 
 .doc_about_widget {
   padding-right: 128px;
+  padding-left: 20px;
 }
 .doc_about_widget p {
-  font-size: 16px;
+  font-size: 13px;
   line-height: 30px;
   color: #6b707f;
   font-weight: 500;
@@ -16066,11 +16067,11 @@ input[type=number] {
 
 .doc_footer_bottom {
   border-top: 1px solid #f0f0f7;
-  padding: 30px 0 30px;
+  padding: 10px 0 0 0;
 }
 .doc_footer_bottom p {
   margin-bottom: 0;
-  font-size: 14px;
+  font-size: 13px;
   color: #6b707f;
 }
 .doc_footer_bottom p span {
@@ -16628,8 +16629,8 @@ input[type=number] {
   ============================================================================================ */
 .forum_footer_area {
   background: #f2f5f7;
-  padding-top: 55px;
-  padding-bottom: 45px;
+  padding-top: 25px;
+  padding-bottom: 20px;
   position: relative;
   z-index: 1;
 }
