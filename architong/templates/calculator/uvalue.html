@@ -18,7 +18,7 @@
                         <h3 style="color: #2c63bb">지역구분</h3>
                         <select id="sido1" name="sido1"></select>
                         <select id="gugun1" name="gugun1" style="display: none"></select>
-                        <select id="locale" onchange="onchangeLocale(this.value)" disabled>
+                        <select id="locale" disabled>
                             <option value="" disabled hidden selected>지역구분</option>
                         </select>
                     </div>
@@ -60,6 +60,17 @@
         <!-- End of Header -->
         <!-- Start of Container -->
         <div class="con_wrap maxwrap1300">
+            <!-- Google Ad  -->
+            <script async src="https://pagead2.googlesyndication.com/pagead/js/adsbygoogle.js"></script>
+            <ins class="adsbygoogle"
+                 style="display:block; text-align:center;"
+                 data-ad-layout="in-article"
+                 data-ad-format="fluid"
+                 data-ad-client="ca-pub-8123301605290544"
+                 data-ad-slot="5045668696"></ins>
+            <script>
+                 (adsbygoogle = window.adsbygoogle || []).push({});
+            </script>
             <!-- Start of External-Wall -->
             <div class="con_tit">
                 <span>*&nbsp;자재의 종류와 두께를 선택하면 열관류율이 자동 계산됨</span>
@@ -661,8 +672,25 @@
             <h6 id="floor-avg-result" class="dis_inb"></h6>
         </div>
         </div>
+        <!-- Google Ad  -->
+        <script async src="https://pagead2.googlesyndication.com/pagead/js/adsbygoogle.js"></script>
+        <ins class="adsbygoogle"
+             style="display:block; text-align:center;"
+             data-ad-layout="in-article"
+             data-ad-format="fluid"
+             data-ad-client="ca-pub-8123301605290544"
+             data-ad-slot="5045668696"></ins>
+        <script>
+             (adsbygoogle = window.adsbygoogle || []).push({});
+        </script>
     </div>
 {% endblock %}
 {% block js %}
     <script src="{% static 'uvalue/js/script.js' %}"></script>
+    <script data-ad-client="ca-pub-8123301605290544" async src="https://pagead2.googlesyndication.com/pagead/js/adsbygoogle.js"></script>
+    <script>
+        window.onload = function() {
+            initCodeSet("{{ sido1 }}", "{{ gugun1 }}", "{{ locale }}", "{{ use }}");
+        }
+    </script>
 {% endblock %}

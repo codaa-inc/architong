@@ -1,5 +1,6 @@
 import requests
 import json
+import os
 import datetime
 
 from django.shortcuts import render
@@ -20,6 +21,11 @@ from apps.forum.models import Comments, UserLikeComment
 # 메인 페이지 조회 / 문서 검색 function
 def index(request):
     books = Books.objects.filter(rls_yn="Y").order_by('-wrt_dt')  # 전체 쿼리셋
+    # 검색조건 콤보박스
+    sort_list = [{'value': '0', 'label': '제목'},
+                 {'value': '1', 'label': '내용'},
+                 {'value': '2', 'label': '저자명'}]
+
     # GET 요청일때 전체 쿼리셋을 가져온다
     if request.method == 'GET':
         # 작성자가 일반회원인 경우에만 소셜계정 프로필 출력, 관리자는 기본이미지를 출력함
@@ -30,7 +36,8 @@ def index(request):
         # 페이징처리
         page = request.GET.get('page')
         paginator = Paginator(books, 6).get_page(page)
-        context = {"books": paginator}
+        context = {"books": paginator,
+                   "sort_list": sort_list}
         return render(request, 'common/index.html', context)
 
     # POST 요청일때 해당 검색조건을 적용한 쿼리셋을 가져온다.
@@ -38,16 +45,31 @@ def index(request):
         text = request.POST['search-box']           # 검색어
         option = request.POST['search-option']      # 검색 범위 옵션
         page = request.POST['page']                 # 이동할 페이지
+
+        # 검색조건에 따른 filter 적용
         if option == '0':
             books = books.filter(book_title__icontains=text)
         elif option == '1':
             page = Pages.objects.all().filter(description__icontains=text).only('book_id')
             book_id_list = page.values_list('book_id', flat=True).distinct().order_by("book_id")
             books = books.filter(book_id__in=book_id_list)
+            for idx, item in enumerate(sort_list):
+                if item.get('value') == option:
+                    sel_item = sort_list[idx]
+                    sort_list.remove(sel_item)
+                    sort_list.insert(0, sel_item)
         elif option == '2':
             books = books.filter(author_id__icontains=text)
+            for idx, item in enumerate(sort_list):
+                if item.get('value') == option:
+                    sel_item = sort_list[idx]
+                    sort_list.remove(sel_item)
+                    sort_list.insert(0, sel_item)
         paginator = Paginator(books, 6).get_page(page)
-        return render(request, 'common/index.html', {"book": paginator, "search_term": text})
+        context = {"books": paginator,
+                   "search_term": text,
+                   "sort_list": sort_list}
+        return render(request, 'common/index.html', context)
 
 
 # 유저 프로필 페이지 function
@@ -82,14 +104,17 @@ class LawView(View):
     def post(self, request):
         if request.user.is_staff:
             host = "http://www.law.go.kr/DRF/lawService.do?"
-            OC = 'mediaquery1'
+            OC = json.loads(open('././config/keys/secret_key.json', 'r').read())['OC']
             type = 'XML'
-            target = request.POST['target']
-            url = host + "OC=" + OC + "&target=" + target + "&type=" + type
-            if target == 'law' or target == 'ordin':        # 일반법, 자치법규
-                url += "&MST=" + request.POST['target_no']
-            elif target == 'admrul':                        # 행정규칙
-                url += "&LID=" + request.POST['target_no']
+            url = host + "OC=" + OC + "&type=" + type
+            target_sel = request.POST['target']
+            if target_sel == 0:      # 일반법
+                url += "&target=law&MST=" + request.POST['target_no']
+            elif target_sel == 1:    # 행정규칙
+                url += "&target=admrul&LID=" + request.POST['target_no']
+            elif target_sel == 2:       # 자치법규
+                url += "&target=ordin&MST=" + request.POST['target_no']
+
             try:
                 res = requests.get(url)
                 print("request url : ", res.url)
@@ -101,7 +126,7 @@ class LawView(View):
                     book_count = Books.objects.filter(book_title=book_title).count()
                     # 이미 등록되어있는지 중복체크
                     if book_count < 1:
-                        book = Books(book_title=book_title, enfc_dt=enfc_dt,
+                        book = Books(book_title=book_title, enfc_dt=enfc_dt, code_gubun=target_sel,
                                      author_id=request.user.username, codes_yn="Y", rls_yn="Y")
                         book.save()     # 법규정보 Books 테이블 등록
                         book_id = Books.objects.last().book_id

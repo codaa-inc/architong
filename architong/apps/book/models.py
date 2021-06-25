@@ -12,6 +12,12 @@ class Books(models.Model):
     wrt_dt = models.DateTimeField(auto_now_add=True, blank=True, null=True)
     enfc_dt = models.DateTimeField(blank=True, null=True)
     codes_yn = models.CharField(max_length=10, blank=True, null=True)
+    CODE_CHOICES = (
+        ('0', '법령'),
+        ('1', '행정규칙'),
+        ('2', '자치법규'),
+    )
+    code_gubun = models.CharField(max_length=2, choices=CODE_CHOICES)
 
     class Meta:
         managed = False

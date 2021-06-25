@@ -1,2 +1,3 @@
-# architong
-건축통은 건축, 도시, 환경 관련 텍스트 문서를 공유하는 플랫폼 서비스(Wiki) 입니다.
+# Codect
+
+ 건축 관련 법규 및 문서를 공유하는 플랫폼 서비스(Wiki) [Codect](http://codetect.io/) 입니다.

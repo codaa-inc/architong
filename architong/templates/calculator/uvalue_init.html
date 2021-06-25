@@ -1,0 +1,45 @@
+{% extends 'common/base.html' %}
+{% load static %}
+{% block content %}
+<div class="sign_inner signup_inner" style="padding-top: 95px;">
+    <h5>열관류율 계산기</h5>
+    <form action="/calc/uvalue" method="post" id="uvalue_form" class="row login_form"
+          style=" padding: 20px 0;">{% csrf_token %}
+        <div class="col-sm-12 form-group">
+            <div class="small_text">지역구분</div>
+            <div class="col-sm-12 form-group" style="display: flex; padding: 0px">
+                <select id="sido1" name="sido1" class="form-control"></select>
+                <select id="gugun1" name="gugun1" class="form-control" style="display: none"></select>
+                <select id="locale" name="locale" class="form-control" disabled>
+                    <option disabled selected>지역구분</option>
+                </select>
+            </div>
+        </div>
+        <div class="col-sm-12 form-group">
+            <div class="small_text">용도구분</div>
+            <select id="use" name="use" class="form-control" onchange="onchangeUse(this.value)">
+                <option disabled selected>용도구분</option>
+            </select>
+        </div>
+        <div class="col-lg-12 text-center">
+            <button type="button" class="btn action_btn thm_btn" onclick="requestUvalue()">검토하기</button>
+        </div>
+    </form>
+</div>
+{% endblock %}
+{% block js %}
+    <script src="{% static 'uvalue/js/script.js' %}"></script>
+    <script>
+        // 열관류율 계산기 검토 클릭 이벤트
+        function requestUvalue() {
+            const localeCode = $('#locale').val();
+            const useCode = $('#use').val();
+            if (localeCode != null && useCode != null) {
+                $("#locale").removeAttr("disabled");
+                $("#uvalue_form").submit();
+            } else {
+                alert("지역과 용도를 모두 선택하세요.");
+            }
+        };
+    </script>
+{% endblock %}

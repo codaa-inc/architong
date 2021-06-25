@@ -9,8 +9,7 @@ from django.core.paginator import Paginator
 from django.db.models import Q, Subquery, OuterRef, Count
 from django.db.models.functions import Coalesce
 from django.shortcuts import render
-from django.http import HttpResponse
-from django.http import JsonResponse
+from django.http import HttpResponse, JsonResponse
 from django.views import View
 
 from apps.forum.models import Comments, UserLikeComment

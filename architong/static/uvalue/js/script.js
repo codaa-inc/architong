@@ -33,7 +33,7 @@ fetch('/calc/uvalue/data').then((response) =>
 /**
  * 초기 데이터를 셋팅하는 함수
  * */
-function initSet(items){
+function initSet(items) {
     // 서버에서 가져온 JSON 데이터 전역변수에 복사
     if (items != null || items != "" || items != "undefined") {
         data = JSON.parse(JSON.stringify(items));
@@ -57,6 +57,22 @@ function initSet(items){
         document.getElementById('use').appendChild(op);
     }
 };
+
+/**
+ * 초기 지역코드, 용도코드를 셋팅하는 함수
+ * */
+function initCodeSet(sido1, gugun1, locale, use) {
+    $('#sido1').val(sido1);
+    if (gugun1 != ""){
+        $('#sido1').change();
+        $('#gugun1').val(gugun1);
+    }
+    $('#locale').val(locale);
+    setLocaleCode(sido1, gugun1);
+    $('#use').val(use);
+    $('#use').change();
+    onclickReview();
+}
 
 /**
  *  콤보박스를 셋팅하는 함수
@@ -234,7 +250,6 @@ function onclickReview() {
             LOCALE_CODE = tmp_locale_code;
             USE_CODE = tmp_use_code;
 
-            $(".maxwrap1300").css("opacity", "1");  // 본문 음영 초기화
             setInitCombobox();                      // 콤보박스 셋팅
             setHeatTransCoPointEpi();               // 열관류율기준값, 배점, EPI 기준값 셋팅
             setInitValue();                         // 초기값 셋팅
@@ -268,7 +283,8 @@ function onclickReview() {
                 let comboArr = document.getElementsByName(arr[i])[0].getElementsByTagName("select");
                 for (let j = 0; j < comboArr.length; j++) {
                     let comboId = comboArr[j].id
-                    if (comboId.split('-')[2] == "thick" && $('#' + comboId).attr('disabled') != 'disabled' && $('#' + comboId).val() > 0) {
+                    if (comboId.split('-')[2] == "thick" && $('#' + comboId).attr('disabled') != 'disabled'
+                        && $('#' + comboId).val() > 0) {
                         $("#" + comboId).val(0);
                         setOptimalThick(comboId);   // 부위별 열관류율에 따른 두께 최적화
                     }
@@ -328,7 +344,6 @@ function setInitValue() {
       setComboSelect("win-direct-kind-1", 1);
     }
     setComboSelect("win-indirect-kind-1", 1);
-
 
     // 지붕 default 값
     setComboSelect("roof-direct-kind-1", 1);
@@ -426,7 +441,7 @@ function onclickReset() {
 */
 function onchangeCombobox(id) {
     if (LOCALE_CODE == null || USE_CODE == null) {
-        alert("지역과 용도를 선택하세요.");
+        alert("지역과 용도를 모두 선택하세요.");
     } else {
         // 콤보 변경에 의한 검토실행이므로 검토버튼클릭여부 flag 변경
         isClickReview = false;
@@ -617,6 +632,7 @@ function onchangeUse(sel) {
     // 선택한 용도코드 임시저장
     tmp_use_code = sel;
 };
+
 
 /**
 * 면적 변경 이벤트
@@ -883,9 +899,11 @@ function setSatisfyHeatResistance() {
     // 슬라브상부 열저항값
     for(let i in materialArr) {
         if (i <= 2) {
-            direct += Number(roundTo(calcHeatResistance(document.getElementById(materialArr[i]).value, document.getElementById(thickArr[i]).value), 3));
+            direct += Number(roundTo(calcHeatResistance(document.getElementById(materialArr[i]).value,
+                document.getElementById(thickArr[i]).value), 3));
         } else {
-            indirect += Number(roundTo(calcHeatResistance(document.getElementById(materialArr[i]).value, document.getElementById(thickArr[i]).value), 3));
+            indirect += Number(roundTo(calcHeatResistance(document.getElementById(materialArr[i]).value,
+                document.getElementById(thickArr[i]).value), 3));
         }
     }
 

@@ -29,7 +29,7 @@ a, p, span, b, h1,h2,h3,h4,h5,h6, input,button,select,textarea,label{transform: 
 }
 .clear{clear: both}
 .wrap1300{width: 1300px;margin: 0 auto; padding: 40px 0 0 0;}
-.maxwrap1300{max-width: 1300px;margin: 0 auto; opacity: 0.3;}
+.maxwrap1300{max-width: 1300px;margin: 0 auto;}
 
 .con_tit h2{ 
 }

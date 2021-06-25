@@ -1,5 +1,4 @@
 from django.conf import settings
-from django.contrib.contenttypes.fields import GenericRelation
 from django.db import models
 from datetime import datetime, timedelta, timezone
 
@@ -16,6 +15,7 @@ class Comments(models.Model):
     status = models.CharField(max_length=10, blank=True, null=True)
     like_users = models.ManyToManyField(settings.AUTH_USER_MODEL, through='UserLikeComment')
     hit_count = models.PositiveIntegerField(default=0)
+
 
     @property
     def created_string(self):
