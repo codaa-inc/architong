@@ -55,7 +55,7 @@ def law_list(request):
 
 
 # 문서 리스트 조회 function
-def doc_list(request):
+def wiki_list(request):
     sort = request.GET.get('sort', 'recent')  # 정렬기준 쿼리스트링을 가져온다, 없는 경우 default 등록순
     if sort == 'views':
         docs = Books.objects.filter(codes_yn="N", rls_yn="Y").order_by('-wrt_dt')
@@ -79,7 +79,7 @@ def doc_list(request):
                 sort_list.remove(sel_item)
                 sort_list.insert(0, sel_item)
     context = {"books": paginator, "sort_list": sort_list}
-    return render(request, "book/doc_list.html", context)
+    return render(request, "book/wiki_list.html", context)
 
 
 # 책 조회 function
@@ -238,4 +238,4 @@ def comment_count(request):
         username = request.user
         q = Q(page_id=page_id) & Q(rls_yn=rls_yn) & Q(username=username) & ~Q(status='D')
         count = Comments.objects.filter(q).count()
-        return JsonResponse({"result": str(count)})
+        return JsonResponse({"comment_count": str(count)})

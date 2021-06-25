@@ -17,13 +17,15 @@ urlpatterns = [
     path('profile/<str:username>', profile),
     path('logout/', auth_views.LogoutView.as_view(), name="logout"),
     path('law/insert', LawView.as_view()),
+    path('law/update/<int:book_id>', law_update),
     path('law/manage', manage_law),
     path('user/manage', manage_user),
+    path('user/update/<int:user_id>', user_update),
 
     # Book
-    path('edit/', editor),
+    path('wiki/', editor),
     path('book/law', law_list),
-    path('book/doc', doc_list),
+    path('book/wiki', wiki_list),
     path('book/<int:book_id>', view_book),
     path('book/bookmark/<int:page_id>', add_or_remove_bookmark),
     path('page/<int:page_id>', view_page),

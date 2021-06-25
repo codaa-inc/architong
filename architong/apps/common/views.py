@@ -284,15 +284,52 @@ class LawView(View):
         page.save()  # 모델 DB 저장
 
 
-# 법규관리 페이지를 렌더링 하는 function
+# 법규관리 페이지를 렌더링하는 function
 @staff_member_required
 def manage_law(request):
     context = {"books": Books.objects.filter(codes_yn="Y").order_by('-wrt_dt')}
     return render(request, "common/law_admin.html", context)
 
 
-# 회원관리 페이지를 렌더링 하는 function
+# 법규 공개여부를 번경하는 function
+@staff_member_required
+def law_update(request, book_id):
+    law = Books.objects.get(book_id=book_id)
+    if law.rls_yn == "Y":
+        law.rls_yn = "N"
+        result = "private"
+    else:
+        law.rls_yn = "Y"
+        result = "public"
+    law.save()
+    return JsonResponse({"result": result})
+
+
+# 회원관리 페이지를 렌더링하는 function
 @staff_member_required
 def manage_user(request):
     context = {"users": get_user_model().objects.all()}
     return render(request, "common/user_admin.html", context)
+
+
+# 회원 활성화여부, 관리자여부를 변경하는 function
+@staff_member_required
+def user_update(request, user_id):
+    user = get_user_model().objects.get(id=user_id)
+    flag = request.GET.get('flag')
+    if flag == 'is_active':
+        if user.is_active == 0:
+            user.is_active = 1
+            message = "활성화"
+        else:
+            user.is_active = 0
+            message = "휴면회원"
+    elif flag == "is_staff":
+        if user.is_staff == 0:
+            user.is_staff = 1
+            message = "관리자로 변경"
+        else:
+            user.is_staff = 0
+            message = "일반회원으로 변경"
+    user.save()
+    return JsonResponse({"message": message})

@@ -157,7 +157,7 @@ class CommentView(View):
             comment.save()
             return JsonResponse({"result": result})
         else:
-            context = {"result": "fail"}
+            context = {"result": "parent delete"}
             return JsonResponse(context, content_type="text/json")
 
 

@@ -562,7 +562,7 @@ function getCommentCount(page_id, rls_yn) {
         async : false,
         dataType: "json", // 서버측에서 전송한 Response 데이터 형식 (json)
         success: function (response) { // 통신 성공시 - 동적으로 북마크 아이콘 변경
-            commentCount = Number(response.result);
+            commentCount = Number(response.comment_count);
         },
         error: function (request, status, error) { // 통신 실패시 - 로그인 페이지 리다이렉트
             //window.location.replace("/accounts/google/login/")

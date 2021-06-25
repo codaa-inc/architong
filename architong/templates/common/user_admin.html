@@ -34,15 +34,25 @@
                     {% for user in users %}
                     <tr>
                         <td>{{ forloop.counter }}</td>
-                        {% if user.is_staff == 1 %}<td>관리자</td>
-                        {% else %}<td>일반회원</td>{% endif %}
+                        {% if user.is_staff == 1 %}
+                            <td><a href="#"
+                                   onclick="onclickUserIsActive('{{ user.id }}', '{{ user.username }}', 'is_staff')">관리자</a></td>
+                        {% else %}
+                            <td><a href="#"
+                                   onclick="onclickUserIsActive('{{ user.id }}', '{{ user.username }}', 'is_staff')">일반회원</a></td>
+                        {% endif %}
                         <td>{{ user.username }}</td>
                         <td>{{ user.email }}</td>
                         <td>{{ user.act_point }}</td>
                         <td>{{ user.last_login | date:'Y.m.d H:i:s' }}</td>
                         <td>{{ user.date_joined | date:'Y.m.d H:i:s' }}</td>
-                        {% if user.is_active == 1 %}<td>사용중</td>
-                        {% else %}<td>휴면</td>{% endif %}
+                        {% if user.is_active == 1 %}
+                            <td><a href="#"
+                                   onclick="onclickUserIsActive('{{ user.id }}', '{{ user.username }}', 'is_active')">사용중</a></td>
+                        {% else %}
+                            <td><a href="#"
+                                   onclick="onclickUserIsActive('{{ user.id }}', '{{ user.username }}', 'is_active')">휴면</a></td>
+                        {% endif %}
                     </tr>
                     {% endfor %}
                     {% else %}
@@ -61,5 +71,6 @@
 {% block js %}
     <script src="{% static 'assets/bootstrap/js/bootstrap-select.min.js' %}"></script>
     <script type="text/javascript" src="https://cdn.datatables.net/v/dt/dt-1.10.23/sl-1.3.1/datatables.min.js"></script>
-    <script src="{% static 'js/theme.js' %}"></script>s
+    <script src="{% static 'js/theme.js' %}"></script>
+    <script src="{% static 'js/common.js' %}"></script>
 {% endblock %}

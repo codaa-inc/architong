@@ -135,3 +135,97 @@ function onchangeSort(value) {
     location.href = window.location.pathname + "?sort=" + value;
 };
 
+/**
+ * 법규관리 페이지 법규구분 변경 이벤트
+ * */
+function onchangeTarget(value) {
+    if (value == "admrul") {
+        $("#target_no_label").text("행정규칙 LID");
+    } else if (value == "ordin"){
+        $("#target_no_label").text("자치법규 MST");
+    } else {
+        $("#target_no_label").text("법령 MST");
+    }
+};
+
+// inputbox 엔터키 감지
+$(document).ready(function(){
+    $("#target_no").keypress(function (e) {
+        if (e.which == 13) {
+            onclickInsertLaw();
+        }
+    });
+});
+
+/**
+ * 법규관리 페이지 법규 등록 이벤트
+ * */
+function onclickInsertLaw() {
+    $.ajax({
+        type: "POST",
+        url: "/law/insert",
+        dataType: "json",
+        data: $("#law_form").serialize() + "&csrfmiddlewaretoken=" + $("input[name=csrfmiddlewaretoken]").val(),
+        success: function (response) {
+            if(response.result == "exist") {
+                alert(response.message);
+            } else if (response.result == "fail"){
+                alert("등록 실패");
+                // 해당 법규 법제처 페이지 open
+                window.open(response.html_url);
+            } else if(response.result == "success") {
+                alert("등록 되었습니다.");
+                document.location.href = "/law/manage";
+            }
+        },
+        error: function (request, status, error) {
+            console.log("code:" + request.status + "\n" + "message:" + request.responseText + "\n" + "error:" + error)
+        },
+    });
+};
+
+/**
+ * 법규관리 페이지 공개여부 변경 이벤트
+ * */
+function onclickLawRlsYn(book_id, book_title) {
+    if(confirm(book_title + "의 공개여부를 변경하시겠습니까?")) {
+       $.ajax({
+            type: "GET",
+            url: "/law/update/" + book_id,
+            dataType: "json",
+            success: function (response) {
+                if(response.result == "private") {
+                    alert("해당 법규가 비공개 처리 되었습니다.");
+                    document.location.href = "/law/manage";
+                } else if (response.result == "public"){
+                    alert("해당 법규가 공개 처리 되었습니다.");
+                    document.location.href = "/law/manage";
+                }
+            },
+            error: function (request, status, error) {
+                console.log("code:" + request.status + "\n" + "message:" + request.responseText + "\n" + "error:" + error)
+            },
+       });
+    }
+};
+
+/**
+ * 회원관리 페이지 활성화여부 변경 이벤트
+ * */
+function onclickUserIsActive(userid, username, flag){
+    const message = flag == "is_active" ? "활성화 여부를" :  "회원구분을";
+    if(confirm(username + "님의 " + message + " 변경하시겠습니까?")) {
+       $.ajax({
+            type: "GET",
+            url: "/user/update/" + userid + "?flag=" + flag,
+            dataType: "json",
+            success: function (response) {
+                alert(username + "님이 " + response.message + " 처리 되었습니다.");
+                document.location.href = "/user/manage";
+            },
+            error: function (request, status, error) {
+                console.log("code:" + request.status + "\n" + "message:" + request.responseText + "\n" + "error:" + error)
+            },
+       });
+    }
+};

@@ -57,6 +57,7 @@
                         <th class="th-sm">No.</th>
                         <th class="th-sm">법규명</th>
                         <th class="th-sm">시행일</th>
+                        <th class="th-sm">공개여부</th>
                         <th class="th-sm">등록일</th>
                     </tr>
                     </thead>
@@ -67,6 +68,11 @@
                         <td>{{ forloop.counter }}</td>
                         <td><a style="color: #6b707f;" href="/book/{{ book.book_id }}">{{ book.book_title }}</a></td>
                         <td>{{ book.enfc_dt | date:'Y.m.d' }}</td>
+                        {% if book.rls_yn == "Y" %}
+                        <td><a href="#" onclick="onclickLawRlsYn('{{ book.book_id }}', '{{ book.book_title }}')">공개</a></td>
+                        {% else %}
+                        <td><a href="#" onclick="onclickLawRlsYn('{{ book.book_id }}', '{{ book.book_title }}')">비공개</a></td>
+                        {% endif %}
                         <td>{{ book.wrt_dt | date:'Y.m.d' }}</td>
                     </tr>
                     {% endfor %}
@@ -92,53 +98,5 @@
     <script src="{% static 'assets/bootstrap/js/bootstrap-select.min.js' %}"></script>
     <script type="text/javascript" src="https://cdn.datatables.net/v/dt/dt-1.10.23/sl-1.3.1/datatables.min.js"></script>
     <script src="{% static 'js/theme.js' %}"></script>
-    <script>
-        // 법규구분 선택에 따라 입력해야할 변수 label 변경
-        function onchangeTarget(value) {
-            if (value == "admrul") {
-                $("#target_no_label").text("행정규칙 LID");
-            } else if (value == "ordin"){
-                $("#target_no_label").text("자치법규 MST");
-            } else {
-                $("#target_no_label").text("법령 MST");
-            }
-        };
-
-        // inputbox 엔터키 감지
-        $(document).ready(function(){
-            $("#target_no").keypress(function (e) {
-                if (e.which == 13) {
-                    onclickInsertLaw();
-                }
-            });
-        });
-
-        /**
-         * 법규 등록 이벤트
-         * */
-        function onclickInsertLaw() {
-            $.ajax({
-                type: "POST",
-                url: "/law/insert",
-                dataType: "json", // 서버측에서 전송한 Response 데이터 형식 (json)
-                data: $("#law_form").serialize() + "&csrfmiddlewaretoken=" + $("input[name=csrfmiddlewaretoken]").val(),
-                success: function (response) { // 통신 성공시 - 동적으로 북마크 아이콘 변경
-                    if(response.result == "exist") {
-                        alert(response.message);
-                    } else if (response.result == "fail"){
-                        alert("등록 실패");
-                        // 해당 법규 법제처 페이지 open
-                        window.open(response.html_url);
-                    } else if(response.result == "success") {
-                        alert("등록 되었습니다.");
-                        document.location.href = "/law/manage";
-                    }
-                },
-                error: function (request, status, error) { // 통신 실패시 - 로그인 페이지 리다이렉트
-                    console.log("code:" + request.status + "\n" + "message:" + request.responseText + "\n" + "error:" + error)
-                    //window.location.replace("/accounts/google/login/")
-                },
-            });
-        };
-    </script>
+    <script src="{% static 'js/common.js' %}"></script>
 {% endblock %}
