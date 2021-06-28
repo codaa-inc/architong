@@ -1,11 +1,18 @@
 from django import forms
 from martor.fields import MartorFormField
-from apps.book.models import Pages
+from .models import Books, Pages
+
+
+class BookForm(forms.ModelForm):
+    class Meta:
+        model = Books
+        fields = ['book_title', 'rls_yn']
 
 
 class PageForm(forms.Form):
     page_title = forms.CharField(widget=forms.TextInput())
     description = MartorFormField()
+
 
 class PostForm(forms.ModelForm):
     class Meta:

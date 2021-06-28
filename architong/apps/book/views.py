@@ -1,5 +1,4 @@
 import json
-
 from django.core.paginator import Paginator
 from django.core.serializers.json import DjangoJSONEncoder
 from django.http import JsonResponse
@@ -7,22 +6,64 @@ from django.views.decorators.csrf import csrf_exempt
 from django.contrib.auth.decorators import login_required
 from django.shortcuts import render, redirect
 from django.db.models import Q
+from django.contrib import messages
 
 from apps.forum.models import Comments
-from .forms import PostForm, PageForm
+from .forms import BookForm, PostForm, PageForm
 from .models import Books, Pages, Bookmark
 
 
+# 책만들기 function
+def wiki_register(request):
+    # GET 요청이면 책만들기 페이지 렌더링
+    if request.method == 'GET':
+        return render(request, "book/wiki_register.html")
+
+    # POST 요청이면 책저장하고 페이지 에디터로 렌더링
+    elif request.method == 'POST':
+        form = BookForm(request.POST)
+        if form.is_valid():
+            # 신규 book 객체 저장
+            new_book = Books(
+                author_id=request.user, codes_yn="N",
+                book_title=request.POST.get('book_title'),
+                rls_yn=request.POST.get('rls_yn')
+            )
+            new_book.save()
+            book_id = Books.objects.order_by('book_id').last().book_id
+            return JsonResponse({"book_id": book_id})
+        else:
+            return JsonResponse({"error_message": "책제목은 최소 3글자, 최대 255글자 입니다."})
+
+
 # 마크다운 편집 페이지 렌더링 function
-def editor(request):
-    if request.method == 'POST':
+def wiki_editor(request, book_id):
+    # GET 요청이면 editor 페이지 렌더링
+    if request.method == 'GET':
+        book = Books.objects.get(book_id=book_id)
+        return render(request, 'book/editor.html', {"page": PageForm(), "book": book})
+
+    # POST 요청
+    elif request.method == 'POST':
         form = PostForm(request.POST)
         if form.is_valid():
-            form.save()
-            return redirect('/')
-    else:
-        # model이 아니라 form 객체를 넘겨야함
-        return render(request, 'book/editor.html', {"page": PageForm()})
+            parent_id = request.POST.get('parent_id', 0)
+            page = Pages(
+                book_id=book_id, page_title=request.POST.get('page_title'),
+                description=request.POST.get('description'),
+                parent_id=parent_id,
+                depth=0 if parent_id == 0 else 1
+            )
+            page_id = Pages.objects.order_by('page_id').last().page_id
+            page.save()
+            return JsonResponse({"page_id": page_id})
+        else:
+            return JsonResponse({"error_message": "오류메세지작성"})
+
+
+# 마크다운 에디터 미리보기 모드
+def wiki_page_editor(request, page_id):
+    return render(request, 'book/editor.html')
 
 
 # 법규 리스트 조회 function

@@ -1,10 +1,11 @@
 from django.db import models
 from martor.models import MartorField
+from django.core.validators import MinLengthValidator
 
 
 class Books(models.Model):
     book_id = models.AutoField(primary_key=True)
-    book_title = models.CharField(max_length=255)
+    book_title = models.CharField(max_length=255, validators=[MinLengthValidator(3)])
     author_id = models.CharField(max_length=150)
     cover_path = models.CharField(max_length=255, blank=True, null=True)
     rls_yn = models.CharField(max_length=10)
@@ -28,8 +29,8 @@ class Pages(models.Model):
     page_id = models.AutoField(primary_key=True)
     book_id = models.IntegerField()
     page_title = models.CharField(max_length=255)
-    parent_id = models.IntegerField(blank=True, null=True)
-    depth = models.IntegerField(blank=True, null=True)
+    parent_id = models.IntegerField(blank=True, null=True, default=0)
+    depth = models.IntegerField(blank=True, null=True, default=0)
     description = MartorField()
     wrt_dt = models.DateTimeField(auto_now_add=True, blank=True, null=True)
     mdfcn_dt = models.DateTimeField(auto_now_add=True, blank=True, null=True)

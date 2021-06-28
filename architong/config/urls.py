@@ -23,7 +23,9 @@ urlpatterns = [
     path('user/update/<int:user_id>', user_update),
 
     # Book
-    path('wiki/', editor),
+    path('wiki/', wiki_register),
+    path('wiki/<int:book_id>', wiki_editor),
+    path('wiki/page/<int:page_id>', wiki_page_editor),
     path('book/law', law_list),
     path('book/wiki', wiki_list),
     path('book/<int:book_id>', view_book),

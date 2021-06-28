@@ -560,13 +560,57 @@ function getCommentCount(page_id, rls_yn) {
         type: "GET",
         url: "/comment/count/?page_id=" + page_id + "&rls_yn=" + rls_yn,
         async : false,
-        dataType: "json", // 서버측에서 전송한 Response 데이터 형식 (json)
-        success: function (response) { // 통신 성공시 - 동적으로 북마크 아이콘 변경
+        dataType: "json",
+        success: function (response) {
             commentCount = Number(response.comment_count);
         },
-        error: function (request, status, error) { // 통신 실패시 - 로그인 페이지 리다이렉트
-            //window.location.replace("/accounts/google/login/")
+        error: function (request, status, error) {
+
         },
     });
     return commentCount;
+};
+
+/**
+ * 신규 책 등록 이벤트
+ * */
+function onclickSaveBook() {
+    $.ajax({
+        type: "POST",
+        url: "/wiki/",
+        data: $("#wiki_register").serialize() + "&csrfmiddlewaretoken=" + $("input[name=csrfmiddlewaretoken]").val(),
+        dataType: "json",
+        success: function (response) {
+            if (response.book_id != undefined) {
+                document.location.href = "/wiki/" + response.book_id;
+            } else {
+                alert(response.error_message);
+            }
+        },
+        error: function (request, status, error) {
+            console.log("code:" + request.status + "\n" + "message:" + request.responseText + "\n" + "error:" + error)
+        },
+    });
+};
+
+/**
+ * 마크다운 에디터 페이지 저장 이벤트
+ * */
+function onclickSavePage(book_id) {
+    $.ajax({
+        type: "POST",
+        url: "/wiki/"+book_id,
+        data: $("#page_form").serialize() +  + "&csrfmiddlewaretoken=" + $("input[name=csrfmiddlewaretoken]").val(),
+        dataType: "json",
+        success: function (response) {
+            if (response.page_id != undefined) {
+                document.location.href = "/wiki/page" + response.page_id;
+            } else {
+                alert(response.error_message);
+            }
+        },
+        error: function (request, status, error) {
+            console.log("code:" + request.status + "\n" + "message:" + request.responseText + "\n" + "error:" + error)
+        },
+    });
 };
