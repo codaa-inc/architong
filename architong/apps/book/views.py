@@ -1,12 +1,11 @@
 import json
 from django.core.paginator import Paginator
 from django.core.serializers.json import DjangoJSONEncoder
-from django.http import JsonResponse
+from django.http import JsonResponse, HttpResponse
 from django.views.decorators.csrf import csrf_exempt
 from django.contrib.auth.decorators import login_required
-from django.shortcuts import render, redirect
+from django.shortcuts import render
 from django.db.models import Q
-from django.contrib import messages
 
 from apps.forum.models import Comments
 from .forms import BookForm, PostForm, PageForm
@@ -14,20 +13,21 @@ from .models import Books, Pages, Bookmark
 
 
 # 책만들기 function
+@login_required(login_url="/account/google/login")
 def wiki_register(request):
     # GET 요청이면 책만들기 페이지 렌더링
     if request.method == 'GET':
         return render(request, "book/wiki_register.html")
-
     # POST 요청이면 책저장하고 페이지 에디터로 렌더링
     elif request.method == 'POST':
         form = BookForm(request.POST)
         if form.is_valid():
             # 신규 book 객체 저장
             new_book = Books(
-                author_id=request.user, codes_yn="N",
+                author_id=request.user,
                 book_title=request.POST.get('book_title'),
-                rls_yn=request.POST.get('rls_yn')
+                rls_yn=request.POST.get('rls_yn'),
+                codes_yn="N",
             )
             new_book.save()
             book_id = Books.objects.order_by('book_id').last().book_id
@@ -36,34 +36,77 @@ def wiki_register(request):
             return JsonResponse({"error_message": "책제목은 최소 3글자, 최대 255글자 입니다."})
 
 
-# 마크다운 편집 페이지 렌더링 function
+# 마크다운 에디터 편집 모드 function
+@login_required(login_url="/account/google/login")
 def wiki_editor(request, book_id):
-    # GET 요청이면 editor 페이지 렌더링
-    if request.method == 'GET':
-        book = Books.objects.get(book_id=book_id)
-        return render(request, 'book/editor.html', {"page": PageForm(), "book": book})
+    book = Books.objects.get(book_id=book_id)
+    # 작성자와 사용자가 일치하는지 체크
+    if str(request.user) == book.author_id:
+        # GET 요청이면 editor 페이지 렌더링
+        if request.method == 'GET':
+            book = Books.objects.get(book_id=book_id)
+            pages = Pages.objects.filter(book_id=book.book_id)
+            context = {"page_form": PageForm(),
+                       "book": book,
+                       "add_point": request.GET.get('page', '')}
+            if pages.count() > 0:
+                sorted_pages = []
+                parent_pages = pages.filter(depth=0)
+                child_pages = pages.filter(depth=1)
+                # 페이지 계층구조 정렬
+                for parent_page in parent_pages:
+                    sorted_pages.append(parent_page)
+                    for child_page in child_pages:
+                        if child_page.parent_id == parent_page.page_id:
+                            sorted_pages.append(child_page)
+                context['page_list'] = sorted_pages
+            return render(request, 'book/editor.html', context)
 
-    # POST 요청
-    elif request.method == 'POST':
-        form = PostForm(request.POST)
-        if form.is_valid():
-            parent_id = request.POST.get('parent_id', 0)
-            page = Pages(
-                book_id=book_id, page_title=request.POST.get('page_title'),
-                description=request.POST.get('description'),
-                parent_id=parent_id,
-                depth=0 if parent_id == 0 else 1
-            )
-            page_id = Pages.objects.order_by('page_id').last().page_id
-            page.save()
-            return JsonResponse({"page_id": page_id})
-        else:
-            return JsonResponse({"error_message": "오류메세지작성"})
+        # POST 요청이면 페이지 등록
+        elif request.method == 'POST':
+            form = PostForm(request.POST)
+            if form.is_valid():
+                parent_id = 0 if request.POST['parent_id'] == "" else request.POST['parent_id']
+                page = Pages(
+                    book_id=book_id,
+                    page_title=request.POST.get('page_title'),
+                    description=request.POST.get('description'),
+                    parent_id=parent_id,
+                    depth=0 if parent_id == 0 else 1
+                )
+                page.save()
+                page_id = Pages.objects.order_by('page_id').last().page_id
+                return JsonResponse({"page_id": page_id})
+            else:
+                return JsonResponse({"error_message": "양식을 확인해주세요."})
+    else:
+        return JsonResponse({"error_message": "작성 권한이 없습니다."})
 
 
-# 마크다운 에디터 미리보기 모드
+# 마크다운 에디터 미리보기 모드 function
+@login_required(login_url="/account/google/login")
 def wiki_page_editor(request, page_id):
-    return render(request, 'book/editor.html')
+    book = Books.objects.get(book_id=Pages.objects.get(page_id=page_id).book_id)
+    # 작성자와 사용자가 일치하는지 체크
+    if str(request.user) == book.author_id:
+        sorted_pages = []
+        pages = Pages.objects.filter(book_id=book.book_id)
+        parent_pages = pages.filter(depth=0)
+        child_pages = pages.filter(depth=1)
+        # 페이지 계층구조 정렬
+        for parent_page in parent_pages:
+            sorted_pages.append(parent_page)
+            for child_page in child_pages:
+                if child_page.parent_id == parent_page.page_id:
+                    sorted_pages.append(child_page)
+        context = {
+            "book": book,
+            "page_list": sorted_pages,
+            "page": pages.get(page_id=page_id)
+        }
+        return render(request, 'book/editor.html', context)
+    else:
+        return HttpResponse("접근 권한이 없습니다.")
 
 
 # 법규 리스트 조회 function
@@ -203,7 +246,8 @@ def add_or_remove_bookmark(request, page_id):
         # 등록된 북마크가 있으면 delete
         if bookmark.count() > 0:
             # 북마크 하위 메모들을 삭제한다
-            private_comment = Comments.objects.filter(Q(page_id=page_id, username=username, rls_yn="N") & ~Q(status="D"))
+            private_comment = Comments.objects.filter(
+                Q(page_id=page_id, username=username, rls_yn="N") & ~Q(status="D"))
             del_comment = list(private_comment.values())
             for data in private_comment:
                 data.status = "D"
@@ -215,10 +259,11 @@ def add_or_remove_bookmark(request, page_id):
 
         # 등록된 북마크가 없으면 insert
         else:
-            insert_bm = Bookmark()  # 모델 객체 생성
-            insert_bm.page_id = page_id
-            insert_bm.book_id = Pages.objects.get(page_id=page_id).book_id
-            insert_bm.username = request.user
+            insert_bm = Bookmark(
+                page_id=page_id,
+                book_id=Pages.objects.get(page_id=page_id).book_id,
+                username=request.user
+            )
             insert_bm.save()
             result = 'insert'
 
@@ -273,10 +318,9 @@ def delete_bookmark(request, page_id):
 # 댓글 갯수를 리턴해주는 function
 @login_required
 def comment_count(request):
-    if request.method == 'GET':
-        page_id = request.GET['page_id']
-        rls_yn = request.GET['rls_yn']
-        username = request.user
-        q = Q(page_id=page_id) & Q(rls_yn=rls_yn) & Q(username=username) & ~Q(status='D')
-        count = Comments.objects.filter(q).count()
-        return JsonResponse({"comment_count": str(count)})
+    page_id = request.GET['page_id']
+    rls_yn = request.GET['rls_yn']
+    username = request.user
+    q = Q(page_id=page_id) & Q(rls_yn=rls_yn) & Q(username=username) & ~Q(status='D')
+    count = Comments.objects.filter(q).count()
+    return JsonResponse({"comment_count": str(count)})

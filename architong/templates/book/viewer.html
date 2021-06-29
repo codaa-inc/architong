@@ -150,7 +150,6 @@
                         {% for page in pages %}
                         <div class="martor-content">
                             <div class="martor-preview" id="page-{{ page.page_id }}">
-                                {% if page.depth == 1 %}
                                     <!----------------------- Comment Icon ----------------------->
                                     <a id="comment-{{ page.page_id }}" class="comment" title="댓글 작성"
                                        onclick='onclickComment("{{ page.comment_count }}", "{{ page.page_id }}")'>
@@ -176,7 +175,6 @@
                                         {% endif %}
                                     </a>
                                     <!----------------------- End Bookmark Icon -------------------->
-                                {% endif %}
                                 <div id="description-{{ page.page_id }}">
                                 {{ page.description|safe_markdown }}
                                 </div> {% csrf_token %}

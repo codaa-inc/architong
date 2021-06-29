@@ -1,6 +1,6 @@
 {% extends 'common/base.html' %}
 {% load static %}
-
+{% load martortags %}
 {% block css %}
 <link href="{% static 'plugins/css/bootstrap.min.css' %}" type="text/css" media="all" rel="stylesheet" />
 <link href="{% static 'plugins/css/ace.min.css' %}" type="text/css" media="all" rel="stylesheet"/>
@@ -29,6 +29,32 @@
     .form-group span {
         font-size: smaller;
     }
+    .editor-tab-description {
+        color: #0d0d75 !important;
+    }
+    .btn-success {
+        float: right;
+        padding: 6px 24px;
+        background-color: #0d0d75;
+        border-color: #0d0d75;
+    }
+    .btn-success:hover {
+        background-color: #0d0d75;
+        border-color: #0d0d75;
+    }
+    #form-bottom {
+        display: flex;
+        align-items: center;
+        justify-content: space-between;
+        margin-bottom: 35px;
+    }
+    #nav-editor-tab-description {
+        color: #696969 !important;
+    }
+
+    #nav-preview-tab-description {
+        color: #696969 !important;
+    }
 </style>
 {% endblock %}
 
@@ -36,61 +62,73 @@
     <section class="doc_documentation_area" id="sticky_doc">
         <div class="container custom_container">
             <div class="row">
+                <!-- 좌단 목차 영역 -->
                 <div class="col-lg-3 doc_mobile_menu display_none" style="z-index: 0;">
                     <aside class="doc_left_sidebarlist">
                         <ul class="list-unstyled nav-sidebar">
                             <li class="nav-item">
-                                <a class="nav-link" style="color: #3c4257 !important;">
+                                <a class="nav-link" style="color: #3c4257 !important; margin-right: 40px;">
                                     <i class="icon_document_alt"></i>&nbsp;{{ book.book_title }}</a>
-                                <span class="icon" data-icon="&#x59;" style="color: #3c4257 !important;"></span>
+                                <span class="icon" data-icon="&#x59;" style="color: #3c4257 !important;"
+                                onclick="addPage('{{ book.book_id }}')"></span>
                             </li>
-                            {% if pages is None %}
-                            <li class="nav-item">
-                                <a class="nav-link" style="color: #0d0d75 !important;">페이지 제목</a>
-                                <span class="icon" data-icon="&#x59;" style="color: #0d0d75 !important;"></span>
-                            </li>
-                            {% else %}
-                            {% for page in pages %}
+                            {% for page in page_list %}
                             {% if page.parent_id == 0 %}
                                 <li class="nav-item active">
-                                    <a onclick='onclickChildList("{{ page.page_id }}")' class="nav-link">{{ page.page_title }}</a>
-                                    <ul class="list-unstyled dropdown_nav" id="parent-list-{{ page.page_id }}" ></ul>
+                                    <a class="nav-link" style="margin-right: 40px; color: #0d0d75 !important;"
+                                    href="/wiki/page/{{ page.page_id }}">{{ page.page_title }}</a>
+                                    <span class="icon" data-icon="&#x59;" style="color: #0d0d75 !important;"
+                                    onclick="addPage('{{ book.book_id }}', '{{ page.page_id }}')"></span>
+                                    <ul class="list-unstyled dropdown_nav" id="parent-list-{{ page.page_id }}"></ul>
                                 </li>
-                                {% elif page.depth == 1 %}
-                                <script>
-                                    $("#" + "parent-list-" + "{{ page.parent_id }}").append(
-                                        `<li><a id='child-list-{{ page.page_id }}' onclick='onclickChildList(this.id)'>` + "{{ page.page_title }}" + `</a></li>`
-                                    );
-                                </script>
+                            {% elif page.depth == 1 %}
+                            <script>
+                                $("#" + "parent-list-" + "{{ page.parent_id }}").append(
+                                    `<li><a id='child-list-{{ page.page_id }}' href="/wiki/page/{{ page.page_id }}">`
+                                    + "{{ page.page_title }}" + `</a></li>`
+                                );
+                            </script>
                             {% endif %}
                             {% endfor %}
-                            {% endif %}
                         </ul>
                     </aside>
                 </div>
+                <!-- 에디터 & 뷰어 영역 -->
                 <div class="col-xl-9 doc-middle-content" style="z-index: 1;">
                     <article id="post" class="documentation_info">
                         <div class="documentation_body" id="documentation">
+                            {% if page_form %}
+                            <!-- 마크다운 편집 모드 -->
                             <div class="shortcode_title">
                                 <h4>본문 작성하기</h4>
                             </div>
                             <form class="form" id="page_form" name="page_form">{% csrf_token %}
                                 <input name="book_id" style="display: none" value="{{ book.book_id }}">
-                                <input name="parent_id" style="display: none" value="{{ page.parent_id }}">
+                                {% if add_point %}
+                                <input name="parent_id" style="display: none" value="{{ add_point }}">
+                                {% endif %}
                                 <div class="form-group">
-                                  {{ page.page_title }}
+                                  {{ page_form.page_title }}
                                 </div>
                                 <div name="description" class="form-group">
-                                  {{ page.description }}
+                                  {{ page_form.description }}
                                 </div>
-                                <div>
-                                    <button type="button" class="btn btn-success" onclick="onclickSavePage('{{ book.book_id }}')"
-                                            style="float: right; padding: 6px 24px;">저장</button>
+                                <div id="form-bottom">
+                                    <p style="margin-bottom: 0px">
+                                        <a href="https://ko.wikipedia.org/wiki/마크다운" target="_blank" style="color : #0d0d75";>마크다운 작성법</a>
+                                    </p>
+                                    <button type="button" class="btn btn-success" onclick="onclickSavePage('{{ book.book_id }}')">저장</button>
                                 </div>
                             </form>
-                            <div class="shortcode_title" style="font-size: smaller;">
-                                <p><span>마크다운 소개</span><a href="https://en.wikipedia.org/wiki/Markdown" target="_blank"> 바로가기</a></p>
+                            {% else %}
+                            <!-- 마크다운 미리보기 모드 -->
+                            <div class="martor-content">
+                                 <div class="martor-preview" id="page-{{ page.page_id }}">
+                                     <h3>{{ page.page_title }}</h3><hr/>
+                                     <div id="description-{{ page.page_id }}">{{ page.description | safe_markdown }}</div>
+                                  </div>
                             </div>
+                            {% endif %}
                             <!--================ Martor =================-->
                             <script type="text/javascript" src="{% static 'plugins/js/jquery.min.js' %}"></script>
                             <script type="text/javascript" src="{% static 'plugins/js/bootstrap.min.js' %}"></script>
@@ -126,4 +164,21 @@
     <script src="{% static 'assets/font-size/js/rv-jquery-fontsize-2.0.3.min.js' %}"></script>
     <script src="{% static 'assets/magnify-pop/jquery.magnific-popup.min.js' %}"></script>
     <script src="{% static 'js/plugins.js' %}"></script>
+    <script>
+      // 페이지 추가 아이콘 이벤트 제거
+      $(".nav-sidebar > li .icon").unbind();
+
+      // 페이지 추가 위치에 메뉴 생성
+      const addPoint = "{{ add_point }}";
+      console.log("addPoint : ", addPoint);
+      if (addPoint != "" | addPoint != undefined) {
+          // depth2에 추가하는 경우
+          const li_html = "<li><a>페이지 제목</a></li>";
+          $("#parent-list-" + addPoint).append(li_html)
+      } else {
+          // depth1에 추가하는 경우
+          const li_html = '<li class="nav-item"><a class="nav-link" style="color: #0d0d75 !important;">페이지 제목</a> </li>';
+          $(".list-unstyled nav-sidebar").append(li_html)
+      }
+    </script>
 {% endblock %}

@@ -600,11 +600,11 @@ function onclickSavePage(book_id) {
     $.ajax({
         type: "POST",
         url: "/wiki/"+book_id,
-        data: $("#page_form").serialize() +  + "&csrfmiddlewaretoken=" + $("input[name=csrfmiddlewaretoken]").val(),
+        data: $("#page_form").serialize() + "&csrfmiddlewaretoken=" + $("input[name=csrfmiddlewaretoken]").val(),
         dataType: "json",
         success: function (response) {
             if (response.page_id != undefined) {
-                document.location.href = "/wiki/page" + response.page_id;
+                document.location.href = "/wiki/page/" + response.page_id;
             } else {
                 alert(response.error_message);
             }
@@ -613,4 +613,17 @@ function onclickSavePage(book_id) {
             console.log("code:" + request.status + "\n" + "message:" + request.responseText + "\n" + "error:" + error)
         },
     });
+};
+
+/**
+ * 마크다운 에디터 페이지 추가 이벤트
+ * */
+function addPage(book_id, page_id) {
+    if (page_id != "" | page_id != undefined) {
+        // depth2에 추가하는 경우
+        document.location.href = "/wiki/" + book_id + "?page=" + page_id;
+    } else {
+        // depth1에 추가하는 경우
+        document.location.href = "/wiki/" + book_id;
+    }
 };

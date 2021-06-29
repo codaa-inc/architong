@@ -57,8 +57,12 @@
                                 {% endif %}
                             </div>
                             <div class="media-body author_text">
-                                <h4>{{ book.author_id }}</h4>
-                                <div class="date">{{ book.enfc_dt | date:'Y.m.d' }}</div>
+                                {% if book.codes_yn == "N" %}
+                                 <h4>{{ book.author_id }}</h4>
+                                 <div class="date">{{ book.wrt_dt | date:'Y.m.d' }} 작성</div>
+                                {% else %}
+                                <div class="date">{{ book.enfc_dt | date:'Y.m.d' }} 시행</div>
+                                {% endif %}
                             </div>
                         </div>
                     </div>
