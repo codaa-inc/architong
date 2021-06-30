@@ -582,7 +582,7 @@ function onclickSaveBook() {
         dataType: "json",
         success: function (response) {
             if (response.book_id != undefined) {
-                document.location.href = "/wiki/" + response.book_id;
+                document.location.href = "/wiki/edit/" + response.book_id;
             } else {
                 alert(response.error_message);
             }
@@ -594,12 +594,12 @@ function onclickSaveBook() {
 };
 
 /**
- * 마크다운 에디터 페이지 저장 이벤트
+ * 마크다운 에디터 페이지 수정 이벤트
  * */
-function onclickSavePage(book_id) {
+function onclickSavePage(page_id) {
     $.ajax({
         type: "POST",
-        url: "/wiki/"+book_id,
+        url: "/wiki/edit/page/" + page_id,
         data: $("#page_form").serialize() + "&csrfmiddlewaretoken=" + $("input[name=csrfmiddlewaretoken]").val(),
         dataType: "json",
         success: function (response) {
@@ -618,12 +618,21 @@ function onclickSavePage(book_id) {
 /**
  * 마크다운 에디터 페이지 추가 이벤트
  * */
-function addPage(book_id, page_id) {
-    if (page_id != "" | page_id != undefined) {
-        // depth2에 추가하는 경우
-        document.location.href = "/wiki/" + book_id + "?page=" + page_id;
+function onclickAddPage(book_id, page_id) {
+    if (page_id != "" && page_id != undefined) {
+        // depth2에 추가
+        document.location.href = "/wiki/edit/" + book_id + "?page=" + page_id;
     } else {
-        // depth1에 추가하는 경우
-        document.location.href = "/wiki/" + book_id;
+        // depth1에 추가
+        document.location.href = "/wiki/edit/" + book_id;
+    }
+};
+
+/**
+ * 마크다운 에디터 페이지 삭제 이벤트
+ * */
+function onclickDeletePage(page_id) {
+    if(confirm("페이지를 삭제하시면 하위 페이지 및 연관된 북마크, 댓글 모두 삭제됩니다.\n정말 삭제하시겠습니까?")){
+        document.location.href = "wiki/delete/page/" + page_id;
     }
 };

@@ -4,17 +4,17 @@ from django.core.serializers.json import DjangoJSONEncoder
 from django.http import JsonResponse, HttpResponse
 from django.views.decorators.csrf import csrf_exempt
 from django.contrib.auth.decorators import login_required
-from django.shortcuts import render
+from django.shortcuts import render, redirect
 from django.db.models import Q
 
 from apps.forum.models import Comments
-from .forms import BookForm, PostForm, PageForm
+from .forms import BookForm, PageForm
 from .models import Books, Pages, Bookmark
 
 
 # 책만들기 function
 @login_required(login_url="/account/google/login")
-def wiki_register(request):
+def wiki_add(request):
     # GET 요청이면 책만들기 페이지 렌더링
     if request.method == 'GET':
         return render(request, "book/wiki_register.html")
@@ -36,77 +36,146 @@ def wiki_register(request):
             return JsonResponse({"error_message": "책제목은 최소 3글자, 최대 255글자 입니다."})
 
 
-# 마크다운 에디터 편집 모드 function
+# 마크다운 에디터 페이지 추가 function
 @login_required(login_url="/account/google/login")
-def wiki_editor(request, book_id):
+def wiki_add_page(request, book_id):
     book = Books.objects.get(book_id=book_id)
     # 작성자와 사용자가 일치하는지 체크
     if str(request.user) == book.author_id:
-        # GET 요청이면 editor 페이지 렌더링
+        # GET 요청이면 editor 새로운 페이지 생성 후 페이지 렌더링
         if request.method == 'GET':
-            book = Books.objects.get(book_id=book_id)
-            pages = Pages.objects.filter(book_id=book.book_id)
-            context = {"page_form": PageForm(),
+            # 새로운 페이지 등록
+            new_page = Pages(
+                book_id=book_id,
+                parent_id=request.GET.get('page', 0),
+                depth=1 if request.GET.get('page') else 0,
+                page_title="new page"
+            )
+            new_page.save()
+            new_page = Pages.objects.order_by('page_id').last()
+            # 목차 계층구조 정렬
+            sorted_pages = []
+            parent_pages = Pages.objects.filter(book_id=book.book_id, depth=0)
+            child_pages = Pages.objects.filter(book_id=book.book_id, depth=1)
+            for parent_page in parent_pages:
+                sorted_pages.append(parent_page)
+                for child_page in child_pages:
+                    if child_page.parent_id == parent_page.page_id:
+                        sorted_pages.append(child_page)
+            context = {"page_form": PageForm(instance=new_page),
+                       "page_id":  new_page.page_id,
                        "book": book,
-                       "add_point": request.GET.get('page', '')}
-            if pages.count() > 0:
-                sorted_pages = []
-                parent_pages = pages.filter(depth=0)
-                child_pages = pages.filter(depth=1)
-                # 페이지 계층구조 정렬
-                for parent_page in parent_pages:
-                    sorted_pages.append(parent_page)
-                    for child_page in child_pages:
-                        if child_page.parent_id == parent_page.page_id:
-                            sorted_pages.append(child_page)
-                context['page_list'] = sorted_pages
+                       "page_list": sorted_pages}
             return render(request, 'book/editor.html', context)
+    else:
+        return HttpResponse("잘못된 접근입니다.")
 
-        # POST 요청이면 페이지 등록
+
+# 마크다운 에디터 function
+@login_required(login_url="/account/google/login")
+def wiki_editor(request, page_id):
+    page = Pages.objects.get(page_id=page_id)
+    book = Books.objects.get(book_id=page.book_id)
+    # 작성자와 사용자가 일치하는지 체크
+    if str(request.user) == book.author_id:
+        # GET 요청이면 에디터 페이지 랜더링
+        if request.method == 'GET':
+            # 목차 계층구조 정렬
+            sorted_pages = []
+            parent_pages = Pages.objects.filter(book_id=book.book_id, depth=0)
+            child_pages = Pages.objects.filter(book_id=book.book_id, depth=1)
+            for parent_page in parent_pages:
+                sorted_pages.append(parent_page)
+                for child_page in child_pages:
+                    if child_page.parent_id == parent_page.page_id:
+                        sorted_pages.append(child_page)
+            context = {"page_form": PageForm(instance=page),
+                       "page_id":  page.page_id,
+                       "book": book,
+                       "page_list": sorted_pages}
+            return render(request, 'book/editor.html', context)
+        # POST 요청이면 페이지 수정 저장
         elif request.method == 'POST':
-            form = PostForm(request.POST)
+            form = PageForm(request.POST)
             if form.is_valid():
-                parent_id = 0 if request.POST['parent_id'] == "" else request.POST['parent_id']
-                page = Pages(
-                    book_id=book_id,
-                    page_title=request.POST.get('page_title'),
-                    description=request.POST.get('description'),
-                    parent_id=parent_id,
-                    depth=0 if parent_id == 0 else 1
-                )
+                page = Pages.objects.get(page_id=page_id)
+                page.page_title = request.POST['page_title']
+                page.description = request.POST['description']
                 page.save()
-                page_id = Pages.objects.order_by('page_id').last().page_id
                 return JsonResponse({"page_id": page_id})
             else:
                 return JsonResponse({"error_message": "양식을 확인해주세요."})
     else:
-        return JsonResponse({"error_message": "작성 권한이 없습니다."})
+        return HttpResponse("잘못된 접근입니다.")
 
 
 # 마크다운 에디터 미리보기 모드 function
 @login_required(login_url="/account/google/login")
-def wiki_page_editor(request, page_id):
-    book = Books.objects.get(book_id=Pages.objects.get(page_id=page_id).book_id)
+def wiki_page_viewer(request, page_id):
+    page = Pages.objects.get(page_id=page_id)
+    book = Books.objects.get(book_id=page.book_id)
     # 작성자와 사용자가 일치하는지 체크
     if str(request.user) == book.author_id:
-        sorted_pages = []
-        pages = Pages.objects.filter(book_id=book.book_id)
-        parent_pages = pages.filter(depth=0)
-        child_pages = pages.filter(depth=1)
-        # 페이지 계층구조 정렬
-        for parent_page in parent_pages:
-            sorted_pages.append(parent_page)
-            for child_page in child_pages:
-                if child_page.parent_id == parent_page.page_id:
-                    sorted_pages.append(child_page)
-        context = {
-            "book": book,
-            "page_list": sorted_pages,
-            "page": pages.get(page_id=page_id)
-        }
-        return render(request, 'book/editor.html', context)
+        # GET 요청이면 미리보기 페이지 랜더링
+        if request.method == 'GET':
+            sorted_pages = []
+            parent_pages = Pages.objects.filter(book_id=book.book_id, depth=0)
+            child_pages = Pages.objects.filter(book_id=book.book_id, depth=1)
+            # 페이지 계층구조 정렬
+            for parent_page in parent_pages:
+                sorted_pages.append(parent_page)
+                for child_page in child_pages:
+                    if child_page.parent_id == parent_page.page_id:
+                        sorted_pages.append(child_page)
+            context = {
+                "book": book,
+                "page_list": sorted_pages,
+                "page": page
+            }
+            return render(request, 'book/editor.html', context)
     else:
-        return HttpResponse("접근 권한이 없습니다.")
+        return HttpResponse("잘못된 접근입니다.")
+
+
+# 위키 삭제 function
+@login_required(login_url="/account/google/login")
+def wiki_delete(request, book_id):
+    book = Books.objects.get(book_id=book_id)
+    # 작성자와 사용자가 일치하는지 체크
+    if str(request.user) == book.author_id:
+        # 연관 북마크 삭제
+        Bookmark.objects.filter(book_id=book_id).delete()
+        # 연관 댓글 삭제
+        page_list = Pages.objects.filter(book_id=book_id)
+        for page in page_list:
+            Comments.objects.filter(page_id=page.page_id).delete()
+        # 하위 페이지들 삭제
+        page_list.delete()
+        # 페이지 삭제
+        book.delete()
+        return render(request, "common/index.html")
+    else:
+        return HttpResponse("잘못된 접근입니다.")
+
+
+# 위키 페이지 삭제 function
+@login_required(login_url="/account/google/login")
+def wiki_delete_page(request, page_id):
+    page = Pages.objects.get(page_id=page_id)
+    author_id = Books.objects.get(book_id=page.book_id).author_id
+    # 작성자와 사용자가 일치하는지 체크
+    if str(request.user) == author_id:
+        # 연관 북마크 삭제
+        Bookmark.objects.filter(page_id=page_id).delete()
+        # 연관 댓글 삭제
+        Comments.objects.filter(page_id=page_id).delete()
+        # 자식 페이지 삭제
+        Pages.objects.filter(parent_id=page_id).delete()
+        # 페이지 삭제
+        page.delete()
+        return render(request, "common/index.html")
+    else:
+        return HttpResponse("잘못된 접근입니다.")
 
 
 # 법규 리스트 조회 function
@@ -133,8 +202,8 @@ def law_list(request):
                 sel_item = sort_list[idx]
                 sort_list.remove(sel_item)
                 sort_list.insert(0, sel_item)
-
-    context = {"books": paginator, "sort_list": sort_list}
+    context = {"books": paginator,
+               "sort_list": sort_list}
     return render(request, "book/law_list.html", context)
 
 
@@ -195,6 +264,26 @@ def view_book(request, book_id):
     context = {'book': book,
                'pages': pages,
                'law_count': law_count}
+
+    # Cookie 생성 후 조회수 증감
+    session_cookie = request.user
+    cookie_name = F'comment_hits:{session_cookie}'
+    response = render(request, 'book/viewer.html', context)
+
+    if request.COOKIES.get(cookie_name) is not None:
+        cookies = request.COOKIES.get(cookie_name)
+        cookies_list = cookies.split('|')
+        if str(book_id) not in cookies_list:
+            response.set_cookie(cookie_name, cookies + f'|{book_id}', expires=None)
+            book.hit_count += 1
+            book.save()
+            return response
+    else:
+        response.set_cookie(cookie_name, book_id, expires=None)
+        book.hit_count += 1
+        book.save()
+        return response
+
     return render(request, 'book/viewer.html', context)
 
 
@@ -230,6 +319,26 @@ def view_page(request, page_id):
                'pages': pages,
                'page_id': str(page_id),
                'law_count': law_count}
+
+    # Cookie 생성 후 조회수 증감
+    session_cookie = request.user
+    cookie_name = F'comment_hits:{session_cookie}'
+    response = render(request, 'book/viewer.html', context)
+
+    if request.COOKIES.get(cookie_name) is not None:
+        cookies = request.COOKIES.get(cookie_name)
+        cookies_list = cookies.split('|')
+        if str(book_id) not in cookies_list:
+            response.set_cookie(cookie_name, cookies + f'|{book_id}', expires=None)
+            book.hit_count += 1
+            book.save()
+            return response
+    else:
+        response.set_cookie(cookie_name, book_id, expires=None)
+        book.hit_count += 1
+        book.save()
+        return response
+
     return render(request, 'book/viewer.html', context)
 
 

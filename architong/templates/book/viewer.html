@@ -82,35 +82,13 @@
     .user-menu {
         color: #0d0d75 !important;
     }
+    .nav-sidebar {
+        padding-bottom: 70px;
+    }
 </style>
 {% endblock %}
 
 {% block content %}
-<script>
-    // 로그인 시 사용자 ID를 저장하는 전역변수 선언
-    let USERNAME = "";
-
-    // page_id 전역변수 선언
-    let PAGEID = "";
-
-    // Page View인 경우 해당 Page 댓글창 펼침, scroll 이동
-    $( document ).ready(function() {
-        if (PAGEID != "") {
-            onclickComment(1, PAGEID);
-            onclickChildList(PAGEID, 'auto');
-        }
-    });
-</script>
-
-{% if page_id %}
-<script>PAGEID = "{{ page_id }}"; </script>
-{% endif %}
-
-{% if user.is_authenticated %}
-<script>USERNAME = "{{ user.get_username }}";</script>
-{% endif %}
-
-
 <!--================Forum Breadcrumb Area =====================-->
 <div class="breadcrumb_area_three" style="padding: 0"></div>
 <!--================End Forum Breadcrumb Area =================-->
@@ -218,4 +196,31 @@
 <script src="{% static 'assets/font-size/js/rv-jquery-fontsize-2.0.3.min.js' %}"></script>
 <script src="{% static 'assets/magnify-pop/jquery.magnific-popup.min.js' %}"></script>
 <script src="{% static 'js/plugins.js' %}"></script>
+<script>
+    // viewer.html, editor.html footer 숨김
+    $(".forum_footer_area").hide();
+</script>
+<script>
+    // 로그인 시 사용자 ID를 저장하는 전역변수 선언
+    let USERNAME = "";
+
+    // page_id 전역변수 선언
+    let PAGEID = "";
+
+    // Page View인 경우 해당 Page 댓글창 펼침, scroll 이동
+    $( document ).ready(function() {
+        if (PAGEID != "") {
+            onclickComment(1, PAGEID);
+            onclickChildList(PAGEID, 'auto');
+        }
+    });
+</script>
 {% endblock %}
+
+{% if page_id %}
+<script>PAGEID = "{{ page_id }}"; </script>
+{% endif %}
+
+{% if user.is_authenticated %}
+<script>USERNAME = "{{ user.get_username }}";</script>
+{% endif %}

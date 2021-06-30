@@ -19,6 +19,7 @@ class Books(models.Model):
         ('2', '자치법규'),
     )
     code_gubun = models.CharField(max_length=2, choices=CODE_CHOICES)
+    hit_count = models.IntegerField(blank=True, null=True)
 
     class Meta:
         managed = False
@@ -31,9 +32,9 @@ class Pages(models.Model):
     page_title = models.CharField(max_length=255)
     parent_id = models.IntegerField(blank=True, null=True, default=0)
     depth = models.IntegerField(blank=True, null=True, default=0)
-    description = MartorField()
-    wrt_dt = models.DateTimeField(auto_now_add=True, blank=True, null=True)
-    mdfcn_dt = models.DateTimeField(auto_now_add=True, blank=True, null=True)
+    description = MartorField(blank=True, null=True)
+    wrt_dt = models.DateTimeField(auto_now_add=True)
+    mdfcn_dt = models.DateTimeField(auto_now=True)
 
     class Meta:
         managed = False

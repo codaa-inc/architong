@@ -9,12 +9,9 @@ class BookForm(forms.ModelForm):
         fields = ['book_title', 'rls_yn']
 
 
-class PageForm(forms.Form):
+class PageForm(forms.ModelForm):
     page_title = forms.CharField(widget=forms.TextInput())
-    description = MartorFormField()
 
-
-class PostForm(forms.ModelForm):
     class Meta:
         model = Pages
         fields = '__all__'

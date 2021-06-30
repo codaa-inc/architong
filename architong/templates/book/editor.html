@@ -55,14 +55,31 @@
     #nav-preview-tab-description {
         color: #696969 !important;
     }
+    .action_btn {
+        font-size: 15px;
+        margin-left: 15px;
+    }
+    .doc_border_btn {
+        font-size: 15px;
+        border: 1px solid #0C0E72;
+    }
+    .button_inner_one {
+        display: flex;
+        justify-content: flex-end;
+        margin-top: 20px;
+    }
+    .nav-sidebar {
+        padding-bottom: 70px;
+    }
 </style>
 {% endblock %}
 
 {% block content %}
-    <section class="doc_documentation_area" id="sticky_doc">
+    <div class="breadcrumb_area_three" style="padding: 0"></div>
+    <section>
         <div class="container custom_container">
             <div class="row">
-                <!-- 좌단 목차 영역 -->
+                <!-- 사이드 네비게이션 영역 -->
                 <div class="col-lg-3 doc_mobile_menu display_none" style="z-index: 0;">
                     <aside class="doc_left_sidebarlist">
                         <ul class="list-unstyled nav-sidebar">
@@ -70,7 +87,7 @@
                                 <a class="nav-link" style="color: #3c4257 !important; margin-right: 40px;">
                                     <i class="icon_document_alt"></i>&nbsp;{{ book.book_title }}</a>
                                 <span class="icon" data-icon="&#x59;" style="color: #3c4257 !important;"
-                                onclick="addPage('{{ book.book_id }}')"></span>
+                                onclick="onclickAddPage('{{ book.book_id }}')" title="페이지 추가"></span>
                             </li>
                             {% for page in page_list %}
                             {% if page.parent_id == 0 %}
@@ -78,7 +95,7 @@
                                     <a class="nav-link" style="margin-right: 40px; color: #0d0d75 !important;"
                                     href="/wiki/page/{{ page.page_id }}">{{ page.page_title }}</a>
                                     <span class="icon" data-icon="&#x59;" style="color: #0d0d75 !important;"
-                                    onclick="addPage('{{ book.book_id }}', '{{ page.page_id }}')"></span>
+                                    onclick="onclickAddPage('{{ book.book_id }}', '{{ page.page_id }}')" title="페이지 추가"></span>
                                     <ul class="list-unstyled dropdown_nav" id="parent-list-{{ page.page_id }}"></ul>
                                 </li>
                             {% elif page.depth == 1 %}
@@ -94,19 +111,14 @@
                     </aside>
                 </div>
                 <!-- 에디터 & 뷰어 영역 -->
-                <div class="col-xl-9 doc-middle-content" style="z-index: 1;">
+                <div class="col-xl-9 doc-middle-content" style="z-index: 10;">
                     <article id="post" class="documentation_info">
                         <div class="documentation_body" id="documentation">
                             {% if page_form %}
                             <!-- 마크다운 편집 모드 -->
-                            <div class="shortcode_title">
-                                <h4>본문 작성하기</h4>
-                            </div>
+                            <h5 style="margin-bottom: 20px;">본문 작성하기</h5>
                             <form class="form" id="page_form" name="page_form">{% csrf_token %}
                                 <input name="book_id" style="display: none" value="{{ book.book_id }}">
-                                {% if add_point %}
-                                <input name="parent_id" style="display: none" value="{{ add_point }}">
-                                {% endif %}
                                 <div class="form-group">
                                   {{ page_form.page_title }}
                                 </div>
@@ -117,7 +129,7 @@
                                     <p style="margin-bottom: 0px">
                                         <a href="https://ko.wikipedia.org/wiki/마크다운" target="_blank" style="color : #0d0d75";>마크다운 작성법</a>
                                     </p>
-                                    <button type="button" class="btn btn-success" onclick="onclickSavePage('{{ book.book_id }}')">저장</button>
+                                    <button type="button" class="btn btn-success" onclick="onclickSavePage('{{ page_id }}')">저장</button>
                                 </div>
                             </form>
                             {% else %}
@@ -127,6 +139,10 @@
                                      <h3>{{ page.page_title }}</h3><hr/>
                                      <div id="description-{{ page.page_id }}">{{ page.description | safe_markdown }}</div>
                                   </div>
+                            </div>
+                            <div class="button_inner_one">
+                                <a onclick="onclickDeletePage({{ page.page_id }})" class="doc_border_btn btn_small">삭제</a>
+                                <a href="/wiki/edit/page/{{ page.page_id }}" class="action_btn btn_small">수정</a>
                             </div>
                             {% endif %}
                             <!--================ Martor =================-->
@@ -168,17 +184,7 @@
       // 페이지 추가 아이콘 이벤트 제거
       $(".nav-sidebar > li .icon").unbind();
 
-      // 페이지 추가 위치에 메뉴 생성
-      const addPoint = "{{ add_point }}";
-      console.log("addPoint : ", addPoint);
-      if (addPoint != "" | addPoint != undefined) {
-          // depth2에 추가하는 경우
-          const li_html = "<li><a>페이지 제목</a></li>";
-          $("#parent-list-" + addPoint).append(li_html)
-      } else {
-          // depth1에 추가하는 경우
-          const li_html = '<li class="nav-item"><a class="nav-link" style="color: #0d0d75 !important;">페이지 제목</a> </li>';
-          $(".list-unstyled nav-sidebar").append(li_html)
-      }
+      // viewer.html, editor.html footer 숨김
+      $(".forum_footer_area").hide();
     </script>
 {% endblock %}
