@@ -1,0 +1,52 @@
+{% extends 'common/base.html' %}
+{% load static %}
+{% block css %}
+<style>
+    .signup_inner {
+        padding-top: 100px;
+        padding-bottom: 160px;
+    }
+</style>
+{% endblock %}
+
+{% block content %}
+    <div class="sign_inner signup_inner">
+        <h5>위키 정보 작성</h5><hr>
+
+        <form id="wiki_register" name="wiki_register" class="row login_form" style=" padding: 20px 0;">{% csrf_token %}
+            <div class="col-sm-12 form-group">
+                <div class="small_text">위키 제목</div>
+                <input type="text" id="book_title" name="book_title" class="form-control">
+            </div>
+            <div class="col-sm-6 form-group">
+                <div class="small_text">공개 여부</div>
+                <select id="rls_yn" name="rls_yn" class="form-control">
+                    <option value="Y">공개</option>
+                    <option value="N">비공개</option>
+                </select>
+            </div>
+            <div class="col-sm-6 form-group">
+                <div class="small_text">카테고리</div>
+                <select id="wiki_gubun" name="wiki_gubun" class="form-control">
+                    <option value="0">전체</option>
+                    <option value="1">설계</option>
+                    <option value="2">재료</option>
+                    <option value="3">시공</option>
+                    <option value="4">설비</option>
+                    <option value="5">환경</option>
+                    <option value="6">도시</option>
+                </select>
+            </div>
+            <div class="col-lg-12 text-center">
+                <button type="button" class="btn action_btn thm_btn" onclick="onclickSaveBook()">저장</button>
+            </div>
+        </form>
+    </div>
+    {% if error_message %}
+    <script>alert("{{ error_message }}");</script>
+    {% endif %}
+{% endblock %}
+
+{% block js %}
+    <script src="{% static 'js/docs.js' %}"></script>
+{% endblock %}

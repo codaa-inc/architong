@@ -19,7 +19,18 @@ class Books(models.Model):
         ('2', '자치법규'),
     )
     code_gubun = models.CharField(max_length=2, choices=CODE_CHOICES)
-    hit_count = models.IntegerField(blank=True, null=True)
+    WIKI_CHOICES = (
+        ('0', '전체'),
+        ('1', '설계'),
+        ('2', '재료'),
+        ('3', '시공'),
+        ('4', '설비'),
+        ('5', '환경'),
+        ('6', '도시'),
+    )
+    wiki_gubun = models.CharField(max_length=10, blank=True, null=True, choices=WIKI_CHOICES)
+    mdfcn_dt = models.DateTimeField(auto_now=True)
+    hit_count = models.IntegerField(blank=True, null=True, default=0)
 
     class Meta:
         managed = False

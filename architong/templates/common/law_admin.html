@@ -69,9 +69,9 @@
                         <td><a style="color: #6b707f;" href="/book/{{ book.book_id }}">{{ book.book_title }}</a></td>
                         <td>{{ book.enfc_dt | date:'Y.m.d' }}</td>
                         {% if book.rls_yn == "Y" %}
-                        <td><a href="#" onclick="onclickLawRlsYn('{{ book.book_id }}', '{{ book.book_title }}')">공개</a></td>
+                        <td><a href="javascript:;" onclick="onclickLawRlsYn('{{ book.book_id }}', '{{ book.book_title }}')">공개</a></td>
                         {% else %}
-                        <td><a href="#" onclick="onclickLawRlsYn('{{ book.book_id }}', '{{ book.book_title }}')">비공개</a></td>
+                        <td><a href="javascript:;" onclick="onclickLawRlsYn('{{ book.book_id }}', '{{ book.book_title }}')">비공개</a></td>
                         {% endif %}
                         <td>{{ book.wrt_dt | date:'Y.m.d' }}</td>
                     </tr>

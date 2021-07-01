@@ -1,4 +1,6 @@
 import json
+import datetime
+
 from django.core.paginator import Paginator
 from django.core.serializers.json import DjangoJSONEncoder
 from django.http import JsonResponse, HttpResponse
@@ -12,12 +14,42 @@ from .forms import BookForm, PageForm
 from .models import Books, Pages, Bookmark
 
 
+# 나의 위키 페이지 렌더링
+@login_required(login_url="/account/google/login")
+def wiki_manage(request):
+    username = str(request.user)
+    sort = request.GET.get('sort', 'recent')  # 정렬기준 쿼리스트링을 가져온다, 없는 경우 default 등록순
+    if sort == 'views':
+        docs = Books.objects.filter(codes_yn="N", author_id=username).order_by('-hit_count')
+    elif sort == 'registered':
+        docs = Books.objects.filter(codes_yn="N", author_id=username).order_by('wrt_dt')
+    else:
+        docs = Books.objects.filter(codes_yn="N", author_id=username).order_by('-mdfcn_dt')
+
+    # 페이징처리
+    page = request.GET.get('page')
+    paginator = Paginator(docs, 15).get_page(page)
+
+    # 정렬기준
+    sort_list = [{'value': 'recent', 'label': '최근 편집순'},
+                 {'value': 'views', 'label': '조회순'},
+                 {'value': 'registered', 'label': '작성순'}]
+    if sort != 'recent':
+        for idx, item in enumerate(sort_list):
+            if item.get('value') == sort:
+                sel_item = sort_list[idx]
+                sort_list.remove(sel_item)
+                sort_list.insert(0, sel_item)
+    context = {"books": paginator, "sort_list": sort_list}
+    return render(request, "book/wiki_manage.html", context)
+
+
 # 책만들기 function
 @login_required(login_url="/account/google/login")
 def wiki_add(request):
     # GET 요청이면 책만들기 페이지 렌더링
     if request.method == 'GET':
-        return render(request, "book/wiki_register.html")
+        return render(request, "book/wiki_regist.html")
     # POST 요청이면 책저장하고 페이지 에디터로 렌더링
     elif request.method == 'POST':
         form = BookForm(request.POST)
@@ -36,6 +68,38 @@ def wiki_add(request):
             return JsonResponse({"error_message": "책제목은 최소 3글자, 최대 255글자 입니다."})
 
 
+# 책정보 조회/수정/삭제 function
+@login_required(login_url="/account/google/login")
+def wiki_update(request, book_id):
+    book = Books.objects.get(book_id=book_id)
+    # 작성자와 사용자가 일치하는지 체크
+    if str(request.user) == book.author_id:
+        # GET 요청이면 책정보 페이지 조회
+        if request.method == 'GET':
+            # 목차 계층구조 정렬
+            sorted_pages = []
+            parent_pages = Pages.objects.filter(book_id=book.book_id, depth=0)
+            child_pages = Pages.objects.filter(book_id=book.book_id, depth=1)
+            for parent_page in parent_pages:
+                sorted_pages.append(parent_page)
+                for child_page in child_pages:
+                    if child_page.parent_id == parent_page.page_id:
+                        sorted_pages.append(child_page)
+            context = {"book": book,
+                       "page_list": sorted_pages}
+            return render(request, "book/editor.html", context)
+        elif request.method == 'POST':
+            form = BookForm(request.POST)
+            if form.is_valid():
+                book.book_title = request.POST.get('book_title')
+                book.rls_yn = request.POST.get('rls_yn')
+                book.wiki_gubun = request.POST.get('wiki_gubun')
+                book.save()
+                return JsonResponse({"result": "success", "message": "위키정보가 저장되었습니다."})
+            else:
+                return JsonResponse({"result": "fail", "message": "정보를 확인해주세요."})
+
+
 # 마크다운 에디터 페이지 추가 function
 @login_required(login_url="/account/google/login")
 def wiki_add_page(request, book_id):
@@ -52,6 +116,8 @@ def wiki_add_page(request, book_id):
                 page_title="new page"
             )
             new_page.save()
+            book.mdfcn_dt = datetime.datetime.now().now()
+            book.save()  # 해당 위키의 최근수정일 갱신
             new_page = Pages.objects.order_by('page_id').last()
             # 목차 계층구조 정렬
             sorted_pages = []
@@ -102,6 +168,8 @@ def wiki_editor(request, page_id):
                 page.page_title = request.POST['page_title']
                 page.description = request.POST['description']
                 page.save()
+                book.mdfcn_dt = datetime.datetime.now().now()
+                book.save()     # 해당 위키의 최근수정일 갱신
                 return JsonResponse({"page_id": page_id})
             else:
                 return JsonResponse({"error_message": "양식을 확인해주세요."})
@@ -162,9 +230,9 @@ def wiki_delete(request, book_id):
 @login_required(login_url="/account/google/login")
 def wiki_delete_page(request, page_id):
     page = Pages.objects.get(page_id=page_id)
-    author_id = Books.objects.get(book_id=page.book_id).author_id
+    book = Books.objects.get(book_id=page.book_id)
     # 작성자와 사용자가 일치하는지 체크
-    if str(request.user) == author_id:
+    if str(request.user) == book.author_id:
         # 연관 북마크 삭제
         Bookmark.objects.filter(page_id=page_id).delete()
         # 연관 댓글 삭제
@@ -173,7 +241,10 @@ def wiki_delete_page(request, page_id):
         Pages.objects.filter(parent_id=page_id).delete()
         # 페이지 삭제
         page.delete()
-        return render(request, "common/index.html")
+        # 해당 위키의 최근수정일 갱신
+        book.mdfcn_dt = datetime.datetime.now().now()
+        book.save()
+        return JsonResponse({"book_id": book.book_id})
     else:
         return HttpResponse("잘못된 접근입니다.")
 
@@ -182,7 +253,7 @@ def wiki_delete_page(request, page_id):
 def law_list(request):
     sort = request.GET.get('sort', 'recent')  # 정렬기준 쿼리스트링을 가져온다, 없는 경우 default 시행일자순
     if sort == 'views':
-        laws = Books.objects.filter(codes_yn="Y", rls_yn="Y").order_by('-enfc_dt')
+        laws = Books.objects.filter(codes_yn="Y", rls_yn="Y").order_by('-hit_count')
     elif sort == 'registered':
         laws = Books.objects.filter(codes_yn="Y", rls_yn="Y").order_by('enfc_dt')
     else:
@@ -204,14 +275,14 @@ def law_list(request):
                 sort_list.insert(0, sel_item)
     context = {"books": paginator,
                "sort_list": sort_list}
-    return render(request, "book/law_list.html", context)
+    return render(request, "book/lawlist.html", context)
 
 
 # 문서 리스트 조회 function
 def wiki_list(request):
     sort = request.GET.get('sort', 'recent')  # 정렬기준 쿼리스트링을 가져온다, 없는 경우 default 등록순
     if sort == 'views':
-        docs = Books.objects.filter(codes_yn="N", rls_yn="Y").order_by('-wrt_dt')
+        docs = Books.objects.filter(codes_yn="N", rls_yn="Y").order_by('-hit_count')
     elif sort == 'registered':
         docs = Books.objects.filter(codes_yn="N", rls_yn="Y").order_by('wrt_dt')
     else:
@@ -232,7 +303,7 @@ def wiki_list(request):
                 sort_list.remove(sel_item)
                 sort_list.insert(0, sel_item)
     context = {"books": paginator, "sort_list": sort_list}
-    return render(request, "book/wiki_list.html", context)
+    return render(request, "book/wikilist.html", context)
 
 
 # 책 조회 function

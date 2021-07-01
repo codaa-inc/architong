@@ -6,7 +6,7 @@ from .models import Books, Pages
 class BookForm(forms.ModelForm):
     class Meta:
         model = Books
-        fields = ['book_title', 'rls_yn']
+        fields = ['book_title', 'rls_yn', 'wiki_gubun']
 
 
 class PageForm(forms.ModelForm):

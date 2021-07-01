@@ -1,50 +1,53 @@
 {% extends 'common/base.html' %}
 {% load socialaccount %}
 {% load static %}
+
+{% block css %}
+    <style>
+        .all-answers {
+            padding-left: 0px;
+            margin-top: 0px;
+        }
+        h5 {
+            display: flex;
+            align-items: center;
+            margin-bottom: 0px;
+        }
+        .post_author {
+            align-items: center;
+        }
+        #add_wiki {
+            font-size: 15px;
+            font-weight: bolder;
+        }
+    </style>
+{% endblock %}
+
 {% block content %}
-<div class="breadcrumb_area_three">
+<section class="doc_tag_area bg_color sec_pad">
     <div class="container">
-        <div class="breadcrumb_text">
-            <h2> Codetect </h2>
-            <p>건축 관련 법규 및 문서를 공유하는 플랫폼 서비스(Wiki) 입니다.<br>누구나 문서를 작성하고 토론 할 수 있습니다. </p>
-        </div>
-        <form id="search-form" name="searchForm" method="POST" action="/" class="header_search_form">{% csrf_token %}
-            <div class="doc_banner_content">
-                <div class="header_search_form_info">
-                    <div class="form-group">
-                        <div class="input-wrapper">
-                            <i class="icon_search"></i>
-                            <input type='search' id="searchbox" autocomplete="off" name="search-box" value="{{ search_term }}"/>
-                            <select class="search-expand-types custom-select" name="search-option" id="search_post_type">
-                                {% for sort in sort_list %}
-                                <option value="{{ sort.value }}">{{ sort.label }}</option>
-                                {% endfor %}
-                            </select>
-                            <input id="page" name="page" type="number" style="display: none;" readonly>
-                        </div>
-                        <button id="searchbtn" type="submit" class="header_form_submit">검색</button>
-                    </div>
+        <div class="all-answers col-md-12">
+            <h5>{{ request.user.first_name }}님의 위키</h5><hr>
+            <div class="filter-bar d-flex" style="align-items: center;">
+                <div class="sort">
+                    <select class="custom-select" id="sortBy" onchange="onchangeSort(this.value)">
+                        {% for sort in sort_list %}
+                        <option value="{{ sort.value }}">{{ sort.label }}</option>
+                        {% endfor %}
+                    </select>
                 </div>
+                <a href="/wiki/add" id="add_wiki"><i class=" icon_folder-add_alt"></i>&nbsp;&nbsp;New Wiki</a>
             </div>
-        </form>
-    </div>
-</div>
-<section class="doc_tag_area bg_color sec_pad" style="padding-top: 0px;">
-    <div class="container">
+        </div>
         <div id="docs" class="row blog_grid_tab">
             {% if books %}
             {% for book in books %}
             <div class="col-lg-4 col-sm-6">
                 <div class="blog_grid_post shadow-sm wow fadeInUp">
-                    <div onclick="location.href='book/{{ book.book_id }}'" class="grid_post_content">
+                    <div onclick="location.href='/wiki/{{ book.book_id }}'" class="grid_post_content">
                         <div class="post_tag">
-                            {% if book.codes_yn == "Y" %}
-                            <a>법규</a>
-                            <a class="c_blue">{{ book.get_code_gubun_display }}</a>
-                            {% else %}
-                            <a>위키</a>
+                            <a href="javascript:;">위키</a>
                             <a class="c_blue">{{ book.get_wiki_gubun_display }}</a>
-                            {% endif %}
                         </div>
                         <a>
                             <h4 class="b_title">{{ book.book_title }}</h4>
@@ -58,20 +61,17 @@
                                 {% endif %}
                             </div>
                             <div class="media-body author_text">
-                                {% if book.codes_yn == "N" %}
-                                 <h4>{{ book.author_id }}</h4>
-                                 <div class="date">작성&nbsp;&nbsp;{{ book.wrt_dt | date:'Y.m.d' }}</div>
-                                {% else %}
-                                <div class="date">시행&nbsp;&nbsp;{{ book.enfc_dt | date:'Y.m.d' }}</div>
-                                {% endif %}
+                                <h4>{{ book.author_id }}</h4>
+                                <div class="date">최근 편집&nbsp;&nbsp;{{ book.mdfcn_dt | date:'Y.m.d' }}</div>
                             </div>
+                            <p style="margin-bottom: 0px;"><ion-icon name="eye-outline"></ion-icon> {{ book.hit_count }}</p>
                         </div>
                     </div>
                 </div>
             </div>
             {% endfor %}
             {% else %}
-            <p style="margin: auto; padding: 20px 0; color: rgba(0, 0, 0, 0.4);">검색 결과가 없습니다.</p>
+            <p style="margin: auto; padding: 20px 0; color: rgba(0, 0, 0, 0.4);">등록된 위키가 없습니다.</p>
             {% endif %}
         </div>
         <div class="col-lg-12 col-sm-2" style="text-align: center">
@@ -80,7 +80,6 @@
                     {% if books.has_previous %}
                     <a class="next page-numbers" onclick='onclickPagination("{{ previous_page_number}}")' style="cursor: pointer;"><i class="arrow_carrot-left"></i></a>
                     {% endif %}
-
                     {% for page_number in books.paginator.page_range %}
                     {% if page_number >= books.number|add:-5 and page_number <= books.number|add:5 %}
                     {% if page_number == books.number %}
@@ -90,7 +89,6 @@
                     {% endif %}
                     {% endif %}
                     {% endfor %}
-
                     {% if books.has_next %}
                     <a class="next page-numbers" onclick='onclickPagination("{{ next_page_number}}")' style="cursor: pointer;"><i class="arrow_carrot-right"></i></a>
                     {% endif %}

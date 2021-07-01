@@ -35,10 +35,10 @@
                     <tr>
                         <td>{{ forloop.counter }}</td>
                         {% if user.is_staff == 1 %}
-                            <td><a href="#"
+                            <td><a href="javascript:;"
                                    onclick="onclickUserIsActive('{{ user.id }}', '{{ user.username }}', 'is_staff')">관리자</a></td>
                         {% else %}
-                            <td><a href="#"
+                            <td><a href="javascript:;"
                                    onclick="onclickUserIsActive('{{ user.id }}', '{{ user.username }}', 'is_staff')">일반회원</a></td>
                         {% endif %}
                         <td>{{ user.username }}</td>
@@ -47,10 +47,10 @@
                         <td>{{ user.last_login | date:'Y.m.d H:i:s' }}</td>
                         <td>{{ user.date_joined | date:'Y.m.d H:i:s' }}</td>
                         {% if user.is_active == 1 %}
-                            <td><a href="#"
+                            <td><a href="javascript:;"
                                    onclick="onclickUserIsActive('{{ user.id }}', '{{ user.username }}', 'is_active')">사용중</a></td>
                         {% else %}
-                            <td><a href="#"
+                            <td><a href="javascript:;"
                                    onclick="onclickUserIsActive('{{ user.id }}', '{{ user.username }}', 'is_active')">휴면</a></td>
                         {% endif %}
                     </tr>
