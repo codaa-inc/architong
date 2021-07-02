@@ -16,7 +16,6 @@ class Comments(models.Model):
     like_users = models.ManyToManyField(settings.AUTH_USER_MODEL, through='UserLikeComment')
     hit_count = models.PositiveIntegerField(default=0)
 
-
     @property
     def created_string(self):
         time = datetime.now() - self.reg_dt

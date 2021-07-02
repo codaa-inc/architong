@@ -73,26 +73,53 @@
     .doc-middle-content {
         padding-top: 0px;
     }
-    .book_title {
-        font-weight: bolder;
-        padding: 16px;
-        background-color: #fdfdfd;
-        margin-bottom: 0px !important;
-    }
     .user-menu {
         color: #0d0d75 !important;
     }
     .nav-sidebar {
         padding-bottom: 70px;
     }
+    #book_info {
+        display: flex;
+        justify-content: space-between;
+        align-items: center;
+        padding: 0px;
+    }
+    #book_info > p {
+        margin-bottom: 0px;
+        font-size: 14px;
+        color: #5a6268;
+    }
+    #book-like-count {
+        cursor: pointer;
+    }
 </style>
 {% endblock %}
 
 {% block content %}
-<!--================Forum Breadcrumb Area =====================-->
+<!-- 페이지 로딩 시 초기 셋팅 영역 -->
+<script>
+    // 로그인 시 사용자 ID를 저장하는 전역변수 선언
+    let USERNAME = "";
+    // page_id 전역변수 선언
+    let PAGEID = "";
+</script>
+{% if page_id %}
+<script>PAGEID = "{{ page_id }}";</script>
+{% endif %}
+{% if user.is_authenticated %}
+<script>USERNAME = "{{ user.get_username }}";</script>
+{% endif %}
+<script>
+    // Page View인 경우 해당 Page 댓글창 펼침, scroll 이동
+    window.onload = function() {
+        if (PAGEID != "") {
+            onclickComment(1, PAGEID);
+            onclickChildList(PAGEID, 'auto');
+        }
+    };
+</script>
 <div class="breadcrumb_area_three" style="padding: 0"></div>
-<!--================End Forum Breadcrumb Area =================-->
-<!--================Topic Area =================================-->
 <section>
     <div class="container custom_container">
         <div class="row">
@@ -106,7 +133,7 @@
                         {% for page in pages %}
                         {% if page.parent_id == 0 %}
                         <li class="nav-item active">
-                            <a onclick='onclickChildList("{{ page.page_id }}")' class="nav-link">{{ page.page_title }}</a>
+                            <a onclick='onclickChildList("{{ page.page_id }}")' class="nav-link" style="margin-right: 30px;">{{ page.page_title }}</a>
                             <span class="icon"><i class="arrow_carrot-down"></i></span>
                             <ul class="list-unstyled dropdown_nav" id="parent-list-{{ page.page_id }}" ></ul>
                         </li>
@@ -124,7 +151,44 @@
             <div class="col-xl-9 doc-middle-content" style="z-index: 1;">{% csrf_token %}
                 <article id="post" class="documentation_info">
                     <div class="documentation_body" id="documentation">
-                        <h4 class="book_title">{{ book.book_title }}</h4>
+                        <!-- 법규/위키 정보 영역 -->
+                        <div class="col-sm-12">
+                            <h4>{{ book.book_title }}</h4>
+                            <div id="book_info">
+                                <p>
+                                    {% if book.codes_yn == "Y" %}
+                                        {% if book.code_gubun %}
+                                            <i class="icon_tag"></i> {{ book.get_code_gubun_display }}
+                                            &nbsp;&nbsp;|&nbsp;&nbsp;
+                                        {% endif %}
+                                        {{ book.enfc_dt | date:'Y.m.d'}} 시행
+                                    {% else %}
+                                        {% if book.wiki_gubun %}
+                                            <i class="icon_tag"></i> {{ book.get_wiki_gubun_display }}
+                                            &nbsp;&nbsp;|&nbsp;&nbsp;
+                                        {% endif %}
+                                        {{ book.wrt_dt | date:'Y.m.d'}} 작성
+                                        {% if book.wrt_dt != book.mdfcn_dt %}
+                                            &nbsp;&nbsp;|&nbsp;&nbsp;
+                                            {{ book.mdfcn_dt | date:'Y.m.d H:i'}} 편집됨
+                                        {% endif %}
+                                    {% endif %}
+                                </p>
+                                <p>
+                                    {% if book.is_liked == "true" %}
+                                        <a id="book-like-count" onclick="onclickLikeBook({{ book.book_id }})">
+                                        <ion-icon name="heart"></ion-icon>&nbsp;{{ book.like_user_count }}&nbsp;</a>
+                                    {% else %}
+                                         <a id="book-like-count" onclick="onclickLikeBook({{ book.book_id }})">
+                                        <ion-icon name="heart-outline"></ion-icon>&nbsp;{{ book.like_user_count }}&nbsp;</a>
+                                    {% endif %}
+                                    <ion-icon name="eye-outline"></ion-icon> {{ book.hit_count }}&nbsp;
+                                    <ion-icon name="chatbubbles-outline"></ion-icon> {{ book.total_comment_count }}
+                                </p>
+                            </div>
+                        </div><hr>
+                        <!-- end of 법규/위키 정보 영역 -->
+                        <!-- 법규/위키 본문 영역 -->
                         {% for page in pages %}
                         <div class="martor-content">
                             <div class="martor-preview" id="page-{{ page.page_id }}">
@@ -153,8 +217,16 @@
                                         {% endif %}
                                     </a>
                                     <!----------------------- End Bookmark Icon -------------------->
+
                                 <div id="description-{{ page.page_id }}">
-                                {{ page.description|safe_markdown }}
+                                    {% if book.codes_yn == "N" %}
+                                        {% if page.depth == 0 %}
+                                            <h2>{{ page.page_title }}</h2><hr>
+                                        {% else %}
+                                            <h3>{{ page.page_title }}</h3>
+                                        {% endif %}
+                                    {% endif %}
+                                {{ page.description | safe_markdown }}
                                 </div> {% csrf_token %}
                                 <!----------------------- Comment Area ----------------------------->
 
@@ -162,7 +234,8 @@
                             </div>
                         </div>
                         {% endfor %}
-                        <!--================ Martor JS =================-->
+                        <!-- end of 법규/위키 본문 영역 -->
+                        <!--================ Martor JS (위치변경하면 작동 X) =================-->
                         <script type="text/javascript" src="{% static 'plugins/js/jquery.min.js' %}"></script>
                         <script type="text/javascript" src="{% static 'plugins/js/bootstrap.min.js' %}"></script>
                         <script type="text/javascript" src="{% static 'plugins/js/highlight.min.js' %}"></script>
@@ -175,7 +248,7 @@
                             // 1개의 장으로 구성되어 있는 경우 제목 보여주지 않음
                             const law_count = "{{ law_count }}";
                             if (law_count < 2) {
-                                $("#documentation").children().first().remove();
+                                $(".martor-content").children().first().remove();
                             }
                         </script>
                     </div>
@@ -184,8 +257,6 @@
         </div>
     </div>
 </section>
-<!--================End Topic Area =================-->
-
 <!-- Back to top button -->
 <a id="back-to-top" title="Back to Top"></a>
 {% endblock %}
@@ -200,27 +271,4 @@
     // viewer.html, editor.html footer 숨김
     $(".forum_footer_area").hide();
 </script>
-<script>
-    // 로그인 시 사용자 ID를 저장하는 전역변수 선언
-    let USERNAME = "";
-
-    // page_id 전역변수 선언
-    let PAGEID = "";
-
-    // Page View인 경우 해당 Page 댓글창 펼침, scroll 이동
-    $( document ).ready(function() {
-        if (PAGEID != "") {
-            onclickComment(1, PAGEID);
-            onclickChildList(PAGEID, 'auto');
-        }
-    });
-</script>
 {% endblock %}
-
-{% if page_id %}
-<script>PAGEID = "{{ page_id }}"; </script>
-{% endif %}
-
-{% if user.is_authenticated %}
-<script>USERNAME = "{{ user.get_username }}";</script>
-{% endif %}

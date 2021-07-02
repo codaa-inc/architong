@@ -35,6 +35,7 @@ urlpatterns = [
     path('book/wiki', wiki_list),
     path('book/<int:book_id>', view_book),
     path('book/bookmark/<int:page_id>', add_or_remove_bookmark),
+    path('book/like/<int:book_id>', like_book),
     path('page/<int:page_id>', view_page),
     path('bookmark/', view_bookmark),
     path('bookmark/<int:page_id>', delete_bookmark),

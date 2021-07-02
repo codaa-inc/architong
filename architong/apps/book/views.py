@@ -1,6 +1,7 @@
 import json
 import datetime
 
+from django.contrib.auth import get_user_model
 from django.core.paginator import Paginator
 from django.core.serializers.json import DjangoJSONEncoder
 from django.http import JsonResponse, HttpResponse
@@ -25,6 +26,15 @@ def wiki_manage(request):
         docs = Books.objects.filter(codes_yn="N", author_id=username).order_by('wrt_dt')
     else:
         docs = Books.objects.filter(codes_yn="N", author_id=username).order_by('-mdfcn_dt')
+
+    # 댓글 객체 좋아요 관련 정보 추가 : is_liked, like_user_count
+    for doc in docs:
+        like_comment = list(Books.objects.get(book_id=doc.book_id).like_users.all())
+        if request.user in like_comment:
+            doc.is_liked = "true"
+        else:
+            doc.is_liked = "false"
+        doc.like_user_count = len(like_comment)
 
     # 페이징처리
     page = request.GET.get('page')
@@ -68,7 +78,7 @@ def wiki_add(request):
             return JsonResponse({"error_message": "책제목은 최소 3글자, 최대 255글자 입니다."})
 
 
-# 책정보 조회/수정/삭제 function
+# 책정보 조회/수정 function
 @login_required(login_url="/account/google/login")
 def wiki_update(request, book_id):
     book = Books.objects.get(book_id=book_id)
@@ -85,6 +95,17 @@ def wiki_update(request, book_id):
                 for child_page in child_pages:
                     if child_page.parent_id == parent_page.page_id:
                         sorted_pages.append(child_page)
+            # 댓글 객체 좋아요 관련 정보 추가 : is_liked, like_user_count
+            like_comment = list(book.like_users.all())
+            if request.user in like_comment:
+                book.is_liked = "true"
+            else:
+                book.is_liked = "false"
+            book.like_user_count = len(like_comment)
+            # 댓글 갯수
+            page_list = Pages.objects.filter(book_id=book_id).values_list('page_id')
+            comment_count = Comments.objects.filter(page_id__in=page_list).count()
+            book.comment_count = comment_count
             context = {"book": book,
                        "page_list": sorted_pages}
             return render(request, "book/editor.html", context)
@@ -259,6 +280,15 @@ def law_list(request):
     else:
         laws = Books.objects.filter(codes_yn="Y", rls_yn="Y").order_by('-enfc_dt')
 
+    # 댓글 객체 좋아요 관련 정보 추가 : is_liked, like_user_count
+    for law in laws:
+        like_comment = list(Books.objects.get(book_id=law.book_id).like_users.all())
+        if request.user in like_comment:
+            law.is_liked = "true"
+        else:
+            law.is_liked = "false"
+        law.like_user_count = len(like_comment)
+
     # 페이징처리
     page = request.GET.get('page')
     paginator = Paginator(laws, 15).get_page(page)
@@ -288,6 +318,15 @@ def wiki_list(request):
     else:
         docs = Books.objects.filter(codes_yn="N", rls_yn="Y").order_by('-wrt_dt')
 
+    # 댓글 객체 좋아요 관련 정보 추가 : is_liked, like_user_count
+    for doc in docs:
+        like_comment = list(Books.objects.get(book_id=doc.book_id).like_users.all())
+        if request.user in like_comment:
+            doc.is_liked = "true"
+        else:
+            doc.is_liked = "false"
+        doc.like_user_count = len(like_comment)
+
     # 페이징처리
     page = request.GET.get('page')
     paginator = Paginator(docs, 15).get_page(page)
@@ -306,7 +345,7 @@ def wiki_list(request):
     return render(request, "book/wikilist.html", context)
 
 
-# 책 조회 function
+# 책/페이지 조회 function
 def view_book(request, book_id):
     # Books, Pages QuerySet
     username = request.user
@@ -316,12 +355,24 @@ def view_book(request, book_id):
     # 본문 장의 갯수 → 1개의 장으로 구성되어 있는 경우 제목 보여주지 않기 위함
     law_count = pages.filter(Q(depth=0) & ~Q(page_title="별표/서식")).count()
 
-    # 페이지별 댓글 count 추가
+    # 댓글 객체 좋아요 관련 정보 추가 : is_liked, like_user_count
+    like_comment = list(book.like_users.all())
+    if request.user in like_comment:
+        book.is_liked = "true"
+    else:
+        book.is_liked = "false"
+    book.like_user_count = len(like_comment)
+
+    # 댓글 count 추가
+    total_comment_count = 0
     for page in pages:
         q = Q(page_id=page.page_id)
         q.add(~Q(status="D") & ~Q(status="TD"), q.AND)
-        q.add(Q(page_id=page.page_id, rls_yn="Y") | Q(page_id=page.page_id, rls_yn="N", username=username), q.AND)
-        page.comment_count = Comments.objects.filter(q).count()
+        q.add(Q(rls_yn="Y") | Q(rls_yn="N", username=username), q.AND)
+        comment_count = Comments.objects.filter(q).count()
+        page.comment_count = comment_count
+        total_comment_count += comment_count
+    book.total_comment_count = total_comment_count
 
     # 로그인된 사용자의 경우 페이지 정보에 북마크 등록여부 추가
     if username is not None:
@@ -369,13 +420,24 @@ def view_page(request, page_id):
     # 본문 장의 갯수 → 1개의 장으로 구성되어 있는 경우 제목 보여주지 않기 위함
     law_count = pages.filter(Q(depth=0) & ~Q(page_title="별표/서식")).count()
 
-    # 페이지별 댓글 count 추가
+    # 댓글 객체 좋아요 관련 정보 추가 : is_liked, like_user_count
+    like_comment = list(book.like_users.all())
+    if request.user in like_comment:
+        book.is_liked = "true"
+    else:
+        book.is_liked = "false"
+    book.like_user_count = len(like_comment)
+
+    # 댓글 count 추가
+    total_comment_count = 0
     for page in pages:
         q = Q(page_id=page.page_id)
         q.add(~Q(status="D") & ~Q(status="TD"), q.AND)
         q.add(Q(rls_yn="Y") | Q(rls_yn="N", username=username), q.AND)
         comment_count = Comments.objects.filter(q).count()
         page.comment_count = comment_count
+        total_comment_count += comment_count
+    book.total_comment_count = total_comment_count
 
     # 로그인된 사용자의 경우 페이지 정보에 북마크 등록여부 추가
     if username is not None:
@@ -385,7 +447,6 @@ def view_page(request, page_id):
                 page.is_bookmarked = 1
             else:
                 page.is_bookmarked = 0
-
     context = {'book': book,
                'pages': pages,
                'page_id': str(page_id),
@@ -409,7 +470,6 @@ def view_page(request, page_id):
         book.hit_count += 1
         book.save()
         return response
-
     return render(request, 'book/viewer.html', context)
 
 
@@ -504,3 +564,26 @@ def comment_count(request):
     q = Q(page_id=page_id) & Q(rls_yn=rls_yn) & Q(username=username) & ~Q(status='D')
     count = Comments.objects.filter(q).count()
     return JsonResponse({"comment_count": str(count)})
+
+
+# 책 좋아요 토글 function
+@login_required(login_url="/account/google/login")
+def like_book(request, book_id):
+    # 문서, 작성자 QuerySet 선언
+    book = Books.objects.get(book_id=book_id)
+    author = get_user_model().objects.get(username=book.author_id)
+
+    # 좋아요 삭제, 댓글 작성자 활동점수 -1
+    if request.user in book.like_users.all():
+        book.like_users.remove(request.user)
+        author.act_point = int(author.act_point) - 1
+        author.save()
+        result = "remove"
+    # 좋아요 등록, 댓글 작성자 활동점수 +1
+    else:
+        book.like_users.add(request.user)
+        author.act_point = int(author.act_point) + 1
+        author.save()
+        result = "add"
+    return JsonResponse({"result": result})
+

@@ -15,6 +15,15 @@
         .post_author {
             align-items: center;
         }
+        .post_tag {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+        }
+        .post_tag > p {
+            margin-bottom: 0px;
+            font-size: 14px;
+        }
     </style>
 {% endblock %}
 {% block content %}
@@ -39,8 +48,18 @@
                 <div class="blog_grid_post shadow-sm wow fadeInUp">
                     <div onclick="location.href='/book/{{ book.book_id }}'" class="grid_post_content">
                         <div class="post_tag">
-                            <a>법규</a>
-                            <a class="c_blue">{{ book.get_code_gubun_display }}</a>
+                            <div>
+                                <a>법규</a>
+                                <a class="c_blue">{{ book.get_code_gubun_display }}</a>
+                            </div>
+                            <p>
+                                {% if book.is_liked == "true" %}
+                                    <ion-icon name="heart"></ion-icon>&nbsp;{{ book.like_user_count }}&nbsp;&nbsp;
+                                {% else %}
+                                    <ion-icon name="heart-outline"></ion-icon>&nbsp;{{ book.like_user_count }}&nbsp;&nbsp;
+                                {% endif %}
+                                <ion-icon name="eye-outline"></ion-icon> {{ book.hit_count }}
+                            </p>
                         </div>
                         <a>
                             <h4 class="b_title">{{ book.book_title }}</h4>
@@ -54,9 +73,8 @@
                                 {% endif %}
                             </div>
                             <div class="media-body author_text">
-                                <div class="date">시행&nbsp;&nbsp;{{ book.enfc_dt | date:'Y.m.d' }}</div>
+                                <div class="date">{{ book.enfc_dt | date:'Y.m.d' }}</div>
                             </div>
-                            <p style="margin-bottom: 0px;"><ion-icon name="eye-outline"></ion-icon> {{ book.hit_count }}</p>
                         </div>
                     </div>
                 </div>

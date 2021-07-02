@@ -1,3 +1,4 @@
+from django.conf import settings
 from django.db import models
 from martor.models import MartorField
 from django.core.validators import MinLengthValidator
@@ -13,28 +14,34 @@ class Books(models.Model):
     wrt_dt = models.DateTimeField(auto_now_add=True, blank=True, null=True)
     enfc_dt = models.DateTimeField(blank=True, null=True)
     codes_yn = models.CharField(max_length=10, blank=True, null=True)
-    CODE_CHOICES = (
-        ('0', '법령'),
-        ('1', '행정규칙'),
-        ('2', '자치법규'),
-    )
-    code_gubun = models.CharField(max_length=2, choices=CODE_CHOICES)
-    WIKI_CHOICES = (
-        ('0', '전체'),
-        ('1', '설계'),
-        ('2', '재료'),
-        ('3', '시공'),
-        ('4', '설비'),
-        ('5', '환경'),
-        ('6', '도시'),
-    )
-    wiki_gubun = models.CharField(max_length=10, blank=True, null=True, choices=WIKI_CHOICES)
     mdfcn_dt = models.DateTimeField(auto_now=True)
     hit_count = models.IntegerField(blank=True, null=True, default=0)
+    CODE_CHOICES = (
+        ('0', '법령'), ('1', '행정규칙'), ('2', '자치법규')
+    )
+
+    WIKI_CHOICES = (
+        ('0', '전체'), ('1', '설계'), ('2', '재료'), ('3', '시공'),
+        ('4', '설비'), ('5', '환경'), ('6', '도시')
+    )
+    code_gubun = models.CharField(max_length=2, choices=CODE_CHOICES)
+    wiki_gubun = models.CharField(max_length=10, blank=True, null=True, choices=WIKI_CHOICES)
+    like_users = models.ManyToManyField(settings.AUTH_USER_MODEL, through='UserLikeBook')
 
     class Meta:
         managed = False
         db_table = 'books'
+
+
+class UserLikeBook(models.Model):
+    id = models.AutoField(primary_key=True)
+    book = models.ForeignKey(Books, models.DO_NOTHING)
+    user = models.ForeignKey(settings.AUTH_USER_MODEL, models.DO_NOTHING)
+    reg_dt = models.DateTimeField(auto_now_add=True, blank=True, null=True)
+
+    class Meta:
+        managed = False
+        db_table = 'user_like_book'
 
 
 class Pages(models.Model):

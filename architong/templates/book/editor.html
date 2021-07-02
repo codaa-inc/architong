@@ -75,6 +75,12 @@
         padding-top: 0px;
         padding-bottom: 160px;
     }
+    #book_info {
+        display: flex;
+        justify-content: space-between;
+        color: #5a6268;
+        padding: 0px;
+    }
 </style>
 {% endblock %}
 
@@ -152,7 +158,24 @@
                             {% else %}
                             <!-- 위키 정보 모드 -->
                             <div class="sign_inner signup_inner">
-                                <h5 style="font-weight: 700">위키 정보 수정</h5><hr>
+                                <h5 style="font-weight: 700">위키 정보</h5><hr>
+                                <div id="book_info" class="col-sm-12">
+                                    <p style="font-size: 13px;">
+                                        {{ book.wrt_dt | date:'Y.m.d'}} 작성
+                                        {% if book.wrt_dt != book.mdfcn_dt %}
+                                        &nbsp;&#183;&nbsp; {{ book.mdfcn_dt | date:'Y.m.d H:i'}} 편집됨
+                                        {% endif %}
+                                    </p>
+                                    <p>
+                                        {% if book.is_liked == "true" %}
+                                            <ion-icon name="heart"></ion-icon>&nbsp;{{ book.like_user_count }}&nbsp;
+                                        {% else %}
+                                            <ion-icon name="heart-outline"></ion-icon>&nbsp;{{ book.like_user_count }}&nbsp;
+                                        {% endif %}
+                                        <ion-icon name="eye-outline"></ion-icon> {{ book.hit_count }}&nbsp;
+                                        <ion-icon name="chatbubbles-outline"></ion-icon> {{ book.comment_count }}
+                                    </p>
+                                </div>
                                 <form id="wiki" name="wiki" class="row login_form" style=" padding: 20px 0;">{% csrf_token %}
                                     <div class="col-sm-12 form-group">
                                         <div class="small_text">위키 제목</div>

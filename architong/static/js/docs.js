@@ -680,3 +680,30 @@ function onclickDeleteWiki(book_id){
         document.location.href = "/wiki/delete/" + book_id;
     }
 };
+
+/**
+ * 뷰어 법규 및 위키 좋아요 클릭 이벤트
+ * */
+function onclickLikeBook(book_id) {
+    $.ajax({
+        type: "GET",
+        url: "/book/like/" + book_id,
+        dataType: "json", // 서버측에서 전송한 Response 데이터 형식 (json)
+        success: function (response) { // 통신 성공시 - 동적으로 북마크 아이콘 변경
+            let like = $("#book-like-count");
+            if (response.result == "add") {
+                const like_count = Number(like.text()) + 1;
+                const like_icon = '<ion-icon name="heart" style="cursor: pointer;" title="좋아요 취소"></ion-icon>&nbsp;';
+                like.html(like_icon + like_count);
+            } else if(response.result == "remove") {
+                const like_count = Number(like.text()) - 1;
+                const like_icon = '<ion-icon name="heart-outline" style="cursor: pointer;" title="좋아요"></ion-icon>&nbsp;';
+                like.html(like_icon + like_count);
+            }
+        },
+        error: function (request, status, error) { // 통신 실패시 - 로그인 페이지 리다이렉트
+            console.log("code:"+request.status+"\n"+"message:"+request.responseText+"\n"+"error:"+error)
+            //window.location.replace("/accounts/google/login/")
+        },
+    });
+};

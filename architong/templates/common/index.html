@@ -60,9 +60,9 @@
                             <div class="media-body author_text">
                                 {% if book.codes_yn == "N" %}
                                  <h4>{{ book.author_id }}</h4>
-                                 <div class="date">작성&nbsp;&nbsp;{{ book.wrt_dt | date:'Y.m.d' }}</div>
+                                 <div class="date">{{ book.wrt_dt | date:'Y.m.d' }}</div>
                                 {% else %}
-                                <div class="date">시행&nbsp;&nbsp;{{ book.enfc_dt | date:'Y.m.d' }}</div>
+                                <div class="date">{{ book.enfc_dt | date:'Y.m.d' }}</div>
                                 {% endif %}
                             </div>
                         </div>

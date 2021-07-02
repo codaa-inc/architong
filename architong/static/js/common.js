@@ -76,15 +76,15 @@ function checkMinLength(id, len) {
 };
 
 /**
- * 좋아요 토글 이벤트
+ * 댓글 좋아요 토글 이벤트
  * */
-function onclickLikeComment(commend_id) {
+function onclickLikeComment(comment_id) {
     $.ajax({
         type: "GET",
-        url: "/comment/like/" + commend_id,
+        url: "/comment/like/" + comment_id,
         dataType: "json", // 서버측에서 전송한 Response 데이터 형식 (json)
         success: function (response) { // 통신 성공시 - 동적으로 북마크 아이콘 변경
-            let like = $("#like-count-" + commend_id);
+            let like = $("#like-count-" + comment_id);
             if (response.result == "add") {
                 const like_count = Number(like.text()) + 1;
                 const like_icon = '<ion-icon name="heart" style="cursor: pointer;" title="좋아요 취소"></ion-icon>&nbsp;';
