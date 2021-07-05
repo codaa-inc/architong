@@ -134,7 +134,7 @@ def wiki_add_page(request, book_id):
                 book_id=book_id,
                 parent_id=request.GET.get('page', 0),
                 depth=1 if request.GET.get('page') else 0,
-                page_title="new page"
+                page_title="페이지 제목"
             )
             new_page.save()
             book.mdfcn_dt = datetime.datetime.now().now()

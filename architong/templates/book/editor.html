@@ -14,7 +14,7 @@
         overflow: auto !important;
         overscroll-behavior: contain;
         scroll-behavior: smooth;
-    }
+    }P
 
     .doc-middle-content {
         padding-top: 0px;
@@ -80,6 +80,15 @@
         justify-content: space-between;
         color: #5a6268;
         padding: 0px;
+    }
+    .markdown-toggle-maximize {
+        display: none;
+    }
+    .markdown-help {
+        display: none;
+    }
+    .markdown-image-upload {
+        display: none;
     }
 </style>
 {% endblock %}
@@ -211,7 +220,6 @@
                             {% endif %}
                             <!--================ Martor =================-->
                             <script type="text/javascript" src="{% static 'plugins/js/jquery.min.js' %}"></script>
-                            <script type="text/javascript" src="{% static 'plugins/js/bootstrap.min.js' %}"></script>
                             <script type="text/javascript" src="{% static 'plugins/js/ace.js' %}"></script>
                             <script type="text/javascript" src="{% static 'plugins/js/mode-markdown.js' %}"></script>
                             <script type="text/javascript" src="{% static 'plugins/js/ext-language_tools.js' %}"></script>
@@ -250,5 +258,9 @@
 
       // viewer.html, editor.html footer 숨김
       $(".forum_footer_area").hide();
+
+      // 마크다운 에디터 속성 변경
+      $("#nav-editor-tab-description").children('span').text("글쓰기");
+      $("#nav-preview-tab-description").children('span').text("미리보기");
     </script>
 {% endblock %}

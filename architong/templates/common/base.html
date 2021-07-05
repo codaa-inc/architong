@@ -26,17 +26,17 @@
     <link rel="stylesheet" href="{% static 'assets/mcustomscrollbar/jquery.mCustomScrollbar.min.css' %}">
     <link rel="stylesheet" href="{% static 'css/style-main.css' %}">
     <link rel="stylesheet" href="{% static 'css/responsive.css' %}">
-    <!-- Google Ad -->
-    <script data-ad-client="ca-pub-8123301605290544" async src="https://pagead2.googlesyndication.com/pagead/js/adsbygoogle.js"></script>
-    <style>
+   <style>
         .user-menu {
             font-size: 14px;
             font-weight: bolder;
             font-family: 'Roboto', sans-serif;
         }
     </style>
+    <!-- Google Ad -->
+    <script data-ad-client="ca-pub-8123301605290544" async src="https://pagead2.googlesyndication.com/pagead/js/adsbygoogle.js"></script>
     <!-- jquery cdn -->
-    <script src="//cdnjs.cloudflare.com/ajax/libs/jquery/3.2.1/jquery.min.js"></script>
+    <script src="{% static 'js/jquery-3.5.1.min.js' %}"></script>
     <!-- google ad -->
     {% block ad %}
     {% endblock %}
@@ -191,7 +191,6 @@
 
 <!-- Optional JavaScript -->
 <!-- jQuery first, then Popper.js, then Bootstrap JS -->
-<script src="{% static 'js/jquery-3.5.1.min.js' %}"></script>
 <script src="{% static 'assets/bootstrap/js/popper.min.js' %}"></script>
 <script src="{% static 'assets/bootstrap/js/bootstrap.min.js' %}"></script>
 <script src="{% static 'js/parallaxie.js' %}"></script>

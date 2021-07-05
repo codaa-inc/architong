@@ -6,14 +6,14 @@
     <link href="{% static 'uvalue/css/menu.css' %}" rel="stylesheet">
 {% endblock %}
 {% block content %}
-    <div class="all">
+    <div id="printArea" class="all">
         <!-- Start of Header -->
         <div class="con_top wrap1300">
             <div class="con_top_01">
-                <div class="con_top_li">
+                <div class="con_top_li printInlineBlock">
                     <h4>열관류율 계산기 (KS)</h4>
                 </div>
-                <div class="con_top_li" style="float: right">
+                <div class="con_top_li printFloat" style="float: right">
                     <div class="con_top_li con_top_li2">
                         <h3 style="color: #2c63bb">지역구분</h3>
                         <select id="sido1" name="sido1"></select>
@@ -27,12 +27,12 @@
                         <select id="use" onchange="onchangeUse(this.value)">
                             <option disabled hidden selected>용도구분</option>
                         </select>
-                        <p><a onclick="onclickReview()"><img src="{% static 'uvalue/img/search_icon.png' %}" class="btn_header" style="width: 15px; height: 19px;">검토</a></p>
-                        <p><a onclick="onclickReset()"><img src="{% static 'uvalue/img/reset_icon.png' %}" class="btn_header" style="width: 18px; height: 18px;">초기화</a></p>
+                        <p class="printInlineBlock"><a onclick="onclickReview()"><img src="{% static 'uvalue/img/search_icon.png' %}" class="btn_header" style="width: 15px; height: 19px;">검토</a></p>
+                        <p class="printInlineBlock"><a onclick="onclickReset()"><img src="{% static 'uvalue/img/reset_icon.png' %}" class="btn_header" style="width: 18px; height: 18px;">초기화</a></p>
                     </div>
                 </div>
             </div>
-            <div class="con_top_02">
+            <div class="con_top_02 printBlock">
                 <ul>
                     <li>
                         <p>
@@ -55,25 +55,25 @@
                     </li>
                 </ul>
                 <div class="clear"></div>
+                <!-- Google Ad  -->
+                <script async src="https://pagead2.googlesyndication.com/pagead/js/adsbygoogle.js"></script>
+                <ins class="adsbygoogle"
+                     style="display:block; text-align:center;"
+                     data-ad-layout="in-article"
+                     data-ad-format="fluid"
+                     data-ad-client="ca-pub-8123301605290544"
+                     data-ad-slot="5045668696"></ins>
+                <script>
+                     (adsbygoogle = window.adsbygoogle || []).push({});
+                </script>
             </div>
         </div>
         <!-- End of Header -->
         <!-- Start of Container -->
         <div class="con_wrap maxwrap1300">
-            <!-- Google Ad  -->
-            <script async src="https://pagead2.googlesyndication.com/pagead/js/adsbygoogle.js"></script>
-            <ins class="adsbygoogle"
-                 style="display:block; text-align:center;"
-                 data-ad-layout="in-article"
-                 data-ad-format="fluid"
-                 data-ad-client="ca-pub-8123301605290544"
-                 data-ad-slot="5045668696"></ins>
-            <script>
-                 (adsbygoogle = window.adsbygoogle || []).push({});
-            </script>
             <!-- Start of External-Wall -->
             <div class="con_tit">
-                <span>*&nbsp;자재의 종류와 두께를 선택하면 열관류율이 자동 계산됨</span>
+                <span class="printBlock">*&nbsp;자재의 종류와 두께를 선택하면 열관류율이 자동 계산됨</span>
                 <h2>
                     <p>외벽평균열관류율</p>
                 </h2>
@@ -662,28 +662,32 @@
                 </ul>
             </div>
             <div id="floor-avg-header" class="con_bot" style="display: none;">
-            <p><span><b style="font-size:27px">=</b> &nbsp;&nbsp;&nbsp; 바닥평균열관류율</span>
-                <span id="floor-avg-trans"></span>&nbsp;
-                W/m²k &nbsp;
-                : &nbsp;
-            <p id="floor-avg-point"></p>
-            <p id="floor-avg-locale"></p>
-            <p id="floor-avg-result-1"></p></p>
-            <h6 id="floor-avg-result" class="dis_inb"></h6>
+                <p><span><b style="font-size:27px">=</b> &nbsp;&nbsp;&nbsp; 바닥평균열관류율</span>
+                    <span id="floor-avg-trans"></span>&nbsp;
+                    W/m²k &nbsp;
+                    : &nbsp;
+                <p id="floor-avg-point"></p>
+                <p id="floor-avg-locale"></p>
+                <p id="floor-avg-result-1"></p></p>
+                <h6 id="floor-avg-result" class="dis_inb"></h6>
+            </div>
         </div>
+        <div class="printBlock" style="text-align: center;">
+            <a  href="javascript:;" onclick="onclickPrint()" style="margin: auto;">
+                <i class="icon_printer"></i> 출력하기</a>
         </div>
-        <!-- Google Ad  -->
-        <script async src="https://pagead2.googlesyndication.com/pagead/js/adsbygoogle.js"></script>
-        <ins class="adsbygoogle"
-             style="display:block; text-align:center;"
-             data-ad-layout="in-article"
-             data-ad-format="fluid"
-             data-ad-client="ca-pub-8123301605290544"
-             data-ad-slot="5045668696"></ins>
-        <script>
-             (adsbygoogle = window.adsbygoogle || []).push({});
-        </script>
     </div>
+    <!-- Google Ad  -->
+    <script async src="https://pagead2.googlesyndication.com/pagead/js/adsbygoogle.js"></script>
+    <ins class="adsbygoogle"
+         style="display:block; text-align:center;"
+         data-ad-layout="in-article"
+         data-ad-format="fluid"
+         data-ad-client="ca-pub-8123301605290544"
+         data-ad-slot="5045668696"></ins>
+    <script>
+         (adsbygoogle = window.adsbygoogle || []).push({});
+    </script>
 {% endblock %}
 {% block js %}
     <script src="{% static 'uvalue/js/script.js' %}"></script>
@@ -692,5 +696,26 @@
         window.onload = function() {
             initCodeSet("{{ sido1 }}", "{{ gugun1 }}", "{{ locale }}", "{{ use }}");
         }
+
+        window.onbeforeprint = function () {
+            // 프린트 할 영역 필터링
+            $(".printBlock").css("display", "none");
+            $(".printInlineBlock").css("display", "none");
+            $(".printFloat").css("float", "left");
+            $(".forum_footer_area").css("display", "none");
+        };
+
+        // 출력 클릭 이벤트
+        function onclickPrint() {
+			window.print();
+        }
+
+        window.onafterprint = function () {
+            // 초기 body 복구
+            $(".printBlock").css("display", "block");
+            $(".printInlineBlock").css("display", "inline-block");
+            $(".printFloat").css("float", "right");
+            $(".forum_footer_area").css("display", "block");
+        };
     </script>
 {% endblock %}

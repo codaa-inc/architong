@@ -243,8 +243,10 @@ function viewCommentList(data, page_id, status) {
 
             // 자신의 글에 수정, 삭제 태그 추가
             if (USERNAME == comment.username && comment.status != "TD") {
-                comment_html += '<a onclick="deleteComment(' + "'child-" + comment.comment_id + "'" + ')" class="comment_tag">&nbsp;삭제&nbsp;</a>';
-                comment_html += '<a onclick="viewUpdateComment(' + "'child-" + comment.comment_id + "'" + ')" class="comment_tag">&nbsp;수정&nbsp;</a>';
+                comment_html += '<a onclick="deleteComment(' + "'child-" + comment.comment_id + "'" + ')" ' +
+                    'class="comment_tag">&nbsp;삭제&nbsp;</a>';
+                comment_html += '<a onclick="viewUpdateComment(' + "'child-" + comment.comment_id + "'" + ')" ' +
+                    'class="comment_tag">&nbsp;수정&nbsp;</a>';
             }
             comment_html += '</div></div></li></ul>';
         }
@@ -253,7 +255,7 @@ function viewCommentList(data, page_id, status) {
     // select할 경우 댓글창 새로 생성
     if (status == "select") {
        comment_html += '</li></ul></div>';
-       $("#description-" + page_id).append(comment_html);
+       $("#page-" + page_id).after(comment_html);
 
     // insert할 경우 댓글을 삽입할 위치를 탐색
     } else if(status == "insert") {
@@ -333,7 +335,7 @@ function viewCommentBox(id) {
                             '<input type="radio" class="rls_yn" name="rls_yn" value="N" id="rls_n" onchange="onchangeRadio(' + "'" + "rls_n" + "'" + ')" style="margin-left: 10px;"><label>북마크 메모</label>' +
                             '<button class="action_btn btn_small" type="button" ' +
                             'onclick="addComment(' + "'" + id + "'" + ')" style="color: #fff;">저장</button></div></form></div>';
-        $("#description-" + page_id).after(commentbox_html);
+        $("#page-" + page_id).after(commentbox_html);
     }
 
     // 생성한 textarea로 마우스 커서 이동

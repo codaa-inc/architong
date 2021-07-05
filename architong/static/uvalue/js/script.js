@@ -63,12 +63,11 @@ function initSet(items) {
  * */
 function initCodeSet(sido1, gugun1, locale, use) {
     $('#sido1').val(sido1);
+    $('#sido1').change();
     if (gugun1 != ""){
-        $('#sido1').change();
         $('#gugun1').val(gugun1);
+        $('#gugun1').change();
     }
-    $('#locale').val(locale);
-    setLocaleCode(sido1, gugun1);
     $('#use').val(use);
     $('#use').change();
     onclickReview();
@@ -338,12 +337,17 @@ function setInitValue() {
     setComboSelect("wall-indirect-thick-4", 22);
 
     // 창호 default 값
-    if(LOCALE_CODE == 0 || LOCALE_CODE == 1 && USE_CODE == 0) {  // 중부1/주거/창호직접
-      setComboSelect("win-direct-kind-1", 5);
+    if(USE_CODE == 1) {     // 비주거 - 일반사중
+        setComboSelect("win-direct-kind-1", 2);
+        setComboSelect("win-indirect-kind-1", 2);
     } else {
-      setComboSelect("win-direct-kind-1", 1);
+        if(LOCALE_CODE == 0 || LOCALE_CODE == 1) {
+            setComboSelect("win-direct-kind-1", 5);
+        } else {
+          setComboSelect("win-direct-kind-1", 1);
+        }
+        setComboSelect("win-indirect-kind-1", 1);
     }
-    setComboSelect("win-indirect-kind-1", 1);
 
     // 지붕 default 값
     setComboSelect("roof-direct-kind-1", 1);
@@ -630,7 +634,7 @@ function setHeatTransCoPointEpi() {
 */
 function onchangeUse(sel) {
     // 선택한 용도코드 임시저장
-    tmp_use_code = sel;
+    tmp_use_code = Number(sel);
 };
 
 
