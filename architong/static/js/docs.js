@@ -641,6 +641,7 @@ function onclickDeletePage(page_id) {
             dataType: "json",
             success: function (response) {
                 if (response.book_id != undefined) {
+                    alert("삭제 되었습니다.");
                     document.location.href = "/wiki/" + response.book_id;
                 } else {
                     alert("삭제 실패");
@@ -679,7 +680,22 @@ function onclickUpdateWiki(book_id){
  * */
 function onclickDeleteWiki(book_id){
     if(confirm("책을 삭제하시면 하위 페이지 및 연관된 북마크, 댓글 모두 삭제됩니다.\n정말 삭제하시겠습니까?")) {
-        document.location.href = "/wiki/delete/" + book_id;
+        $.ajax({
+            type: "GET",
+            url: "/wiki/delete/" + book_id,
+            dataType: "json",
+            success: function (response) {
+                if (response.result == "success") {
+                    alert("삭제 되었습니다.");
+                    document.location.href = "/wiki";
+                } else {
+                    alert("삭제 실패");
+                }
+            },
+            error: function (request, status, error) {
+                console.log("code:" + request.status + "\n" + "message:" + request.responseText + "\n" + "error:" + error)
+            },
+        });
     }
 };
 

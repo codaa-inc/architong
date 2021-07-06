@@ -22,10 +22,10 @@ class Books(models.Model):
 
     WIKI_CHOICES = (
         ('0', '전체'), ('1', '설계'), ('2', '재료'), ('3', '시공'),
-        ('4', '설비'), ('5', '환경'), ('6', '도시')
+        ('4', '설비'), ('5', '환경'), ('6', '도시'), ('7', '기타')
     )
     code_gubun = models.CharField(max_length=2, choices=CODE_CHOICES)
-    wiki_gubun = models.CharField(max_length=10, blank=True, null=True, choices=WIKI_CHOICES)
+    wiki_gubun = models.CharField(max_length=10, blank=True, null=True, choices=WIKI_CHOICES, default=7)
     like_users = models.ManyToManyField(settings.AUTH_USER_MODEL, through='UserLikeBook')
 
     class Meta:

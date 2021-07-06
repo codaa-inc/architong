@@ -40,6 +40,7 @@ urlpatterns = [
     path('page/<int:page_id>', view_page),
     path('bookmark/', view_bookmark),
     path('bookmark/<int:page_id>', delete_bookmark),
+    path('testmd', testmd),
 
     # Forum
     path('comment/<str:id>', CommentView.as_view()),

@@ -20,7 +20,7 @@ from apps.forum.models import Comments, UserLikeComment
 
 # 메인 페이지 조회 / 문서 검색 function
 def index(request):
-    books = Books.objects.filter(rls_yn="Y").order_by('-wrt_dt')  # 전체 쿼리셋
+    books = Books.objects.filter(rls_yn="Y").order_by('-hit_count')  # 전체 쿼리셋, default 조회순 정렬
     # 검색조건 콤보박스
     sort_list = [{'value': '0', 'label': '제목'},
                  {'value': '1', 'label': '내용'},

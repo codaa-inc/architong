@@ -6,6 +6,7 @@
 <link href="{% static 'plugins/css/ace.min.css' %}" type="text/css" media="all" rel="stylesheet"/>
 <link href="{% static 'plugins/css/resizable.min.css' %}" type="text/css" media="all" rel="stylesheet"/>
 <link href="{% static 'martor/css/martor.bootstrap.min.css' %}" type="text/css" media="all" rel="stylesheet"/>
+<link rel="stylesheet" href="https://cdn.jsdelivr.net/simplemde/latest/simplemde.min.css">
 <style>
     .doc_left_sidebarlist {
         padding-top: 0px !important;
@@ -90,6 +91,14 @@
     .markdown-image-upload {
         display: none;
     }
+    /**
+    .ace_editor {
+        letter-spacing: -4.5px;
+        word-spacing: -2px;
+        font-size: 18px;
+        line-break : loose;
+        word-break: break-all;
+    }*/
 </style>
 {% endblock %}
 
@@ -138,13 +147,11 @@
                             <!-- 마크다운 편집 모드 -->
                             <h5 style="margin-bottom: 20px;">본문 작성하기</h5>
                             <form class="form" id="page_form" name="page_form">{% csrf_token %}
-                                <input name="book_id" style="display: none" value="{{ book.book_id }}">
+                                <input name="book_id" style="display: none;" value="{{ book.book_id }}">
                                 <div class="form-group">
                                   {{ page_form.page_title }}
                                 </div>
-                                <div name="description" class="form-group">
-                                  {{ page_form.description }}
-                                </div>
+                                <textarea id="MyID"></textarea>
                                 <div id="form-bottom">
                                     <p style="margin-bottom: 0px">
                                         <a href="https://ko.wikipedia.org/wiki/마크다운" target="_blank" style="color : #0d0d75";>마크다운 작성법</a>
@@ -262,5 +269,9 @@
       // 마크다운 에디터 속성 변경
       $("#nav-editor-tab-description").children('span').text("글쓰기");
       $("#nav-preview-tab-description").children('span').text("미리보기");
+    </script>
+    <script src="https://cdn.jsdelivr.net/simplemde/latest/simplemde.min.js"></script>
+    <script>
+        var simplemde = new SimpleMDE({ element: document.getElementById("MyID") });
     </script>
 {% endblock %}

@@ -1,6 +1,7 @@
 import json
 import datetime
 
+from django.conf import settings
 from django.contrib.auth import get_user_model
 from django.core.paginator import Paginator
 from django.core.serializers.json import DjangoJSONEncoder
@@ -242,7 +243,7 @@ def wiki_delete(request, book_id):
         page_list.delete()
         # 페이지 삭제
         book.delete()
-        return render(request, "common/index.html")
+        return JsonResponse({"result": "success"})
     else:
         return HttpResponse("잘못된 접근입니다.")
 
@@ -586,4 +587,9 @@ def like_book(request, book_id):
         author.save()
         result = "add"
     return JsonResponse({"result": result})
+
+
+
+def testmd(request):
+    return render(request, "book/testmd.html")
 

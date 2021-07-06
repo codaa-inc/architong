@@ -1,3 +1,4 @@
+# -*- coding: utf-8 -*-
 """
 Python Markdown
 
@@ -19,11 +20,12 @@ Copyright 2004 Manfred Stienstra (the original version)
 License: BSD (see LICENSE.md for details).
 """
 
+from __future__ import unicode_literals
 import warnings
 from ..util import parseBoolValue
 
 
-class Extension:
+class Extension(object):
     """ Base class for extensions to subclass. """
 
     # Default config -- to be overriden by a subclass
@@ -48,7 +50,7 @@ class Extension:
 
     def getConfigs(self):
         """ Return all configs settings as a dict. """
-        return {key: self.getConfig(key) for key in self.config.keys()}
+        return dict([(key, self.getConfig(key)) for key in self.config.keys()])
 
     def getConfigInfo(self):
         """ Return all config descriptions as a list of tuples. """
@@ -75,18 +77,15 @@ class Extension:
         md = args[0]
         try:
             self.extendMarkdown(md)
-        except TypeError as e:
-            if "missing 1 required positional argument" in str(e):
-                # Must be a 2.x extension. Pass in a dumby md_globals.
-                self.extendMarkdown(md, {})
-                warnings.warn(
-                    "The 'md_globals' parameter of '{}.{}.extendMarkdown' is "
-                    "deprecated.".format(self.__class__.__module__, self.__class__.__name__),
-                    category=DeprecationWarning,
-                    stacklevel=2
-                )
-            else:
-                raise
+        except TypeError:
+            # Must be a 2.x extension. Pass in a dumby md_globals.
+            self.extendMarkdown(md, {})
+            warnings.warn(
+                "The 'md_globals' parameter of '{0}.{1}.extendMarkdown' is "
+                "deprecated.".format(self.__class__.__module__, self.__class__.__name__),
+                category=DeprecationWarning,
+                stacklevel=2
+            )
 
     def extendMarkdown(self, md):
         """
