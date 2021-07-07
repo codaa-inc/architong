@@ -602,7 +602,8 @@ function onclickSavePage(page_id) {
     $.ajax({
         type: "POST",
         url: "/wiki/edit/page/" + page_id,
-        data: $("#page_form").serialize() + "&csrfmiddlewaretoken=" + $("input[name=csrfmiddlewaretoken]").val(),
+        data: $("#page_form").serialize() + "&csrfmiddlewaretoken=" + $("input[name=csrfmiddlewaretoken]").val()
+                + "&description=" + simplemde.value(),
         dataType: "json",
         success: function (response) {
             if (response.page_id != undefined) {

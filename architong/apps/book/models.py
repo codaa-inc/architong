@@ -1,6 +1,5 @@
 from django.conf import settings
 from django.db import models
-from martor.models import MartorField
 from django.core.validators import MinLengthValidator
 
 
@@ -50,7 +49,7 @@ class Pages(models.Model):
     page_title = models.CharField(max_length=255)
     parent_id = models.IntegerField(blank=True, null=True, default=0)
     depth = models.IntegerField(blank=True, null=True, default=0)
-    description = MartorField(blank=True, null=True)
+    description = models.TextField(blank=True, null=True)
     wrt_dt = models.DateTimeField(auto_now_add=True)
     mdfcn_dt = models.DateTimeField(auto_now=True)
 

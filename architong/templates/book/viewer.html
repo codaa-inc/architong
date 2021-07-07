@@ -1,6 +1,6 @@
 {% extends 'common/base.html' %}
 {% load static %}
-{% load martortags %}
+{% load markup_tags %}
 {% block css %}
 <link href="{% static 'plugins/css/bootstrap.min.css' %}" type="text/css" media="all" rel="stylesheet"/>
 <link href="{% static 'plugins/css/ace.min.css' %}" type="text/css" media="all" rel="stylesheet"/>
@@ -227,7 +227,7 @@
                                             <h3>{{ page.page_title }}</h3>
                                         {% endif %}
                                     {% endif %}
-                                {{ page.description | safe_markdown }}
+                                {{ page.description | apply_markup:"markdown" }}
                                 </div> {% csrf_token %}
                                 <!----------------------- Comment Area ----------------------------->
 
@@ -236,10 +236,6 @@
                         </div>
                         {% endfor %}
                         <!-- end of 법규/위키 본문 영역 -->
-                        <!--================ Martor JS (위치변경하면 작동 X) =================-->
-                        <script type="text/javascript" src="{% static 'plugins/js/jquery.min.js' %}"></script>
-                        <script type="text/javascript" src="{% static 'plugins/js/bootstrap.min.js' %}"></script>
-                        <script type="text/javascript" src="{% static 'plugins/js/highlight.min.js' %}"></script>
                         <script>
                             // 마크다운 뷰어 함수
                             $('.martor-preview pre').each(function (i, block) {

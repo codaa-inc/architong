@@ -12,7 +12,7 @@ from django.shortcuts import render, redirect
 from django.db.models import Q
 
 from apps.forum.models import Comments
-from .forms import BookForm, PageForm
+from .forms import BookForm
 from .models import Books, Pages, Bookmark
 
 
@@ -150,7 +150,7 @@ def wiki_add_page(request, book_id):
                 for child_page in child_pages:
                     if child_page.parent_id == parent_page.page_id:
                         sorted_pages.append(child_page)
-            context = {"page_form": PageForm(instance=new_page),
+            context = {"page_form": new_page,
                        "page_id":  new_page.page_id,
                        "book": book,
                        "page_list": sorted_pages}
@@ -177,24 +177,20 @@ def wiki_editor(request, page_id):
                 for child_page in child_pages:
                     if child_page.parent_id == parent_page.page_id:
                         sorted_pages.append(child_page)
-            context = {"page_form": PageForm(instance=page),
+            context = {"page_form": page,
                        "page_id":  page.page_id,
                        "book": book,
                        "page_list": sorted_pages}
             return render(request, 'book/editor.html', context)
         # POST 요청이면 페이지 수정 저장
         elif request.method == 'POST':
-            form = PageForm(request.POST)
-            if form.is_valid():
-                page = Pages.objects.get(page_id=page_id)
-                page.page_title = request.POST['page_title']
-                page.description = request.POST['description']
-                page.save()
-                book.mdfcn_dt = datetime.datetime.now().now()
-                book.save()     # 해당 위키의 최근수정일 갱신
-                return JsonResponse({"page_id": page_id})
-            else:
-                return JsonResponse({"error_message": "양식을 확인해주세요."})
+            page = Pages.objects.get(page_id=page_id)
+            page.page_title = request.POST['page_title']
+            page.description = request.POST['description']
+            page.save()
+            book.mdfcn_dt = datetime.datetime.now().now()
+            book.save()     # 해당 위키의 최근수정일 갱신
+            return JsonResponse({"page_id": page_id})
     else:
         return HttpResponse("잘못된 접근입니다.")
 
@@ -587,9 +583,3 @@ def like_book(request, book_id):
         author.save()
         result = "add"
     return JsonResponse({"result": result})
-
-
-
-def testmd(request):
-    return render(request, "book/testmd.html")
-
