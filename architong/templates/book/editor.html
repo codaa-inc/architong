@@ -77,7 +77,6 @@
     .CodeMirror {
         height: 50vh;
         font-size: 14px;
-        background-color: transparent;
     }
     .cm-spell-error {
         background: transparent !important;
@@ -236,6 +235,7 @@
     <script src="{% static 'assets/font-size/js/rv-jquery-fontsize-2.0.3.min.js' %}"></script>
     <script src="{% static 'assets/magnify-pop/jquery.magnific-popup.min.js' %}"></script>
     <script src="{% static 'js/plugins.js' %}"></script>
+    <script src="https://cdn.jsdelivr.net/simplemde/latest/simplemde.min.js"></script>
     <script>
       // 페이지 추가 아이콘 이벤트 제거
       $(".nav-sidebar > li .icon").unbind();
@@ -243,7 +243,6 @@
       // viewer.html, editor.html footer 숨김
       $(".forum_footer_area").hide();
     </script>
-    <script src="https://cdn.jsdelivr.net/simplemde/latest/simplemde.min.js"></script>
     <script>
         // SimpleMDE 선언
         var simplemde = new SimpleMDE({
@@ -253,8 +252,13 @@
             placeholder : "본문 내용"
         });
 
-        // fullscreen 모드를 위한 상단 nav 우선순위 조정
-        $(".navbar").css('z-index', 0);
-
+        // Fullscreen 또는 SideBySide 모드 전환 : 상단 nav bar 우선순위 toggle
+        simplemde.codemirror.on("refresh", function(){
+            if (simplemde.isFullscreenActive() || simplemde.isSideBySideActive()) {
+                $(".navbar").css('z-index', 0);
+            } else {
+                $(".navbar").css('z-index', 20);
+            }
+        });
     </script>
 {% endblock %}

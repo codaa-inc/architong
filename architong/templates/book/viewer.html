@@ -6,6 +6,9 @@
 <link href="{% static 'plugins/css/ace.min.css' %}" type="text/css" media="all" rel="stylesheet"/>
 <link href="{% static 'plugins/css/resizable.min.css' %}" type="text/css" media="all" rel="stylesheet"/>
 <link href="{% static 'martor/css/martor.bootstrap.min.css' %}" type="text/css" media="all" rel="stylesheet"/>
+<link href="{% static 'assets/bootstrap/css/bootstrap-select.min.css' %}" rel="stylesheet">
+<link href="{% static 'assets/slick/slick.css' %}" rel="stylesheet">
+<link href="{% static 'assets/slick/slick-theme.css' %}" rel="stylesheet">
 <style>
     .martor-preview:hover {
         background-color: #F9F9F9;
@@ -42,7 +45,7 @@
         cursor: pointer;
         float: right;
     }
-    .comment_inner {
+    .comment_inner, .blog_comment_box {
         padding: 16px;
     }
     .comment_author {
@@ -58,7 +61,6 @@
         cursor: pointer;
         float: right;
     }
-
     .doc_left_sidebarlist {
         padding-top: 0px !important;
         position: fixed;
@@ -91,8 +93,13 @@
     #book-like-count {
         cursor: pointer;
     }
-    .blog_comment_box {
-        padding: 16px;
+    .modal-content {
+        padding: 25px;
+    }
+    #bookmarkSubmit {
+        background: #0C0E72;
+        color: #fff;
+        padding: 10px 30px;
     }
 </style>
 {% endblock %}
@@ -207,7 +214,7 @@
                                     <!----------------------- End Comment Icon -------------------->
                                     <!----------------------- Bookmark Icon ----------------------->
                                     <a id="bookmark-{{ page.page_id }}" class="bookmark" title="북마크 추가"
-                                       onclick='addOrRemoveBookmark("{{ page.page_id }}")'>
+                                       onclick="onclikckBookMark({{ page.page_id }})">
                                         {% if page.is_bookmarked == 1 %}
                                             <i class="icon_ribbon" style="font-size: larger"></i>
                                             <script>
@@ -218,30 +225,23 @@
                                         {% endif %}
                                     </a>
                                     <!----------------------- End Bookmark Icon -------------------->
-
-                                <div id="description-{{ page.page_id }}">
-                                    {% if book.codes_yn == "N" %}
-                                        {% if page.depth == 0 %}
-                                            <h2>{{ page.page_title }}</h2><hr>
-                                        {% else %}
-                                            <h3>{{ page.page_title }}</h3>
+                                    <!-------------------- Description Area ------------------------>
+                                    <div id="description-{{ page.page_id }}">
+                                        {% if book.codes_yn == "N" %}
+                                            {% if page.depth == 0 %}
+                                                <h2>{{ page.page_title }}</h2><hr>
+                                            {% else %}
+                                                <h3>{{ page.page_title }}</h3>
+                                            {% endif %}
                                         {% endif %}
-                                    {% endif %}
-                                {{ page.description | apply_markup:"markdown" }}
-                                </div> {% csrf_token %}
-                                <!----------------------- Comment Area ----------------------------->
-
-                                <!----------------------- End Comment Area ------------------------->
+                                    {{ page.description | apply_markup:"markdown" }}
+                                    </div> {% csrf_token %}
+                                    <!------------------ End Description Area ---------------------->
                             </div>
                         </div>
                         {% endfor %}
                         <!-- end of 법규/위키 본문 영역 -->
                         <script>
-                            // 마크다운 뷰어 함수
-                            $('.martor-preview pre').each(function (i, block) {
-                                hljs.highlightBlock(block);
-                            });
-
                             // 1개의 장으로 구성되어 있는 경우 제목 보여주지 않음
                             const law_count = "{{ law_count }}";
                             if (law_count < 2) {
@@ -254,16 +254,49 @@
         </div>
     </div>
 </section>
-<!-- Back to top button -->
-<a id="back-to-top" title="Back to Top"></a>
+
+<!-- 프로젝트 선택 모달 -->
+<div class="modal fade" id="selectProjectModal" tabindex="-3" role="dialog" aria-hidden="false">
+    <button type="button" class="close" data-dismiss="modal" aria-label="Close">
+        <i class=" icon_close"></i>
+    </button>
+    <div class="modal-dialog help_form" role="document">
+        <div class="modal-content">
+            <div class="shortcode_title">
+                <h5><i class="icon_ribbon"></i>&nbsp;북마크 추가</h5>
+                <p style="color: #5a6268;">북마크를 추가할 프로젝트를 선택해주세요</p>
+            </div>
+            <form action="#" class="contact_form">
+                <div class="row">
+                    <div class="form-group col-lg-12">
+                        <select type="select" class="form-control" name="project_select" id="project_select">
+                            <option selected disabled>선택 안 함</option>
+                        </select>
+                    </div>
+                    <input id="bookmarkParam" type="hidden">
+                    <!--<div class="form-group col-lg-12">
+                        <input type="text" class="form-control" name="project_input" id="project_input"
+                               placeholder="새로운 프로젝트명">
+                    </div>-->
+                    <button id="bookmarkSubmit" class="btn action_btn" style="margin: auto;"
+                    onclick="addBookmark()">등록</button>
+                </div>
+            </form>
+        </div>
+    </div>
+</div>
 {% endblock %}
 
 {% block js %}
 <script src="{% static 'js/docs.js' %}"></script>
 <script src="{% static 'js/common.js' %}"></script>
+<script src="{% static 'assets/bootstrap/js/bootstrap-select.min.js' %}"></script>
+<script src="{% static 'assets/slick/slick.min.js' %}"></script>
+<script src="{% static 'js/jquery.parallax-scroll.js' %}"></script>
+<script src="{% static 'js/theme.js' %}"></script>
+<script src="{% static 'js/plugins.js' %}"></script>
 <script src="{% static 'assets/font-size/js/rv-jquery-fontsize-2.0.3.min.js' %}"></script>
 <script src="{% static 'assets/magnify-pop/jquery.magnific-popup.min.js' %}"></script>
-<script src="{% static 'js/plugins.js' %}"></script>
 <script>
     // viewer.html, editor.html footer 숨김
     $(".forum_footer_area").hide();

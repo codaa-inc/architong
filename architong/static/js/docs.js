@@ -27,21 +27,47 @@ function onclickChildList(id, behavior) {
     preBmId = bmId;
 };
 
+
+/**
+ * 북마크 클릭 이벤트
+ */
+function onclikckBookMark(pageId) {
+    console.log("pageId : ", pageId);
+    console.log($("#bookmark-" + pageId).prop("title"));
+    // 삭제인 경우 북마크 하위 메모 삭제 여부를 확인한다.
+    if ($("#bookmark-" + pageId).prop("title") == "북마크 삭제") {
+        let commentCnt = getCommentCount(pageId, "N");
+        if (commentCnt > 0) {
+          if(!confirm("북마크를 삭제하시면 나의 비공개 메모 " + commentCnt +"건도 함께 삭제됩니다.\n진행하시겠습니까?")) {
+                return;
+            }
+        }
+        addOrRemoveBookmark(pageId);
+    } else {
+        // 추가인 경우 모달 오픈
+        $('#selectProjectModal').appendTo("body").modal('show');
+        $("#selectProjectModal").css("z-index", "1600");
+        $("#bookmarkParam").val(pageId);
+    }
+}
+
+/**
+ * 북마크 등록버튼 클릭 이벤트
+ * */
+function addBookmark(pageId) {
+    // modal close
+    $('#selectProjectModal').modal('hide');
+    // 북마크 등록 요청
+    addOrRemoveBookmark($("#bookmarkParam").val());
+};
+
 /**
  * 북마크 등록상태변경 함수
  * : 북마크 O → 북마크 삭제
  * : 북마크 X → 북마크 등록
  * */
 function addOrRemoveBookmark(pageId) {
-    // 삭제하려는 경우 북마크 하위 메모 삭제 여부를 확인한다.
-    if ($("#bookmark-" + pageId).prop("title") == "북마크 삭제") {
-        let commentCnt = getCommentCount(pageId, "N");
-        if(commentCnt > 0) {
-            if(!confirm("북마크를 삭제하시면 나의 비공개 메모 " + commentCnt +"건도 함께 삭제됩니다.\n진행하시겠습니까?")) {
-                return;
-            }
-        }
-    }
+    console.log("추가이벤트");
     $.ajax({
         type: "PUT",
         url: "bookmark/" + pageId,
@@ -114,6 +140,7 @@ function removeBookmark(pageId) {
         success: function (response) { // 통신 성공시 - 동적으로 북마크 아이콘 변경
             if (response.result == "success") {
                 $("div").remove("#page-" + pageId);
+                $("#commentbox-" + pageId).remove();
             }
         },
         error: function (request, status, error) { // 통신 실패시 - 로그인 페이지 리다이렉트
