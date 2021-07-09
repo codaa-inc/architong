@@ -599,11 +599,14 @@ function onclickSaveBook() {
  * 마크다운 에디터 페이지 수정 이벤트
  * */
 function onclickSavePage(page_id) {
+    let data = $("#page_form").serialize() + "&csrfmiddlewaretoken=" + $("input[name=csrfmiddlewaretoken]").val();
+    if (simplemde.value() != null && simplemde.value() != "") {
+        data += "&description=" + simplemde.value();
+    }
     $.ajax({
         type: "POST",
         url: "/wiki/edit/page/" + page_id,
-        data: $("#page_form").serialize() + "&csrfmiddlewaretoken=" + $("input[name=csrfmiddlewaretoken]").val()
-                + "&description=" + simplemde.value(),
+        data: data,
         dataType: "json",
         success: function (response) {
             if (response.page_id != undefined) {

@@ -77,6 +77,10 @@
     .CodeMirror {
         height: 50vh;
         font-size: 14px;
+        background-color: transparent;
+    }
+    .cm-spell-error {
+        background: transparent !important;
     }
 </style>
 {% endblock %}
@@ -136,7 +140,7 @@
                                 <input name="book_id" style="display: none;" value="{{ book.book_id }}">
                                 <input class="form-control" name="page_title" value="{{ page_form.page_title }}"
                                 style="margin-bottom: 15px;">
-                                <textarea id="description">{{ page_form.description }}</textarea>
+                                <textarea id="description">{% if page_form.description %}{{ page_form.description }}{% endif %}</textarea>
                                 <button type="button" class="btn btn-success" onclick="onclickSavePage('{{ page_id }}')"
                                 style="margin: 15px 0px 35px 0px;">저장</button>
                             </form>
@@ -145,7 +149,11 @@
                             <div class="martor-content">
                                  <div class="martor-preview" id="page-{{ page.page_id }}">
                                      <h3>{{ page.page_title }}</h3><hr/>
-                                     <div id="description-{{ page.page_id }}">{{ page.description | apply_markup:"markdown" }}</div>
+                                     <div id="description-{{ page.page_id }}">
+                                         {% if page.description %}
+                                            {{ page.description | apply_markup:"markdown" }}
+                                         {% endif %}
+                                     </div>
                                   </div>
                             </div>
                             <div class="button_inner_one">
@@ -245,11 +253,8 @@
             placeholder : "본문 내용"
         });
 
-        simplemde.codemirror.on("gutterClick", function(instance, line, gutter, clickEvent){
-            console.log("gutterClick : ", instance, line, gutter, clickEvent);
-        });
-        simplemde.codemirror.on("refresh", function(){
-            console.log("refresh");
-        });
+        // fullscreen 모드를 위한 상단 nav 우선순위 조정
+        $(".navbar").css('z-index', 0);
+
     </script>
 {% endblock %}
