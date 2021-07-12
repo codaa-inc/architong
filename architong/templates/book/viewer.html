@@ -274,11 +274,13 @@
                         </select>
                     </div>
                     <input id="bookmarkParam" type="hidden">
-                    <!--<div class="form-group col-lg-12">
+                    <div class="form-group col-lg-12" id="project_add" hidden>
                         <input type="text" class="form-control" name="project_input" id="project_input"
-                               placeholder="새로운 프로젝트명">
-                    </div>-->
-                    <button id="bookmarkSubmit" class="btn action_btn" style="margin: auto;"
+                               placeholder="새폴더">
+                    </div>
+                    <button id="bookmarkSubmit" class="btn doc_border_btn btn_small" style="margin: auto;"
+                    onclick="addNewProject()">새폴더 추가</button>
+                    <button id="bookmarkSubmit" class="btn action_btn btn_small" style="margin: auto;"
                     onclick="addBookmark()">등록</button>
                 </div>
             </form>

@@ -14,7 +14,7 @@ urlpatterns = [
     path('admin/', admin.site.urls),
     path('', index),
     path('accounts/', include('allauth.urls')),
-    path('profile/<str:username>', profile),
+    path('profile/<str:username>', Profile.as_view()),
     path('logout/', auth_views.LogoutView.as_view(), name="logout"),
     path('law/insert', LawView.as_view()),
     path('law/update/<int:book_id>', law_update),

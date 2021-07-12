@@ -19,6 +19,29 @@
 .media-body {
     padding-bottom: 0px !important;
 }
+.forum_body .navbar-nav li {
+    padding-left: 0px;
+    padding-right: 0px;
+}
+.documentation_tab .nav-item .nav-link {
+    font-size: 16px;
+}
+.sec_pad {
+    padding: 30px 0 0 0;
+}
+.list_pagination {
+    padding-top: 0px;
+    justify-content: center !important;
+}
+.info_list {
+    padding: 30px;
+}
+.info_list li {
+    margin-bottom: 15px;
+}
+.documentation_tab_pane {
+    padding-top: 0px;
+}
 
 </style>
 {% endblock %}
@@ -81,60 +104,148 @@
                         </div>
                     </div>
                 </div>
-                <div class="forum_l_inner comment_l" style="margin-top: 20px;">
-                    <div class="forum_head d-flex justify-content-between">
-                        <ul class="nav right" style="padding: 10px;">
-                            <li><h5 style="margin-bottom: 0px;">최근 활동</h5></li></ul>
-                    </div>
-                    <div class="forum_body">
-                        <ul class="navbar-nav topic_comment_list">
-                            {% if comments %}
-                            {% for comment in comments %}
-                            <li>
-                                <div class="media">
-                                    <div class="media-body">
-                                        <h6><i class="icon_check_alt"></i> 댓글을 남겼습니다.</h6>
-                                        {% if comment.created_string == False %}
-                                        <h6><i class="icon_calendar"></i> {{ comment.reg_dt | date:'Y.m.d'  }}</h6>
-                                        {% else %}
-                                        <h6><i class="icon_calendar"></i> {{ comment.created_string  }}</h6>
-                                        {% endif %}
-                                        <a href="/forum/{{ comment.comment_id }}"><p>{{ comment.content | truncatechars:80 }}</p></a>
-                                    </div>
-                                </div>
+                <section class="h_doc_documentation_area sec_pad">
+                    <div class="container">
+                        <ul class="nav nav-tabs documentation_tab" id="myTabs" role="tablist">
+                            <li class="nav-item">
+                                <a class="nav-link active" id="all-tab" data-toggle="tab" href="#recent" role="tab" aria-controls="or" aria-selected="true">최근활동</a>
                             </li>
-                            {% endfor %}
-                            {% else %}
-                            <li style="text-align: center"><h6>최근 활동이 없습니다.</h6></li>
+                            <!-- 자신의 프로필 페이지를 조회할 때만 norification list 출력 -->
+                            {% if noti_list %}
+                            <li class="nav-item">
+                                <a class="nav-link" id="local-tab" data-toggle="tab" href="#noti" role="tab" aria-controls="doc" aria-selected="false">알림</a>
+                            </li>
                             {% endif %}
                         </ul>
-                    </div>
-                </div>
-                <div class="list_pagination d-flex justify-content-between" style="justify-content: center !important;">
-                    <div class="right">
-                        <nav class="navigation pagination" style="display: inline;">
-                            <div class="nav-links" style="padding-top: 50px;">
-                                {% if comments.has_previous %}
-                                <a class="next page-numbers" onclick='onclickPagination("{{ previous_page_number}}")' style="cursor: pointer;"><i class="arrow_carrot-left"></i></a>
-                                {% endif %}
-
-                                {% for page_number in comments.paginator.page_range %}
-                                {% if page_number >= comments.number|add:-5 and page_number <= comments.number|add:5 %}
-                                {% if page_number == comments.number %}
-                                <a class="page-numbers current" onclick='onclickPagination("{{ page_number}}")' style="cursor: pointer;">{{ page_number}}</a>
-                                {% else %}
-                                <a class="page-numbers" onclick='onclickPagination("{{ page_number}}")' style="cursor: pointer;">{{ page_number}}</a>
-                                {% endif %}
-                                {% endif %}
-                                {% endfor %}
-
-                                {% if comments.has_next %}
-                                <a class="next page-numbers" onclick='onclickPagination("{{ next_page_number}}")' style="cursor: pointer;"><i class="arrow_carrot-right"></i></a>
-                                {% endif %}
+                        <div class="tab-content" id="myTabContents">
+                            <div class="tab-pane documentation_tab_pane fade show active" id="recent" role="tabpanel" aria-labelledby="all-tab">
+                                <div class="forum_body">
+                                    <ul class="navbar-nav topic_comment_list">
+                                        {% if recent_act_list %}
+                                        {% for recent_act in recent_act_list %}
+                                            {% if recent_act.flag == "comment" %}
+                                            <li>
+                                                <div class="media">
+                                                    <div class="media-body">
+                                                        <h6><i class="icon_check_alt"></i> 댓글을 남겼습니다.</h6>
+                                                        <h6><i class="icon_calendar"></i> {{ recent_act.act_dt  }}</h6>
+                                                        <a href="/forum/{{ recent_act.content_id }}"><p>{{ recent_act.content | truncatechars:80 }}</p></a>
+                                                    </div>
+                                                </div>
+                                            </li>
+                                            {% elif recent_act.flag == "wiki" %}
+                                            <li>
+                                                <div class="media">
+                                                    <div class="media-body">
+                                                        <h6><i class="icon_check_alt"></i> 위키를 작성했습니다.</h6>
+                                                        <h6><i class="icon_calendar"></i> {{ recent_act.act_dt  }}</h6>
+                                                        <a href="/book/{{ recent_act.content_id }}"><p>{{ recent_act.content | truncatechars:80 }}</p></a>
+                                                    </div>
+                                                </div>
+                                            </li>
+                                            {% endif %}
+                                        {% endfor %}
+                                        {% else %}
+                                        <li style="text-align: center"><h6>최근 활동이 없습니다.</h6></li>
+                                        {% endif %}
+                                    </ul>
+                                </div>
+                                <div class="list_pagination d-flex justify-content-between">
+                                    <div class="right">
+                                        <nav class="navigation pagination" style="display: inline;">
+                                            <div class="nav-links" style="padding-top: 50px;">
+                                                {% if recent_act_list.has_previous %}
+                                                <a class="page-numbers" href='?page={{ recent_act_list.previous_page_number }}' style="cursor: pointer;">
+                                                    <i class="arrow_carrot-left"></i>
+                                                </a>
+                                                {% endif %}
+                                                {% for page_number in recent_act_list.paginator.page_range %}
+                                                {% if page_number >= recent_act_list.number|add:-5 and page_number <= recent_act_list.number|add:5 %}
+                                                {% if page_number == recent_act_list.number %}
+                                                <a class="page-numbers current" href='?page={{ page_number }}' style="cursor: pointer;">{{ page_number }}</a>
+                                                {% else %}
+                                                <a class="page-numbers" href='?page={{ page_number }}' style="cursor: pointer;">{{ page_number }}</a>
+                                                {% endif %}
+                                                {% endif %}
+                                                {% endfor %}
+                                                {% if recent_act_list.has_next %}
+                                                <a class="page-numbers" href='?page={{ recent_act_list.next_page_number }}' style="cursor: pointer;">
+                                                    <i class="arrow_carrot-right"></i>
+                                                </a>
+                                                {% endif %}
+                                            </div>
+                                        </nav>
+                                    </div>
+                                </div>
                             </div>
-                        </nav>
+                            <!-- 자신의 프로필 페이지를 조회할 때만 norification list 출력 -->
+                            {% if noti_list %}
+                            <div class="tab-pane documentation_tab_pane fade" id="noti" role="tabpanel" aria-labelledby="local-tab">
+                                <div class="forum_body">
+                                    <ul class="navbar-nav topic_comment_list">
+                                        {% for noti in noti_list %}
+                                            {% if noti.flag == "like_comment" %}
+                                            <li>
+                                                <div class="media">
+                                                    <div class="media-body">
+                                                        <h6>
+                                                            <i class="icon_check_alt"></i>
+                                                            <a href="/profile/{{ noti.target_user }}">{{ noti.target_user }}</a> 님이 내 글을 좋아합니다.
+                                                        </h6>
+                                                        <h6><i class="icon_calendar"></i> {{ noti.act_dt }}</h6>
+                                                        <a href="/forum/{{ noti.content_id }}"><p>{{ noti.content | truncatechars:80 }}</p></a>
+                                                    </div>
+                                                </div>
+                                            </li>
+                                            {% elif noti.flag == "like_wiki" %}
+                                            <li>
+                                                <div class="media">
+                                                    <div class="media-body">
+                                                        <h6>
+                                                            <i class="icon_check_alt"></i>
+                                                            <a href="/profile/{{ noti.target_user }}">{{ noti.target_user }}</a> 님이 내 위키를 좋아합니다.
+                                                        </h6>
+                                                        <h6><i class="icon_calendar"></i> {{ noti.act_dt }}</h6>
+                                                        <a href="/book/{{ noti.content_id }}"><p>{{ noti.content | truncatechars:80 }}</p></a>
+                                                    </div>
+                                                </div>
+                                            </li>
+                                            {% endif %}
+                                        {% endfor %}
+                                    </ul>
+                                </div>
+                                <div class="list_pagination d-flex justify-content-between">
+                                    <div class="right">
+                                        <nav class="navigation pagination" style="display: inline;">
+                                            <div class="nav-links" style="padding-top: 50px;">
+                                                {% if noti_list.has_previous %}
+                                                <a class="page-numbers" href='?noti={{ noti_list.previous_page_number }}' style="cursor: pointer;">
+                                                    <i class="arrow_carrot-left"></i>
+                                                </a>
+                                                {% endif %}
+                                                {% for page_number in noti_list.paginator.page_range %}
+                                                {% if page_number >= noti_list.number|add:-5 and page_number <= noti_list.number|add:5 %}
+                                                {% if page_number == noti_list.number %}
+                                                <a class="page-numbers current" href='?noti={{ page_number }}' style="cursor: pointer;">{{ page_number }}</a>
+                                                {% else %}
+                                                <a class="page-numbers" href='?noti={{ page_number }}' style="cursor: pointer;">{{ page_number }}</a>
+                                                {% endif %}
+                                                {% endif %}
+                                                {% endfor %}
+                                                {% if noti_list.has_next %}
+                                                <a class="page-numbers" href='?noti={{ noti_list.next_page_number }}' style="cursor: pointer;">
+                                                    <i class="arrow_carrot-right"></i>
+                                                </a>
+                                                {% endif %}
+                                            </div>
+                                        </nav>
+                                    </div>
+                                </div>
+                            </div>
+                            {% endif %}
+                       </div>
                     </div>
-                </div>
+                </section>
             </div>
             </div>
         </div>
@@ -144,6 +255,7 @@
 {% endblock %}
 
 {% block js %}
+<script src="{% static 'js/common.js' %}"></script>
 <script src="{% static 'js/jquery.parallax-scroll.js' %}"></script>
 <script src="{% static 'assets/magnify-pop/jquery.magnific-popup.min.js' %}"></script>
 <script src="{% static 'js/plugins.js' %}"></script>

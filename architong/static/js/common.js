@@ -13,6 +13,20 @@ function onclickPagination(page_number) {
 };
 
 /**
+ * 메인 페이지 네비게이션 클릭 이벤트
+ * */
+function onclickProfilePagination(page_number) {
+    const searchbox = $("#searchbox").val()
+    // 검색어가 없으면 GET 요청, 검색어가 있으면 POST 요청(Form Submit)
+    if (searchbox == "" || searchbox == null) {
+        location.href ='?page=' + page_number;
+    } else {
+        $("#page").val(page_number);
+        document.searchForm.submit();
+    }
+};
+
+/**
  * 작성일 표시형식 변경 함수
  * */
 function displayRegDt(reg_dt) {

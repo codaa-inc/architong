@@ -1,8 +1,8 @@
 import requests
 import json
 import os
-import datetime
 
+from datetime import datetime, timedelta, timezone
 from django.shortcuts import render
 from django.contrib.admin.views.decorators import staff_member_required
 from django.contrib.auth import get_user_model
@@ -14,7 +14,7 @@ from django.http import JsonResponse
 from django.db.models import Q
 
 from apps.common.models import SocialaccountSocialaccount as Socialaccount
-from apps.book.models import Books, Pages
+from apps.book.models import Books, Pages, UserLikeBook
 from apps.forum.models import Comments, UserLikeComment
 
 
@@ -73,29 +73,103 @@ def index(request):
 
 
 # 유저 프로필 페이지 function
-def profile(request, username):
-    if request.method == 'GET':
+class Profile(View):
+    def get(self, request, username):
         # 사용자정보, 활동점수, 댓글수, 작성한 댓글의 좋아요 합계 QuerySet
         user_info = get_user_model().objects.get(username=username)
         user_info.picture = json.loads(Socialaccount.objects.get(user_id=user_info.id).extra_data)['picture']
         act_point = get_user_model().objects.get(username=username).act_point
 
-        # 최근활동 QuerySet
-        comments = Comments.objects.filter(Q(username=username) & (Q(status="C") | Q(status="U"))).order_by('-reg_dt')
+        # 최근활동 QuerySet : flag, act_dt, content_id, content, target_user(좋아요일때만)
+        recent_act_list = []
+        noti_list = []
+        profile = Profile()
+        # 최근활동 - 댓글, 댓글 좋아요
         like_count = 0
+        comments = Comments.objects.filter(Q(username=username) & (Q(status="C") | Q(status="U"))).order_by('-reg_dt')
         for comment in comments:
-            like_count += comment.like_users.all().count()
+            like_users = UserLikeComment.objects.filter(comment_id=comment.comment_id)
+            like_count += like_users.count()
+            for like_user in like_users:
+                target_user = get_user_model().objects.get(id=like_user.user_id).username
+                # 자신의 프로필 페이지에 접근한 경우 : 내 댓글에 좋아요 누른 기록 보임
+                if username == str(request.user) and comment.username != target_user:
+                    noti_dict = {}
+                    noti_dict['flag'] = "like_comment"
+                    noti_dict['content_id'] = comment.comment_id
+                    noti_dict['content'] = comment.content
+                    noti_dict['act_dt'] = like_user.reg_dt
+                    noti_dict['target_user'] = target_user
+                    noti_list.append(noti_dict)
+            recent_act = {}
+            recent_act['flag'] = "comment"
+            recent_act['content_id'] = comment.comment_id
+            recent_act['content'] = comment.content
+            recent_act['act_dt'] = comment.reg_dt
+            recent_act_list.append(recent_act)
 
-        # 최근활동 페이징 처리
+        # 최근활동 - 위키, 위키 좋아요
+        wiki_list = Books.objects.filter(author_id=username, codes_yn="N", rls_yn="Y")
+        for wiki in wiki_list:
+            like_users = UserLikeBook.objects.filter(book=wiki.book_id)
+            for like_user in like_users:
+                target_user = get_user_model().objects.get(id=like_user.user_id).username
+                # 자신의 프로필 페이지에 접근한 경우 : 내 위키에 좋아요 누른 기록 보임
+                if username == str(request.user) and wiki.author_id != target_user:
+                    noti_dict = {}
+                    noti_dict['flag'] = "like_wiki"
+                    noti_dict['content_id'] = wiki.book_id
+                    noti_dict['content'] = wiki.book_title
+                    noti_dict['act_dt'] = like_user.reg_dt
+                    noti_dict['target_user'] = target_user
+                    noti_list.append(noti_dict)
+            recent_act = {}
+            recent_act['flag'] = "wiki"
+            recent_act['content_id'] = wiki.book_id
+            recent_act['content'] = wiki.book_title
+            recent_act['act_dt'] = wiki.mdfcn_dt
+            recent_act_list.append(recent_act)
+
+        # TODO: 최근활동 - 나의 위키 또는 댓글에 리플 : 자신의 프로필 페이지에 접근한 경우
+
+        # 최근활동 리스트 날짜별 정렬, 날짜 포맷팅, 페이징 처리
+        sorted_recent_act_list = sorted(recent_act_list, key=(lambda x: x['act_dt']))
+        for sorted_recent_act in sorted_recent_act_list:
+            sorted_recent_act['act_dt'] = profile.act_dt_string(sorted_recent_act['act_dt'])
+        sorted_recent_act_list.reverse()
         page = request.GET.get('page')
-        paginator = Paginator(comments, 10).get_page(page)
-
+        paginator = Paginator(sorted_recent_act_list, 5).get_page(page)
         context = {"user_info": user_info,
                    "act_point": str(act_point),
                    "comment_count": str(comments.count()),
                    "like_count": str(like_count),
-                   "comments": paginator}
+                   "recent_act_list": paginator}
+
+        # 자신의 프로필 조회시 알림 리스트 날짜별 정렬, 날짜 포맷팅, 페이징 처리
+        if username == str(request.user):
+            sorted_noti_list = sorted(noti_list, key=(lambda x: x['act_dt']))
+            for sorted_noti in sorted_noti_list:
+                sorted_noti['act_dt'] = profile.act_dt_string(sorted_noti['act_dt'])
+            sorted_noti_list.reverse()
+            noti_page = request.GET.get('noti')
+            noti_paginator = Paginator(sorted_noti_list, 5).get_page(noti_page)
+            context["noti_list"] = noti_paginator
         return render(request, "common/profile.html", context)
+
+    @staticmethod
+    def act_dt_string(act_dt):
+        time = datetime.now() - act_dt
+        if time < timedelta(minutes=1):
+            return '방금 전'
+        elif time < timedelta(hours=1):
+            return str(int(time.seconds / 60)) + '분 전'
+        elif time < timedelta(days=1):
+            return str(int(time.seconds / 3600)) + '시간 전'
+        elif time < timedelta(days=7):
+            time = datetime.now(tz=timezone.utc).date() - act_dt.date()
+            return str(time.days) + '일 전'
+        else:
+            return act_dt
 
 
 # 법규 데이터를 처리하는 class

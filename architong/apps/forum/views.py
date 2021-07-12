@@ -396,14 +396,15 @@ def like_comment(request, comment_id):
     # 좋아요 삭제, 댓글 작성자 활동점수 -1
     if request.user in comment.like_users.all():
         comment.like_users.remove(request.user)
-        author.act_point = int(author.act_point) - 1
-        author.save()
         result = "remove"
-
+        if str(request.user) != comment.username:
+            author.act_point = int(author.act_point) - 1
+            author.save()
     # 좋아요 등록, 댓글 작성자 활동점수 +1
     else:
         comment.like_users.add(request.user)
-        author.act_point = int(author.act_point) + 1
-        author.save()
         result = "add"
+        if str(request.user) != comment.username:
+            author.act_point = int(author.act_point) + 1
+            author.save()
     return JsonResponse({"result": result})

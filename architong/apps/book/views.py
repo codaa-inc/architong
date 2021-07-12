@@ -74,6 +74,13 @@ def wiki_add(request):
             )
             new_book.save()
             book_id = Books.objects.order_by('book_id').last().book_id
+
+            # 공개위키 작성시 활동점수 +3
+            if request.POST.get('rls_yn') == "Y":
+                author = get_user_model().objects.get(username=request.user)
+                author.act_point = int(author.act_point) + 3
+                author.save()
+
             return JsonResponse({"book_id": book_id})
         else:
             return JsonResponse({"error_message": "책제목은 최소 3글자, 최대 255글자 입니다."})
@@ -141,6 +148,7 @@ def wiki_add_page(request, book_id):
             book.mdfcn_dt = datetime.datetime.now().now()
             book.save()  # 해당 위키의 최근수정일 갱신
             new_page = Pages.objects.order_by('page_id').last()
+
             # 목차 계층구조 정렬
             sorted_pages = []
             parent_pages = Pages.objects.filter(book_id=book.book_id, depth=0)
@@ -204,10 +212,10 @@ def wiki_page_viewer(request, page_id):
     if str(request.user) == book.author_id:
         # GET 요청이면 미리보기 페이지 랜더링
         if request.method == 'GET':
+            # 페이지 계층구조 정렬
             sorted_pages = []
             parent_pages = Pages.objects.filter(book_id=book.book_id, depth=0)
             child_pages = Pages.objects.filter(book_id=book.book_id, depth=1)
-            # 페이지 계층구조 정렬
             for parent_page in parent_pages:
                 sorted_pages.append(parent_page)
                 for child_page in child_pages:
@@ -573,13 +581,15 @@ def like_book(request, book_id):
     # 좋아요 삭제, 댓글 작성자 활동점수 -1
     if request.user in book.like_users.all():
         book.like_users.remove(request.user)
-        author.act_point = int(author.act_point) - 1
-        author.save()
         result = "remove"
+        if str(request.user) != book.author_id:
+            author.act_point = int(author.act_point) - 1
+            author.save()
     # 좋아요 등록, 댓글 작성자 활동점수 +1
     else:
         book.like_users.add(request.user)
-        author.act_point = int(author.act_point) + 1
-        author.save()
         result = "add"
+        if str(request.user) != book.author_id:
+            author.act_point = int(author.act_point) + 1
+            author.save()
     return JsonResponse({"result": result})

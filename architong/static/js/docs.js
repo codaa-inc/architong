@@ -32,8 +32,6 @@ function onclickChildList(id, behavior) {
  * 북마크 클릭 이벤트
  */
 function onclikckBookMark(pageId) {
-    console.log("pageId : ", pageId);
-    console.log($("#bookmark-" + pageId).prop("title"));
     // 삭제인 경우 북마크 하위 메모 삭제 여부를 확인한다.
     if ($("#bookmark-" + pageId).prop("title") == "북마크 삭제") {
         let commentCnt = getCommentCount(pageId, "N");
@@ -54,11 +52,12 @@ function onclikckBookMark(pageId) {
 /**
  * 북마크 등록버튼 클릭 이벤트
  * */
-function addBookmark(pageId) {
+function addBookmark() {
     // modal close
     $('#selectProjectModal').modal('hide');
     // 북마크 등록 요청
-    addOrRemoveBookmark($("#bookmarkParam").val());
+    const pageId = $("#bookmarkParam").val();
+    addOrRemoveBookmark(pageId);
 };
 
 /**
@@ -756,3 +755,12 @@ function onclickLikeBook(book_id) {
         },
     });
 };
+
+
+/**
+ * 북마크 새폴더 추가 버튼 클릭 이벤트
+ * */
+function addNewProject() {
+    $("#project_add").show();
+    $("#project_select").attr('disabled', 'disabled');
+}
