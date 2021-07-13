@@ -79,6 +79,25 @@
     .row {
         justify-content: center;
     }
+    .all-answers {
+        padding: 0px;
+        margin: 0 0 30px 0;
+
+    }
+    #header-btn > a {
+        font-size: 15px;
+        font-weight: bolder;
+        color: #0d0d75;
+        margin-left: 20px;
+    }
+    h5 {
+    display: flex;
+    align-items: center;
+    margin-bottom: 0px;
+    }
+    .nice-select .list {
+        overflow: visible;
+    }
 </style>
 {% endblock %}
 
@@ -100,12 +119,28 @@
 {% if user.is_authenticated %}
 <script>USERNAME = "{{ user.get_username }}";</script>
 {% endif %}
-
 <div class="breadcrumb_area_three" style="padding: 0"></div>
 <section class="doc_documentation_area" id="sticky_doc">
     <div class="container custom_container">
+        <div class="all-answers col-md-12">
+            <h5>{{ request.user.first_name }}님의 북마크</h5><hr>
+            <div class="filter-bar d-flex" style="align-items: center;">
+                <div class="sort">
+                    <select class="custom-select" id="sortBy" onchange="onchangeSort(this.value)">
+                        <option value="0" selected>전체</option>
+                        {% for bookmark in bookmark_label %}
+                        <option value="{{ bookmark.label_id }}">{{ bookmark.label_name }}</option>
+                        {% endfor %}
+                    </select>
+                </div>
+                <div id="header-btn">
+                    <a href="#" id=""><i class="icon-cog"></i>&nbsp;&nbsp;폴더관리</a>
+                    <a href="#" id=""><i class="icon_printer"></i>&nbsp;&nbsp;출력</a>
+                </div>
+            </div>
+        </div>
         <div class="row">
-            <div class="col-xl-9 doc-middle-content" style="padding-top: 0px;">
+            <div class="col-xl-12 doc-middle-content" style="padding-top: 0px;">
                 <article id="post" class="documentation_info">
                     <div class="documentation_body" id="documentation">
                         {% if bookmarks %}

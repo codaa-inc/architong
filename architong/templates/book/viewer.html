@@ -101,6 +101,16 @@
         color: #fff;
         padding: 10px 30px;
     }
+    #bookmarkNewLabel {
+        color: #0d0d75;
+        background: #FFFFFF;
+        padding: 10px 28px;
+        border-color: #0d0d75;
+    }
+    .button_inner_one {
+        display: flex;
+        justify-content: center;
+    }
 </style>
 {% endblock %}
 
@@ -266,24 +276,31 @@
                 <h5><i class="icon_ribbon"></i>&nbsp;북마크 추가</h5>
                 <p style="color: #5a6268;">북마크를 추가할 프로젝트를 선택해주세요</p>
             </div>
-            <form action="#" class="contact_form">
+            <form id="bookmarkForm" class="contact_form">{% csrf_token %}
                 <div class="row">
                     <div class="form-group col-lg-12">
                         <select type="select" class="form-control" name="project_select" id="project_select">
-                            <option selected disabled>선택 안 함</option>
+                            <option value="0" selected disabled>선택 안 함</option>
+                            {% if bookmark_label %}
+                                {% for label in bookmark_label %}
+                                    <option value="{{ label.label_id }}">{{ label.label_name }}</option>
+                                {% endfor %}
+                            {% endif %}
                         </select>
                     </div>
                     <input id="bookmarkParam" type="hidden">
-                    <div class="form-group col-lg-12" id="project_add" hidden>
+                    <div class="form-group col-lg-12" id="project_add">
                         <input type="text" class="form-control" name="project_input" id="project_input"
                                placeholder="새폴더">
                     </div>
-                    <button id="bookmarkSubmit" class="btn doc_border_btn btn_small" style="margin: auto;"
-                    onclick="addNewProject()">새폴더 추가</button>
-                    <button id="bookmarkSubmit" class="btn action_btn btn_small" style="margin: auto;"
-                    onclick="addBookmark()">등록</button>
                 </div>
             </form>
+            <div class="button_inner_one">
+                <button id="bookmarkNewLabel" class="btn doc_border_btn btn_small"
+                onclick="addNewProject()">새폴더</button>
+                <button id="bookmarkSubmit" class="btn action_btn btn_small"
+                onclick="addBookmark()">등록</button>
+            </div>
         </div>
     </div>
 </div>

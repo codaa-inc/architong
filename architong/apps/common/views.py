@@ -80,19 +80,20 @@ class Profile(View):
         user_info.picture = json.loads(Socialaccount.objects.get(user_id=user_info.id).extra_data)['picture']
         act_point = get_user_model().objects.get(username=username).act_point
 
-        # 최근활동 QuerySet : flag, act_dt, content_id, content, target_user(좋아요일때만)
+        # 최근활동, 알림 QuerySet 선언
         recent_act_list = []
         noti_list = []
         profile = Profile()
+
         # 최근활동 - 댓글, 댓글 좋아요
         like_count = 0
-        comments = Comments.objects.filter(Q(username=username) & (Q(status="C") | Q(status="U"))).order_by('-reg_dt')
+        comments = Comments.objects.filter(Q(username=username) & (Q(status="C") | Q(status="U")))
         for comment in comments:
             like_users = UserLikeComment.objects.filter(comment_id=comment.comment_id)
             like_count += like_users.count()
             for like_user in like_users:
                 target_user = get_user_model().objects.get(id=like_user.user_id).username
-                # 자신의 프로필 페이지에 접근한 경우 : 내 댓글에 좋아요 누른 기록 보임
+                # 알림 - 내 댓글에 좋아요 누른 기록 보임
                 if username == str(request.user) and comment.username != target_user:
                     noti_dict = {}
                     noti_dict['flag'] = "like_comment"
@@ -114,7 +115,7 @@ class Profile(View):
             like_users = UserLikeBook.objects.filter(book=wiki.book_id)
             for like_user in like_users:
                 target_user = get_user_model().objects.get(id=like_user.user_id).username
-                # 자신의 프로필 페이지에 접근한 경우 : 내 위키에 좋아요 누른 기록 보임
+                # 알림 - 내 위키에 좋아요 누른 기록 보임
                 if username == str(request.user) and wiki.author_id != target_user:
                     noti_dict = {}
                     noti_dict['flag'] = "like_wiki"
@@ -130,9 +131,23 @@ class Profile(View):
             recent_act['act_dt'] = wiki.mdfcn_dt
             recent_act_list.append(recent_act)
 
-        # TODO: 최근활동 - 나의 위키 또는 댓글에 리플 : 자신의 프로필 페이지에 접근한 경우
+        # 알림 - 나의 위키 또는 댓글에 리플
+        if username == str(request.user):
+            page_list = Pages.objects.filter(book_id__in=wiki_list.values_list('book_id')).values_list('page_id')
+            comment_list = Comments.objects.filter(
+                Q(parent_id__in=comments.values_list('page_id')) |
+                Q(page_id__in=page_list) &
+                ~Q(username=username)).order_by('page_id').distinct()
+            for comment in comment_list:
+                noti_dict = {}
+                noti_dict['flag'] = "reply"
+                noti_dict['content_id'] = comment.comment_id
+                noti_dict['content'] = comment.content
+                noti_dict['act_dt'] = comment.reg_dt
+                noti_dict['target_user'] = comment.username
+                noti_list.append(noti_dict)
 
-        # 최근활동 리스트 날짜별 정렬, 날짜 포맷팅, 페이징 처리
+        # 최근활동 리스트 - 날짜별 정렬, 날짜 포맷팅, 페이징 처리
         sorted_recent_act_list = sorted(recent_act_list, key=(lambda x: x['act_dt']))
         for sorted_recent_act in sorted_recent_act_list:
             sorted_recent_act['act_dt'] = profile.act_dt_string(sorted_recent_act['act_dt'])
@@ -145,7 +160,7 @@ class Profile(View):
                    "like_count": str(like_count),
                    "recent_act_list": paginator}
 
-        # 자신의 프로필 조회시 알림 리스트 날짜별 정렬, 날짜 포맷팅, 페이징 처리
+        # 알림 리스트 - 날짜별 정렬, 날짜 포맷팅, 페이징 처리
         if username == str(request.user):
             sorted_noti_list = sorted(noti_list, key=(lambda x: x['act_dt']))
             for sorted_noti in sorted_noti_list:

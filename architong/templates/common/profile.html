@@ -111,7 +111,7 @@
                                 <a class="nav-link active" id="all-tab" data-toggle="tab" href="#recent" role="tab" aria-controls="or" aria-selected="true">최근활동</a>
                             </li>
                             <!-- 자신의 프로필 페이지를 조회할 때만 norification list 출력 -->
-                            {% if noti_list %}
+                            {% if noti_list != None %}
                             <li class="nav-item">
                                 <a class="nav-link" id="local-tab" data-toggle="tab" href="#noti" role="tab" aria-controls="doc" aria-selected="false">알림</a>
                             </li>
@@ -127,7 +127,7 @@
                                             <li>
                                                 <div class="media">
                                                     <div class="media-body">
-                                                        <h6><i class="icon_check_alt"></i> 댓글을 남겼습니다.</h6>
+                                                        <h6><ion-icon name="chatbubble-outline"></ion-icon> 댓글을 남겼습니다.</h6>
                                                         <h6><i class="icon_calendar"></i> {{ recent_act.act_dt  }}</h6>
                                                         <a href="/forum/{{ recent_act.content_id }}"><p>{{ recent_act.content | truncatechars:80 }}</p></a>
                                                     </div>
@@ -137,7 +137,7 @@
                                             <li>
                                                 <div class="media">
                                                     <div class="media-body">
-                                                        <h6><i class="icon_check_alt"></i> 위키를 작성했습니다.</h6>
+                                                        <h6><ion-icon name="document-text-outline"></ion-icon> 위키를 작성했습니다.</h6>
                                                         <h6><i class="icon_calendar"></i> {{ recent_act.act_dt  }}</h6>
                                                         <a href="/book/{{ recent_act.content_id }}"><p>{{ recent_act.content | truncatechars:80 }}</p></a>
                                                     </div>
@@ -150,6 +150,7 @@
                                         {% endif %}
                                     </ul>
                                 </div>
+                                {% if recent_act_list %}
                                 <div class="list_pagination d-flex justify-content-between">
                                     <div class="right">
                                         <nav class="navigation pagination" style="display: inline;">
@@ -177,20 +178,22 @@
                                         </nav>
                                     </div>
                                 </div>
+                                {% endif %}
                             </div>
                             <!-- 자신의 프로필 페이지를 조회할 때만 norification list 출력 -->
-                            {% if noti_list %}
+                            {% if noti_list != None %}
                             <div class="tab-pane documentation_tab_pane fade" id="noti" role="tabpanel" aria-labelledby="local-tab">
                                 <div class="forum_body">
                                     <ul class="navbar-nav topic_comment_list">
+                                        {% if noti_list|length > 0 %}
                                         {% for noti in noti_list %}
                                             {% if noti.flag == "like_comment" %}
                                             <li>
                                                 <div class="media">
                                                     <div class="media-body">
                                                         <h6>
-                                                            <i class="icon_check_alt"></i>
-                                                            <a href="/profile/{{ noti.target_user }}">{{ noti.target_user }}</a> 님이 내 글을 좋아합니다.
+                                                            <ion-icon name="heart-outline"></ion-icon>
+                                                            <a href="/profile/{{ noti.target_user }}">{{ noti.target_user }}</a> 님이 내 댓글을 좋아합니다.
                                                         </h6>
                                                         <h6><i class="icon_calendar"></i> {{ noti.act_dt }}</h6>
                                                         <a href="/forum/{{ noti.content_id }}"><p>{{ noti.content | truncatechars:80 }}</p></a>
@@ -202,7 +205,7 @@
                                                 <div class="media">
                                                     <div class="media-body">
                                                         <h6>
-                                                            <i class="icon_check_alt"></i>
+                                                            <ion-icon name="heart-outline"></ion-icon>
                                                             <a href="/profile/{{ noti.target_user }}">{{ noti.target_user }}</a> 님이 내 위키를 좋아합니다.
                                                         </h6>
                                                         <h6><i class="icon_calendar"></i> {{ noti.act_dt }}</h6>
@@ -210,10 +213,27 @@
                                                     </div>
                                                 </div>
                                             </li>
+                                            {% elif noti.flag == "reply" %}
+                                            <li>
+                                                <div class="media">
+                                                    <div class="media-body">
+                                                        <h6>
+                                                            <ion-icon name="chatbubble-outline"></ion-icon>
+                                                            <a href="/profile/{{ noti.target_user }}">{{ noti.target_user }}</a> 님이 내 게시물에 댓글을 달았습니다.
+                                                        </h6>
+                                                        <h6><i class="icon_calendar"></i> {{ noti.act_dt }}</h6>
+                                                        <a href="/forum/{{ noti.content_id }}"><p>{{ noti.content | truncatechars:80 }}</p></a>
+                                                    </div>
+                                                </div>
+                                            </li>
                                             {% endif %}
                                         {% endfor %}
+                                        {% else %}
+                                        <li style="text-align: center"><h6>최근 알림이 없습니다.</h6></li>
+                                        {% endif %}
                                     </ul>
                                 </div>
+                                {% if noti_list|length > 0 %}
                                 <div class="list_pagination d-flex justify-content-between">
                                     <div class="right">
                                         <nav class="navigation pagination" style="display: inline;">
@@ -241,6 +261,7 @@
                                         </nav>
                                     </div>
                                 </div>
+                                {% endif %}
                             </div>
                             {% endif %}
                        </div>
@@ -260,4 +281,10 @@
 <script src="{% static 'assets/magnify-pop/jquery.magnific-popup.min.js' %}"></script>
 <script src="{% static 'js/plugins.js' %}"></script>
 <script src="{% static 'js/theme.js' %}"></script>
+<script>
+    // 알림탭 페이지 이동시 탭 위치 조정
+    if (getUrlParam("noti") != "") {
+        $("#local-tab").trigger("click");
+    }
+</script>
 {% endblock %}

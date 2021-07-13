@@ -13,7 +13,7 @@ from django.db.models import Q
 
 from apps.forum.models import Comments
 from .forms import BookForm
-from .models import Books, Pages, Bookmark
+from .models import Books, Pages, Bookmark, BookmarkLabel
 
 
 # 나의 위키 페이지 렌더링
@@ -380,7 +380,7 @@ def view_book(request, book_id):
     book.total_comment_count = total_comment_count
 
     # 로그인된 사용자의 경우 페이지 정보에 북마크 등록여부 추가
-    if username is not None:
+    if request.user.is_authenticated:
         for page in pages:
             is_bookmarked = Bookmark.objects.filter(page_id=page.page_id, username=username).count()
             if is_bookmarked > 0:
@@ -391,6 +391,12 @@ def view_book(request, book_id):
     context = {'book': book,
                'pages': pages,
                'law_count': law_count}
+
+    # 로그인된 사용자의 경우 북마크 모달에 레이블 리스트 추가
+    if request.user.is_authenticated:
+        bookmark_label = BookmarkLabel.objects.filter(
+            user_id=get_user_model().objects.get(username=username)).order_by('-label_id')
+        context['bookmark_label'] = bookmark_label
 
     # Cookie 생성 후 조회수 증감
     session_cookie = request.user
@@ -445,7 +451,7 @@ def view_page(request, page_id):
     book.total_comment_count = total_comment_count
 
     # 로그인된 사용자의 경우 페이지 정보에 북마크 등록여부 추가
-    if username is not None:
+    if request.user.is_authenticated:
         for page in pages:
             is_bookmarked = Bookmark.objects.filter(page_id=page.page_id, username=username).count()
             if is_bookmarked > 0:
@@ -456,6 +462,12 @@ def view_page(request, page_id):
                'pages': pages,
                'page_id': str(page_id),
                'law_count': law_count}
+
+    # 로그인된 사용자의 경우 북마크 모달에 레이블 리스트 추가
+    if request.user.is_authenticated:
+        bookmark_label = BookmarkLabel.objects.filter(
+            user_id=get_user_model().objects.get(username=username)).order_by('-label_id')
+        context['bookmark_label'] = bookmark_label
 
     # Cookie 생성 후 조회수 증감
     session_cookie = request.user
@@ -509,6 +521,18 @@ def add_or_remove_bookmark(request, page_id):
                 book_id=Pages.objects.get(page_id=page_id).book_id,
                 username=request.user
             )
+            if request.POST['project_input']:
+                # 북마크 새폴더 추가
+                label = BookmarkLabel(
+                    label_name=request.POST['project_input'],
+                    user=get_user_model().objects.get(username=username)
+                )
+                label.save()
+                insert_bm.label = BookmarkLabel.objects.latest('label_id')
+            else:
+                # 북마크 기존 폴더 선택
+                if request.POST['project_select']:
+                    insert_bm.label = BookmarkLabel.objects.get(label_id=request.POST['project_select'])
             insert_bm.save()
             result = 'insert'
 
@@ -526,8 +550,8 @@ def add_or_remove_bookmark(request, page_id):
 # 북마크 관리 페이지 조회 function
 @login_required(login_url="/account/google/login")
 def view_bookmark(request):
-    username = request.user  # 세션으로부터 유저 정보 가져오기
-    if username is not None:
+    if request.user.is_authenticated:
+        username = request.user  # 세션으로부터 유저 정보 가져오기
         bookmarks = Bookmark.objects.filter(username=username).order_by('book_id', 'page_id')
         page_q = Q(page_id__in=bookmarks.values_list('page_id', flat=True))
         status_q = Q(status="C") | Q(status="U")
@@ -540,15 +564,23 @@ def view_bookmark(request):
                 bookmark.comment = json.dumps(list(comment), cls=DjangoJSONEncoder)
             if idx == 0 or bookmark.book_id != bookmarks[idx - 1].book_id:
                 bookmark.book_title = Books.objects.get(book_id=bookmark.book_id).book_title
-        return render(request, "book/bookmark.html", {"bookmarks": bookmarks})
+        # 북마크 레이블 리스트 추가
+        bookmark_label = BookmarkLabel.objects.filter(
+            user_id=get_user_model().objects.get(username=username)).order_by('-label_id')
+        context = {
+            "bookmarks": bookmarks,
+            "bookmark_label": bookmark_label
+        }
+        return render(request, "book/bookmark.html", context)
 
 
 # 북마크 관리 페이지 삭제 function
 @login_required(login_url="/account/google/login")
 @csrf_exempt
 def delete_bookmark(request, page_id):
-    username = request.user  # 세션으로부터 유저 정보 가져오기
-    if username is not None:
+    if request.user.is_authenticated:
+        # 세션으로부터 유저 정보 가져오기
+        username = request.user
         # 북마크 하위 메모들을 삭제한다
         private_comment = Comments.objects.filter(page_id=page_id, username=username, rls_yn="N")
         for data in private_comment:

@@ -26,7 +26,7 @@ class CommentView(View):
 
         # 부모,자식 댓글 QuerySet
         q = Q(page_id=id) & ~Q(status="D")
-        if username is not None:
+        if request.user.is_authenticated:
             q.add(Q(rls_yn="Y") | Q(rls_yn="N", username=username), q.AND)
         else:
             q.add(Q(rls_yn="Y"), q.AND)

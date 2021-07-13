@@ -45,6 +45,10 @@ function onclikckBookMark(pageId) {
         // 추가인 경우 모달 오픈
         $('#selectProjectModal').appendTo("body").modal('show');
         $("#selectProjectModal").css("z-index", "1600");
+        // 모달 속성 초기화
+        $("#project_add").css('display', 'none');
+        $("#bookmarkNewLabel").css('display', '');
+        $("#project_select").removeAttr('disabled');
         $("#bookmarkParam").val(pageId);
     }
 }
@@ -66,12 +70,15 @@ function addBookmark() {
  * : 북마크 X → 북마크 등록
  * */
 function addOrRemoveBookmark(pageId) {
-    console.log("추가이벤트");
     $.ajax({
-        type: "PUT",
-        url: "bookmark/" + pageId,
+        type: "POST",
+        url: "/book/bookmark/" + pageId,
+        data: $("#bookmarkForm").serialize() + "&csrfmiddlewaretoken=" + $("input[name=csrfmiddlewaretoken]").val(),
         dataType: "json", // 서버측에서 전송한 Response 데이터 형식 (json)
         success: function (response) { // 통신 성공시 - 동적으로 북마크 아이콘 변경
+            if (response.result == "insert" || response.result == "delete") {
+                window.location.href = "/page/" + pageId;
+            } /**
             if (response.result == "insert") {
                 // 북마크 등록
                 $("#bookmark-" + pageId).children().attr("class", "icon_ribbon");
@@ -92,7 +99,7 @@ function addOrRemoveBookmark(pageId) {
                         }
                     }
                 }
-            } else if(response.result == "false") {
+            } */ else if(response.result == "false") {
                 if (confirm(response.message)) {
                     // 인증된 사용자가 아닌 경우 로그인 페이지로 이동
                     document.location.href = "/accounts/google/login/?next=" + window.location.pathname;
@@ -740,7 +747,8 @@ function onclickLikeBook(book_id) {
         success: function (response) { // 통신 성공시 - 동적으로 북마크 아이콘 변경
             let like = $("#book-like-count");
             if (response.result == "add") {
-                const like_count = Number(like.text()) + 1;
+                const like_count
+                    = Number(like.text()) + 1;
                 const like_icon = '<ion-icon name="heart" style="cursor: pointer;" title="좋아요 취소"></ion-icon>&nbsp;';
                 like.html(like_icon + like_count);
             } else if(response.result == "remove") {
@@ -761,6 +769,8 @@ function onclickLikeBook(book_id) {
  * 북마크 새폴더 추가 버튼 클릭 이벤트
  * */
 function addNewProject() {
-    $("#project_add").show();
+    $("#project_add").css('display', '');
+    $("#bookmarkNewLabel").css('display', 'none');
+    $("#project_select").val(0);
     $("#project_select").attr('disabled', 'disabled');
 }

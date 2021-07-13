@@ -58,12 +58,23 @@ class Pages(models.Model):
         db_table = 'pages'
 
 
+class BookmarkLabel(models.Model):
+    label_id = models.AutoField(primary_key=True)
+    label_name = models.CharField(max_length=255)
+    user = models.ForeignKey(settings.AUTH_USER_MODEL, models.DO_NOTHING)
+
+    class Meta:
+        managed = False
+        db_table = 'bookmark_label'
+
+
 class Bookmark(models.Model):
     bookmark_id = models.AutoField(primary_key=True)
     page_id = models.IntegerField()
     book_id = models.IntegerField()
     username = models.CharField(max_length=150)
     reg_dt = models.DateTimeField(auto_now_add=True, blank=True, null=True)
+    label = models.ForeignKey(BookmarkLabel, on_delete=models.CASCADE, blank=True, null=True)
 
     class Meta:
         managed = False
