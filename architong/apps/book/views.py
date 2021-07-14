@@ -551,8 +551,15 @@ def add_or_remove_bookmark(request, page_id):
 @login_required(login_url="/account/google/login")
 def view_bookmark(request):
     if request.user.is_authenticated:
-        username = request.user  # 세션으로부터 유저 정보 가져오기
-        bookmarks = Bookmark.objects.filter(username=username).order_by('book_id', 'page_id')
+        # 북마크 쿼리셋, label 검색조건 적용
+        username = request.user
+        label_id = request.GET.get('sort', "")
+        if label_id != "0" and label_id != "":
+            bookmarks = Bookmark.objects.filter(username=username, label_id=label_id).order_by('book_id', 'page_id')
+        else:
+            bookmarks = Bookmark.objects.filter(username=username).order_by('book_id', 'page_id')
+
+        # 북마크 메모 쿼리셋 추가
         page_q = Q(page_id__in=bookmarks.values_list('page_id', flat=True))
         status_q = Q(status="C") | Q(status="U")
         pages = Pages.objects.filter(page_q).values()
@@ -564,9 +571,19 @@ def view_bookmark(request):
                 bookmark.comment = json.dumps(list(comment), cls=DjangoJSONEncoder)
             if idx == 0 or bookmark.book_id != bookmarks[idx - 1].book_id:
                 bookmark.book_title = Books.objects.get(book_id=bookmark.book_id).book_title
+
         # 북마크 레이블 리스트 추가
-        bookmark_label = BookmarkLabel.objects.filter(
-            user_id=get_user_model().objects.get(username=username)).order_by('-label_id')
+        bookmark_label = [{"label_id": "0", "label_name": "전체"}]
+        bookmark_label.extend(list(BookmarkLabel.objects.filter(
+            user_id=get_user_model().objects.get(username=username)).order_by('-label_id').values()))
+
+        # 선택값이 있을 경우 lable 정렬
+        if label_id != "0" and label_id != "":
+            for idx, label in enumerate(bookmark_label):
+                if label['label_id'] == int(label_id):
+                    sel_label = bookmark_label[idx]
+                    bookmark_label.pop(idx)
+                    bookmark_label.insert(0, sel_label)
         context = {
             "bookmarks": bookmarks,
             "bookmark_label": bookmark_label
@@ -625,3 +642,42 @@ def like_book(request, book_id):
             author.act_point = int(author.act_point) + 1
             author.save()
     return JsonResponse({"result": result})
+
+
+# 북마크 레이블 등록 수정 삭제 function
+@login_required(login_url="/account/google/login")
+def manage_label(request, label_id):
+    if request.user.is_authenticated:
+        username = request.user
+        if label_id != 0:
+            label = BookmarkLabel.objects.get(label_id=label_id)
+        # POST 요청시 북마크 레이블 등록 또는 수정
+        if request.method == "POST":
+            if label_id == 0:
+                new_label = BookmarkLabel(
+                    label_name=request.POST['label_name'],
+                    user_id=get_user_model().objects.get(username=username).id
+                )
+                new_label.save()
+                label_id = BookmarkLabel.objects.latest('label_id').label_id
+                return JsonResponse({"result": "success", "label_id": str(label_id)})
+            else:
+                if label.user_id == get_user_model().objects.get(username=username).id:
+                    label.label_name = request.POST['label_name']
+                    label.save()
+                    return JsonResponse({"result": "success"})
+                else:
+                    return JsonResponse({"result": "fail"})
+
+        # DELETE 요청시 북마크 레이블, 하위 북마크 및 댓글 삭제
+        elif request.method == "DELETE":
+            # 하위 북마크의 비공개 댓글 삭제
+            page_list = Bookmark.objects.filter(label_id=label_id).values_list('page_id')
+            if len(page_list) > 0:
+                Comments.objects.filter(
+                    username=username, rls_yn="N", page_id__in=page_list).delete()
+            # 북마크 레이블 삭제, 북마크는 casecade로 자동삭제
+            label.delete()
+            return JsonResponse({"result": "success"})
+    else:
+        return JsonResponse({"result": "fail"})

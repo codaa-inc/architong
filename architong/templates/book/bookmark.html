@@ -28,7 +28,6 @@
         color: #a7a9ac;
         float: right;
     }
-
     .comment {
         float: right;
         cursor: pointer;
@@ -47,13 +46,11 @@
     #radio-group > input, button {
         margin: auto 10px;
     }
-
     .comment_tag {
         color: #0C0E72 !important;
         cursor: pointer;
         float: right;
     }
-
     .comment_inner {
         padding-top: 0px;
     }
@@ -82,7 +79,13 @@
     .all-answers {
         padding: 0px;
         margin: 0 0 30px 0;
-
+        line-height: 28px;
+        font-size: 16px;
+        height: 100%;
+        font-family: 'NanumSquare',san-serif;
+        font-weight: 400;
+        color: #6b707f;
+        letter-spacing: 0.15px;
     }
     #header-btn > a {
         font-size: 15px;
@@ -91,21 +94,53 @@
         margin-left: 20px;
     }
     h5 {
-    display: flex;
-    align-items: center;
-    margin-bottom: 0px;
+        display: flex;
+        align-items: center;
+        margin-bottom: 0px;
+        font-weight: 700;
+        font-family: 'NanumSquare',san-serif;
+        color: #1d2746;
+        font-size: 1.25rem;
     }
     .nice-select .list {
-        overflow: visible;
+        overflow-x: scroll;
+    }
+    .all-answers .filter-bar .nice-select .list {
+        width: 180px;
+    }
+    .custom-select {
+        font-size: 14px;
+    }
+    .modal-content {
+        padding: 25px;
+    }
+    #bookmarkNewLabel {
+        color: #0d0d75;
+        background: #FFFFFF;
+        padding: 10px 28px;
+        border-color: #0d0d75;
+    }
+    .button_inner_one {
+        display: flex;
+        justify-content: center;
+    }
+    .contact_form .form-group {
+        margin-bottom: 10px;
+    }
+    .topic_list_item {
+        margin-bottom: 10px;
+    }
+    .editMode {
+        margin-left: 5px;
+        font-size: 13px !important;
+        cursor: pointer;
     }
 </style>
 {% endblock %}
-
 {% block content %}
 <!-- 댓글 랜더링을 위해 script 먼저 로딩 -->
 <script src="{% static 'js/docs.js' %}"></script>
 <script src="{% static 'js/common.js' %}"></script>
-
 <!-- 페이지 로딩 시 초기 셋팅 영역 -->
 <script>
     // 로그인 시 사용자 ID를 저장하는 전역변수 선언
@@ -127,14 +162,13 @@
             <div class="filter-bar d-flex" style="align-items: center;">
                 <div class="sort">
                     <select class="custom-select" id="sortBy" onchange="onchangeSort(this.value)">
-                        <option value="0" selected>전체</option>
                         {% for bookmark in bookmark_label %}
                         <option value="{{ bookmark.label_id }}">{{ bookmark.label_name }}</option>
                         {% endfor %}
                     </select>
                 </div>
                 <div id="header-btn">
-                    <a href="#" id=""><i class="icon-cog"></i>&nbsp;&nbsp;폴더관리</a>
+                    <a href="javascript:;" onclick="onclickFolderManage()"><i class="icon_cog"></i>&nbsp;&nbsp;폴더관리</a>
                     <a href="#" id=""><i class="icon_printer"></i>&nbsp;&nbsp;출력</a>
                 </div>
             </div>
@@ -155,7 +189,8 @@
                         {% endif %}
                             <div id="book-{{ bookmark.book_id }}-{{ bookmark.page_id }}" class="martor-content" style="margin-bottom: 10px;">
                                 <div class="martor-preview" id="page-{{ bookmark.page_id }}">
-                                    <a id="bookmark-{{ bookmark.page_id }}" class="bookmark" title="북마크 삭제" onclick='removeBookmark("{{ bookmark.page_id }}")'>
+                                    <a id="bookmark-{{ bookmark.page_id }}" class="bookmark" title="북마크 삭제"
+                                       onclick='removeBookmark("{{ bookmark.page_id }}")'>
                                         <i class="icon_ribbon" style="font-size: larger"></i>
                                     </a>
                                     <div id="description-{{ bookmark.page_id }}">{% csrf_token %}
@@ -173,12 +208,14 @@
                                 <div id="commentbox-{{ bookmark.page_id }}" class="blog_comment_box topic_comment" style="padding-top: 0px;">
                                     <form id="form-parent-{{ bookmark.page_id }}"  class="get_quote_form row">
                                         <div class="col-md-12 form-group">
-                                            <textarea id="textarea-parent-{{ bookmark.page_id }}" name="content" class="form-control message" required></textarea>
+                                            <textarea id="textarea-parent-{{ bookmark.page_id }}" name="content"
+                                                      class="form-control message" required></textarea>
                                             <input type="hidden" name="rls_yn" value="N">
                                             <label class="floating-label">Comment</label>
                                         </div>
                                         <div class="col-md-12 form-group" id="radio-group">
-                                            <button class="action_btn btn_small" type="button" onclick="addComment('parent-{{ bookmark.page_id }}')" style="color: #fff;">저장</button>
+                                            <button class="action_btn btn_small" type="button"
+                                                    onclick="addComment('parent-{{ bookmark.page_id }}')" style="color: #fff;">저장</button>
                                         </div>
                                     </form>
                                 </div>
@@ -193,6 +230,62 @@
         </div>
     </div>
 </section>
+
+<!-- 프로젝트 선택 모달 -->
+<div class="modal fade" id="selectProjectModal" tabindex="-3" role="dialog" aria-hidden="false">
+    <button type="button" class="close" data-dismiss="modal" aria-label="Close">
+        <i class=" icon_close"></i>
+    </button>
+    <div class="modal-dialog help_form" role="document">
+        <div class="modal-content">
+            <div class="shortcode_title">
+                <h5><i class="icon_cog"></i>&nbsp;북마크 폴더 관리</h5>
+            </div>
+            <form id="bookmarkForm" class="contact_form">{% csrf_token %}
+                <div class="row">
+                    <div class="form-group col-lg-12">
+                        {% if bookmark_label %}
+                        <div class="topic_list_item">
+                            <ul id="labelList" class="navbar-nav">
+                                {% for label in bookmark_label %}
+                                    {% if label.label_id != "0" %}
+                                    <!-- 북마크 레이블 리스트 모드 -->
+                                    <li id="label-{{ label.label_id }}-view">
+                                        <i class="icon_folder-alt"></i>
+                                        <a id="label-{{ label.label_id }}" href="javascript:;"
+                                           onclick="onclickEditMode({{ label.label_id }})">{{ label.label_name }}</a>
+                                    </li>
+                                    <!-- 북마크 레이블 편집 모드 -->
+                                    <li id="label-{{ label.label_id }}-edit" style="display: none;">
+                                        <i class="icon_folder-alt"></i>
+                                        <input id='label-{{ label.label_id }}-input' name="label_name" value='{{ label.label_name }}'
+                                               type='text' onfocusout='onclickViewMode({{ label.label_id }})'>
+                                        <a class="editMode" style='color: #0C0E72;'
+                                           onclick="updateBookmarkLabel({{ label.label_id }})">수정</a>
+                                        <a class="editMode" style='color: #C0392B;'
+                                           onclick="deleteBookmarkLabel({{ label.label_id }})">삭제</a>
+                                    </li>
+                                    {% endif %}
+                                {% endfor %}
+                                <!-- 북마크 새폴더 추가 -->
+                                <li id='new_label' style="display: none;">
+                                    <i class='icon_folder-alt'></i>&nbsp;
+                                    <input id="new_label_input" name="" type='text' onfocusout="onclickNewLabelViewMode()">
+                                    <a class="editMode" style='color: #0C0E72;' onclick="addBookmarkLabel()">저장</a>
+                                </li>
+                            </ul>
+                        </div>
+                        {% endif %}
+                    </div>
+                </div>
+            </form>{% csrf_token %}
+            <div class="button_inner_one">
+                <button id="bookmarkNewLabel" class="btn doc_border_btn btn_small"
+                onclick="addNew()">새폴더</button>
+            </div>
+        </div>
+    </div>
+</div>
 {% endblock %}
 
 {% block js %}
@@ -201,6 +294,126 @@
 <script src="{% static 'js/plugins.js' %}"></script>
 <script>
     // 북마크 댓글은 비공개이므로 좋아요 제거
-    $(".count").remove();
+    $('a').remove('.count');
+
+    // 폴더관리 모달 오픈
+    function onclickFolderManage() {
+        $('#selectProjectModal').appendTo("body").modal('show');
+        $("#selectProjectModal").css("z-index", "1600");
+    };
+
+    // 폴더관리 모달 편집모드 클릭
+    function onclickEditMode(label_id) {
+        // 모드 변환
+        $("#label-" + label_id + "-view").css('display', 'none');
+        $("#label-" + label_id + "-edit").css('display', '');
+        // inputbox focus 설정
+        const inputElem = $("#label-" + label_id + "-input");
+        inputElem.focus();
+        inputElem[0].setSelectionRange(inputElem.val().length, inputElem.val().length);
+    };
+
+    // 폴더관리 모달 리스트모드 클릭
+    function onclickViewMode(label_id) {
+        setTimeout(function() {
+            // 모드 변환
+            $("#label-" + label_id + "-view").css('display', '');
+            $("#label-" + label_id + "-edit").css('display', 'none');
+        }, 300);
+    };
+
+    // 새폴더 추가 focusout 이벤트
+    function onclickNewLabelViewMode(){
+        setTimeout(function() {
+            $('#new_label').css('display', 'none');
+        }, 300);
+    }
+
+    // 폴더관리 모달 새폴더 클릭
+    function addNew() {
+        if ($("#new_label").css('display') == 'none') {
+            $("#new_label").css('display', '');
+            $("#new_label_input").focus();
+        }
+    };
+
+    // 북마크 폴더 추가
+    function addBookmarkLabel() {
+        const newText = $("#new_label_input").val();
+        $.ajax({
+            type: "POST",
+            url: "/bookmark/label/0",
+            data: "label_name=" + newText + "&csrfmiddlewaretoken=" + $("input[name=csrfmiddlewaretoken]").val(),
+            dataType: "json",
+            success: function (response) {
+                if (response.result == "success") {
+                    const newId = response.label_id;
+                    const newElem = '<li id="label-' + newId + '-view"><i class="icon_folder-alt"></i>&nbsp;' +
+                        '<a id="label-' + newId + '" href="javascript:;" onclick="onclickEditMode(' + newId + ')">' +
+                        newText + '</a></li><li id="label-' + newId + '-edit" style="display: none;">' +
+                        '<i class="icon_folder-alt"></i>&nbsp;<input id="label-' + newId + '-input" name="label_name"' +
+                        'value="' + newText + '" type="text" onfocusout="onclickViewMode(' + "'" + newId + "'" + ')">' +
+                        '<a class="editMode" style="color: #0C0E72;" onclick="updateBookmarkLabel(' + newId + ')">수정</a>' +
+                        '<a class="editMode" style="color: #C0392B;" onclick="deleteBookmarkLabel(' + newId + ')">삭제</a></li>';
+                    $("#new_label_input").val("");      // inputbox 초기화
+                    $("#new_label").before(newElem);    // 새항목 추가
+                } else {
+                    alert("잘못된 접근입니다.");
+                }
+            },
+            error: function (request, status, error) {
+                console.log("code:" + request.status + "\n" + "message:" + request.responseText + "\n" + "error:" + error)
+            },
+        });
+    }
+
+    // 북마크 폴더 수정
+    function updateBookmarkLabel(label_id) {
+        const newText = $("#label-" + label_id + "-input").val();
+        $.ajax({
+            type: "POST",
+            url: "/bookmark/label/" + label_id,
+            data: "label_name=" + newText + "&csrfmiddlewaretoken=" + $("input[name=csrfmiddlewaretoken]").val(),
+            dataType: "json",
+            success: function (response) {
+                if (response.result == "success") {
+                    $("#label-" + label_id).text(newText);
+                } else {
+                    alert("잘못된 접근입니다.");
+                }
+            },
+            error: function (request, status, error) {
+                console.log("code:" + request.status + "\n" + "message:" + request.responseText + "\n" + "error:" + error)
+            },
+        });
+    };
+
+    // 북마크 폴더 삭제
+    function deleteBookmarkLabel(label_id) {
+        if (confirm("북마크 폴더를 삭제하시면 하위 북마크와 메모가 모두 삭제됩니다.\n삭제하시겠습니까?")) {
+            $.ajax({
+                type: "DELETE",
+                url: "/bookmark/label/" + label_id,
+                headers: { "X-CSRFToken" : $("input[name=csrfmiddlewaretoken]").val()},
+                dataType: "json",
+                success: function (response) {
+                    if (response.result == "success") {
+                        $("#label-" + label_id + "-view").remove();
+                        $("#label-" + label_id + "-edit").remove();
+                    } else {
+                        alert("잘못된 접근입니다.");
+                    }
+                },
+                error: function (request, status, error) {
+                    console.log("code:" + request.status + "\n" + "message:" + request.responseText + "\n" + "error:" + error)
+                },
+            });
+        }
+    };
+
+    // modal close 시 페이지 reload
+    $("#selectProjectModal").on('hide.bs.modal', function(e) {
+        window.location.href = "/bookmark";
+    });
 </script>
 {% endblock %}
