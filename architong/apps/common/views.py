@@ -1,6 +1,7 @@
 import requests
 import json
 import os
+import datetime
 
 from datetime import datetime, timedelta, timezone
 from django.shortcuts import render
@@ -191,41 +192,60 @@ class Profile(View):
 class LawView(View):
     # 법규 API 호출 function
     def post(self, request):
-        if request.user.is_staff:
+        if request.user.is_staff:       # 관리자 권한 검사
             host = "http://www.law.go.kr/DRF/lawService.do?"
             OC = json.loads(open('././config/keys/secret_key.json', 'r').read())['OC']
             type = 'XML'
             url = host + "OC=" + OC + "&type=" + type
             target_sel = request.POST['target']
-            if target_sel == 0:      # 일반법
+            if target_sel == "0":           # 법령
                 url += "&target=law&MST=" + request.POST['target_no']
-            elif target_sel == 1:    # 행정규칙
+            elif target_sel == "1":         # 행정규칙
                 url += "&target=admrul&LID=" + request.POST['target_no']
-            elif target_sel == 2:       # 자치법규
+            elif target_sel == "2":         # 자치법규
                 url += "&target=ordin&MST=" + request.POST['target_no']
-
-            try:
-                res = requests.get(url)
-                print("request url : ", res.url)
-                if res.status_code == 200:
-                    xml_text = ElementTree.fromstring(res.text)
-                    html_url = str(res.url.replace("XML", "HTML"))
-                    book_title = xml_text.find('기본정보').find('법령명_한글').text
-                    enfc_dt = datetime.datetime.strptime(xml_text.find('기본정보').find('시행일자').text, "%Y%m%d").date()
-                    book_count = Books.objects.filter(book_title=book_title).count()
-                    # 이미 등록되어있는지 중복체크
-                    if book_count < 1:
-                        book = Books(book_title=book_title, enfc_dt=enfc_dt, code_gubun=target_sel,
-                                     author_id=request.user.username, codes_yn="Y", rls_yn="Y")
-                        book.save()     # 법규정보 Books 테이블 등록
-                        book_id = Books.objects.last().book_id
-                        # 마크다운 파싱
+            #try:
+            res = requests.get(url)
+            print("request url : ", res.url)
+            if res.status_code == 200:
+                xml_text = ElementTree.fromstring(res.text)
+                html_url = str(res.url.replace("XML", "HTML"))
+                if target_sel == "0":  # 법령
+                    root_tag = xml_text.find('기본정보')
+                    book_title = root_tag.find('법령명_한글').text
+                elif target_sel == "1":  # 행정규칙
+                    root_tag = xml_text.find('행정규칙기본정보')
+                    book_title = root_tag.find('행정규칙명').text
+                elif target_sel == "2":  # 자치법규
+                    root_tag = xml_text.find('자치법규기본정보')
+                    book_title = root_tag.find('자치법규명').text
+                book_count = Books.objects.filter(book_title=book_title).count()
+                # 이미 등록되어있는지 중복체크
+                if book_count == 0:
+                    # 법규정보 Books 테이블 등록
+                    book = Books(
+                        book_title=book_title, code_gubun=target_sel,
+                        author_id=request.user.username, codes_yn="Y", rls_yn="Y",
+                        enfc_dt=datetime.strptime(root_tag.find('시행일자').text, "%Y%m%d").date()
+                    )
+                    book.save()
+                    book_id = Books.objects.last().book_id
+                    # 마크다운 파싱
+                    if target_sel == "0":  # 법령
                         self.xml_to_markdown_law(xml_text, book_id)
-                        return JsonResponse({"result": "success", "html_url": html_url})
-                    else:
-                        return JsonResponse({"result": "exist", "message": "이미 등록된 법규입니다."})
-            except Exception as e:
-                return JsonResponse({"result": "fail", "html_url": html_url})
+                    elif target_sel == "1":  # 행정규칙
+                        return JsonResponse({"result": "success", "html_url": html_url, "message": "준비중입니다."})
+                        #self.xml_to_markdown_admrul(xml_text, book_id)
+                    elif target_sel == "2":  # 자치법규
+                        return JsonResponse({"result": "success", "html_url": html_url, "message": "준비중입니다."})
+                        #self.xml_to_markdown_ordin(xml_text, book_id)
+                    return JsonResponse({"result": "success", "html_url": html_url, "message": "등록 되었습니다."})
+                else:
+                    return JsonResponse({"result": "exist", "message": "이미 등록된 법규입니다."})
+            #except Exception as e:
+                #return JsonResponse({"result": "fail", "html_url": html_url,  "message": "등록 실패"})
+        else:
+            return JsonResponse({"result": "forbidden", "message": "잘못된 접근입니다."})
 
 
     '''
@@ -240,7 +260,6 @@ class LawView(View):
      - 별표제목 → 별표제목 + 파일링크
      - 별표서식파일링크, 별표서식PDF파일링크 → 이미지링크
     '''
-    # 시행령, 시행규칙 → 마크다운 파싱 function
     def xml_to_markdown_law(self, xml_text, book_id):
         # 조문 컨버팅
         jo_root = xml_text.iter(tag='조문단위')
@@ -316,6 +335,94 @@ class LawView(View):
                       + attachment.find("별표서식PDF파일링크").text + ")"
                 markdown_text = title + "&nbsp;&nbsp;&nbsp;&nbsp;" + hwp + "&nbsp;&nbsp;" + pdf + "\n"
                 self.insert_page("별표", title, markdown_text, book_id)
+
+    '''
+    [ 행정규칙 마크다운 디자인 ]
+     - 장 → H2 + 구분선
+     - 절 → H2 + 구분선
+     - 조문 → H3
+     - 항 → 디자인 없음
+     - 호 → blockquote, ordered list 제거
+     - 목 → blockquote * 2
+     - 목 하위 텍스트(tab으로 구분) → blockquote * 3
+     - 이미지 → 이미지링크
+     - 별표제목 → 별표제목 + 파일링크
+     - 별표서식파일링크, 별표서식PDF파일링크 → 이미지링크
+    '''
+    def xml_to_markdown_admrul(self, xml_text, book_id):
+        # 조문 컨버팅
+        jo_root = xml_text.iter(tag='조문내용')
+        for jo in jo_root:  # 조문 → H3
+            global markdown_text
+            global title
+            if jo:
+                title = jo.text.lstrip().rstrip().replace('(', ' ').split(')')[0]
+                if is_jomun == "조문":  # 조문 → H3
+                    header = jo.find('조문내용').text.lstrip().rstrip()
+                    if header.find(')') != -1:
+                        markdown_text = "### " + header.split(")", 1)[0] + ")\n"
+                        context = header.split(")", 1)[1]
+                        if context is not None:
+                            markdown_text += context.rstrip() + "\n"
+                    else:
+                        markdown_text = header
+                    hang_root = jo.iter(tag='항')
+                    for hang in hang_root:  # 항 → 디자인 없음
+                        if hang:
+                            if hang.find('항내용') is not None:
+                                markdown_text += hang.find('항내용').text.lstrip() + "\n"
+                            ho_root = hang.iter(tag='호')
+                            for idx, ho in enumerate(ho_root):
+                                if ho:  # 호 → Blockquote
+                                    markdown_text += "> " + ho.find('호내용').text.lstrip().replace(". ", ".") + "\n"
+                                    if ho.find('목') != -1:
+                                        mok_root = ho.iter(tag='목')
+                                        for mok in mok_root:
+                                            mok = mok.find('목내용').text.split('\t\t\t\t\t\t')
+                                            for idx, row in enumerate(mok):
+                                                if row:
+                                                    if idx == 0:
+                                                        markdown_text += ">> " + row.lstrip() + '\n' + '\n'
+                                                    else:
+                                                        markdown_text += ">>> " + row.lstrip() + '\n'
+                                                    if idx == len(mok) - 1:
+                                                        markdown_text += '\n'
+                                    else:
+                                        break
+                                else:
+                                    break
+                        else:
+                            break
+                else:  # 전문 → H2 + 구분선
+                    markdown_text = "\n\n##" + title + "\n----------"
+                self.insert_page(is_jomun, title, self.get_img_link(markdown_text), book_id)
+
+        # 별표, 서식 컨버팅
+        attachments_root = xml_text.iter(tag='별표단위')
+        if attachments_root:
+            for attachment in attachments_root:
+                attachment_gb = attachment.find('별표구분').text
+                order = str(int(attachment.find('별표번호').text))
+                order_branch = str(int(attachment.find('별표가지번호').text))
+                if attachment_gb == "별표":
+                    if order_branch != "0":
+                        order += "의" + order_branch
+                    order = "별표 " + order
+                elif attachment_gb == "서식":
+                    if order_branch != "0":
+                        order += "호의" + order_branch
+                    else:
+                        order += "호"
+                    order = "별지 제" + order + "서식"
+                title = "[" + order + "] " \
+                        + attachment.find('별표제목').text.replace("&lt;", "<").replace("&gt;", ">")
+                hwp = "[![](https://www.law.go.kr/LSW/images/button/btn_han.gif)](http://www.law.go.kr" \
+                      + attachment.find("별표서식파일링크").text + ")"
+                pdf = "[![](https://www.law.go.kr/LSW/images/button/btn_pdf.gif)](http://www.law.go.kr" \
+                      + attachment.find("별표서식PDF파일링크").text + ")"
+                markdown_text = title + "&nbsp;&nbsp;&nbsp;&nbsp;" + hwp + "&nbsp;&nbsp;" + pdf + "\n"
+                self.insert_page("별표", title, markdown_text, book_id)
+
 
     # 이미지 링크 처리
     def get_img_link(self, context):

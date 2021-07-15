@@ -24,6 +24,17 @@
     .paginate_button {
         padding: 0px !important;
     }
+    .login_form .form-group {
+        margin-bottom: 15px;
+    }
+    #description {
+        color: #F93443;
+        font-size: 13px;
+    }
+    #description_list {
+        color: #4C4DEC;
+        font-size: 13px;
+    }
     </style>
 {% endblock %}
 {% block content %}
@@ -32,32 +43,40 @@
         <div class="col-lg-10 doc-middle-content">
             <h5>법규 등록</h5>
             <form id="law_form" onsubmit="return false;" name="law_form" class="row login_form">{% csrf_token %}
-                <div class="col-sm-5 form-group">
+                <div class="col-sm-3 form-group">
                     <div class="small_text">구분</div>
                     <select type="select" class="form-control" name="target" id="target" onchange="onchangeTarget(this.value)">
-                        <option value="law" selected>법령</option>
-                        <option value="admrul">행정규칙</option>
-                        <option value="ordin">자치법규</option>
+                        <option value="0" selected>법령</option>
+                        <option value="1">행정규칙</option>
+                        <option value="2">자치법규</option>
                     </select>
                 </div>
-                <div class="col-sm-5 form-group">
-                    <div class="small_text" id="target_no_label">법령 MST</div>
-                    <input type="number" class="form-control" name="target_no" id="target_no">
+                <div class="col-sm-6 form-group">
+                    <div class="small_text" id="target_no_label">법령MST&nbsp;&nbsp;
+                        <span id="description"><i class="icon_error-circle_alt"></i>&nbsp;제목 입력 불가, 법령 MST를 숫자로 입력해주세요.</span>
+                    </div>
+                    <input id="target_no" type="number" class="form-control" name="target_no" id="target_no">
                 </div>
-                <div class="col-sm-2 form-group text-center" style="position: relative">
+                <div class="col-sm-3 form-group text-center" style="position: relative">
+                    <div class="small_text"> </div>
                     <button type="button" class="btn action_btn thm_btn" onclick="onclickInsertLaw()"
-                    style="transform: translate(-20%, 90%)">등록</button>
+                    style="transform: translate(-20%, 90%); float: left;">등록</button>
                 </div>
             </form>
-            <h5 id="data-table" style="margin-bottom: -10px;">법규 목록</h5>
+            <h5 id="data-table" style="margin-bottom: -10px;">법규 목록&nbsp;&nbsp;
+                <span id="description_list"><i class="icon_info_alt"></i>&nbsp;공개여부 셀을 클릭하면 상태를 변경할 수 있습니다.</span>
+            </h5>
             <div class="data_table_area table-responsive">
                 <table id="dtMaterialDesignExample" class="table">
                     <thead>
                     <tr>
                         <th class="th-sm">No.</th>
+                        <th class="th-sm">법규구분</th>
                         <th class="th-sm">법규명</th>
                         <th class="th-sm">시행일</th>
                         <th class="th-sm">공개여부</th>
+                        <th class="th-sm">조회수</th>
+                        <th class="th-sm">등록자</th>
                         <th class="th-sm">등록일</th>
                     </tr>
                     </thead>
@@ -66,6 +85,7 @@
                     {% for book in books %}
                     <tr>
                         <td>{{ forloop.counter }}</td>
+                        <td>{{ book.get_code_gubun_display }}</td>
                         <td><a style="color: #6b707f;" href="/book/{{ book.book_id }}">{{ book.book_title }}</a></td>
                         <td>{{ book.enfc_dt | date:'Y.m.d' }}</td>
                         {% if book.rls_yn == "Y" %}
@@ -73,6 +93,8 @@
                         {% else %}
                         <td><a href="javascript:;" onclick="onclickLawRlsYn('{{ book.book_id }}', '{{ book.book_title }}')">비공개</a></td>
                         {% endif %}
+                        <td>{{ book.hit_count }}</td>
+                        <td>{{ book.author_id }}</td>
                         <td>{{ book.wrt_dt | date:'Y.m.d' }}</td>
                     </tr>
                     {% endfor %}
@@ -84,12 +106,10 @@
                     </tbody>
                 </table>
             </div>
-            <ul>
-                <li><a target="_blank" href="https://law.go.kr/LSO/lab/lawListSupport.do">
-                    국가법령정보 링크</a></li>
-                <li><a target="_blank" href="http://kkharchitects.com/%ea%b1%b4%ec%b6%95%eb%b2%95%ea%b7%9c%eb%a7%81%ed%81%ac/">
-                    건축법규 링크</a></li>
-            </ul>
+            <div style="margin: 20px;">
+                <a target="_blank" href="https://law.go.kr/LSO/lab/lawListSupport.do" style="margin-right: 20px;">국가법령정보 링크</a>
+                <a target="_blank" href="http://kkharchitects.com/%ea%b1%b4%ec%b6%95%eb%b2%95%ea%b7%9c%eb%a7%81%ed%81%ac/">건축법규 링크</a>
+            </div>
         </div>
         <div class="col-lg-1"></div>
     </div>

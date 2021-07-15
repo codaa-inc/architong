@@ -8,13 +8,19 @@
         .paginate_button {
             padding: 0px !important;
         }
+        #description_list {
+            color: #4C4DEC;
+            font-size: 13px;
+        }
     </style>
 {% endblock %}
 {% block content %}
     <div class="row" style="margin-top: 60px;">
         <div class="col-lg-1"></div>
         <div class="col-lg-10 doc-middle-content">
-            <h5 class="s_title load-order-2" id="data-table">회원 목록</h5>
+            <h5 class="s_title load-order-2" id="data-table">회원 목록&nbsp;&nbsp;
+                <span id="description_list"><i class="icon_info_alt"></i>&nbsp;회원구분, 활성화여부 셀을 클릭하면 상태를 변경할 수 있습니다.</span>
+            </h5>
             <div class="data_table_area table-responsive">
                 <table id="dtMaterialDesignExample" class="table">
                     <thead>

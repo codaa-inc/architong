@@ -153,16 +153,21 @@ function onchangeSort(value) {
  * 법규관리 페이지 법규구분 변경 이벤트
  * */
 function onchangeTarget(value) {
-    if (value == "admrul") {
-        $("#target_no_label").text("행정규칙 LID");
-    } else if (value == "ordin"){
-        $("#target_no_label").text("자치법규 MST");
-    } else {
-        $("#target_no_label").text("법령 MST");
+    if (value == "0") {
+        $("#target_no_label").html('법령MST&nbsp;&nbsp;<span id="description">' +
+            '<i class="icon_error-circle_alt"></i>&nbsp;제목 입력 불가, 법령MST를 숫자로 입력해주세요.</span>');
+    } else if (value == "1"){
+        $("#target_no_label").html('행정규칙LID&nbsp;&nbsp;<span id="description">' +
+            '<i class="icon_error-circle_alt"></i>&nbsp;제목 입력 불가, 행정규칙LID를 숫자로 입력해주세요.</span>');
+    } else if (value == "2"){
+        $("#target_no_label").html('자치법규MST&nbsp;&nbsp;<span id="description">' +
+            '<i class="icon_error-circle_alt"></i>&nbsp;제목 입력 불가, 자치법규MST를 숫자로 입력해주세요.</span>');
     }
 };
 
-// inputbox 엔터키 감지
+/**
+ * inputbox 엔터키 감지
+ */
 $(document).ready(function(){
     $("#target_no").keypress(function (e) {
         if (e.which == 13) {
@@ -181,10 +186,8 @@ function onclickInsertLaw() {
         dataType: "json",
         data: $("#law_form").serialize() + "&csrfmiddlewaretoken=" + $("input[name=csrfmiddlewaretoken]").val(),
         success: function (response) {
-            if(response.result == "exist") {
-                alert(response.message);
-            } else if (response.result == "fail"){
-                alert("등록 실패");
+            alert(response.message);
+            if (response.result == "fail"){
                 // 해당 법규 법제처 페이지 open
                 window.open(response.html_url);
             } else if(response.result == "success") {

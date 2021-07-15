@@ -90,7 +90,6 @@
     #header-btn > a {
         font-size: 15px;
         font-weight: bolder;
-        color: #0d0d75;
         margin-left: 20px;
     }
     h5 {
@@ -137,10 +136,12 @@
     }
 </style>
 {% endblock %}
+
 {% block content %}
 <!-- 댓글 랜더링을 위해 script 먼저 로딩 -->
 <script src="{% static 'js/docs.js' %}"></script>
 <script src="{% static 'js/common.js' %}"></script>
+
 <!-- 페이지 로딩 시 초기 셋팅 영역 -->
 <script>
     // 로그인 시 사용자 ID를 저장하는 전역변수 선언
@@ -154,6 +155,7 @@
 {% if user.is_authenticated %}
 <script>USERNAME = "{{ user.get_username }}";</script>
 {% endif %}
+
 <div class="breadcrumb_area_three" style="padding: 0"></div>
 <section class="doc_documentation_area" id="sticky_doc">
     <div class="container custom_container">
@@ -168,8 +170,10 @@
                     </select>
                 </div>
                 <div id="header-btn">
-                    <a href="javascript:;" onclick="onclickFolderManage()"><i class="icon_cog"></i>&nbsp;&nbsp;폴더관리</a>
-                    <a href="#" id=""><i class="icon_printer"></i>&nbsp;&nbsp;출력</a>
+                    <a href="javascript:;" style="color: #535550;" onclick="onclickFolderManage()">
+                        <i class="icon_cog"></i>&nbsp;&nbsp;폴더관리</a>
+                    <a href="javascript:;" style="color: #0d0d75" onclick="onclickPrintBookMark()">
+                        <i class="icon_printer"></i>&nbsp;&nbsp;출력</a>
                 </div>
             </div>
         </div>
@@ -281,7 +285,7 @@
             </form>{% csrf_token %}
             <div class="button_inner_one">
                 <button id="bookmarkNewLabel" class="btn doc_border_btn btn_small"
-                onclick="addNew()">새폴더</button>
+                onclick="onclickAddLabel()">새폴더</button>
             </div>
         </div>
     </div>
@@ -296,124 +300,30 @@
     // 북마크 댓글은 비공개이므로 좋아요 제거
     $('a').remove('.count');
 
-    // 폴더관리 모달 오픈
-    function onclickFolderManage() {
-        $('#selectProjectModal').appendTo("body").modal('show');
-        $("#selectProjectModal").css("z-index", "1600");
-    };
-
-    // 폴더관리 모달 편집모드 클릭
-    function onclickEditMode(label_id) {
-        // 모드 변환
-        $("#label-" + label_id + "-view").css('display', 'none');
-        $("#label-" + label_id + "-edit").css('display', '');
-        // inputbox focus 설정
-        const inputElem = $("#label-" + label_id + "-input");
-        inputElem.focus();
-        inputElem[0].setSelectionRange(inputElem.val().length, inputElem.val().length);
-    };
-
-    // 폴더관리 모달 리스트모드 클릭
-    function onclickViewMode(label_id) {
-        setTimeout(function() {
-            // 모드 변환
-            $("#label-" + label_id + "-view").css('display', '');
-            $("#label-" + label_id + "-edit").css('display', 'none');
-        }, 300);
-    };
-
-    // 새폴더 추가 focusout 이벤트
-    function onclickNewLabelViewMode(){
-        setTimeout(function() {
-            $('#new_label').css('display', 'none');
-        }, 300);
-    }
-
-    // 폴더관리 모달 새폴더 클릭
-    function addNew() {
-        if ($("#new_label").css('display') == 'none') {
-            $("#new_label").css('display', '');
-            $("#new_label_input").focus();
-        }
-    };
-
-    // 북마크 폴더 추가
-    function addBookmarkLabel() {
-        const newText = $("#new_label_input").val();
-        $.ajax({
-            type: "POST",
-            url: "/bookmark/label/0",
-            data: "label_name=" + newText + "&csrfmiddlewaretoken=" + $("input[name=csrfmiddlewaretoken]").val(),
-            dataType: "json",
-            success: function (response) {
-                if (response.result == "success") {
-                    const newId = response.label_id;
-                    const newElem = '<li id="label-' + newId + '-view"><i class="icon_folder-alt"></i>&nbsp;' +
-                        '<a id="label-' + newId + '" href="javascript:;" onclick="onclickEditMode(' + newId + ')">' +
-                        newText + '</a></li><li id="label-' + newId + '-edit" style="display: none;">' +
-                        '<i class="icon_folder-alt"></i>&nbsp;<input id="label-' + newId + '-input" name="label_name"' +
-                        'value="' + newText + '" type="text" onfocusout="onclickViewMode(' + "'" + newId + "'" + ')">' +
-                        '<a class="editMode" style="color: #0C0E72;" onclick="updateBookmarkLabel(' + newId + ')">수정</a>' +
-                        '<a class="editMode" style="color: #C0392B;" onclick="deleteBookmarkLabel(' + newId + ')">삭제</a></li>';
-                    $("#new_label_input").val("");      // inputbox 초기화
-                    $("#new_label").before(newElem);    // 새항목 추가
-                } else {
-                    alert("잘못된 접근입니다.");
-                }
-            },
-            error: function (request, status, error) {
-                console.log("code:" + request.status + "\n" + "message:" + request.responseText + "\n" + "error:" + error)
-            },
-        });
-    }
-
-    // 북마크 폴더 수정
-    function updateBookmarkLabel(label_id) {
-        const newText = $("#label-" + label_id + "-input").val();
-        $.ajax({
-            type: "POST",
-            url: "/bookmark/label/" + label_id,
-            data: "label_name=" + newText + "&csrfmiddlewaretoken=" + $("input[name=csrfmiddlewaretoken]").val(),
-            dataType: "json",
-            success: function (response) {
-                if (response.result == "success") {
-                    $("#label-" + label_id).text(newText);
-                } else {
-                    alert("잘못된 접근입니다.");
-                }
-            },
-            error: function (request, status, error) {
-                console.log("code:" + request.status + "\n" + "message:" + request.responseText + "\n" + "error:" + error)
-            },
-        });
-    };
-
-    // 북마크 폴더 삭제
-    function deleteBookmarkLabel(label_id) {
-        if (confirm("북마크 폴더를 삭제하시면 하위 북마크와 메모가 모두 삭제됩니다.\n삭제하시겠습니까?")) {
-            $.ajax({
-                type: "DELETE",
-                url: "/bookmark/label/" + label_id,
-                headers: { "X-CSRFToken" : $("input[name=csrfmiddlewaretoken]").val()},
-                dataType: "json",
-                success: function (response) {
-                    if (response.result == "success") {
-                        $("#label-" + label_id + "-view").remove();
-                        $("#label-" + label_id + "-edit").remove();
-                    } else {
-                        alert("잘못된 접근입니다.");
-                    }
-                },
-                error: function (request, status, error) {
-                    console.log("code:" + request.status + "\n" + "message:" + request.responseText + "\n" + "error:" + error)
-                },
-            });
-        }
-    };
-
     // modal close 시 페이지 reload
     $("#selectProjectModal").on('hide.bs.modal', function(e) {
         window.location.href = "/bookmark";
     });
+
+    const printBlockElem = ['#header-btn', '.blog_comment_box', '.comment_inner', '.forum_footer_area'];
+
+    // 프린트 영역 필터링
+    window.onbeforeprint = function () {
+        $.each(printBlockElem, function(index, item) {
+           $(item).css('display', 'none');
+        });
+    };
+
+    // 프린트 실행 이벤트
+    function onclickPrintBookMark() {
+        window.print();
+    }
+
+    // 프린트 영역을 초기 body로 복구
+    window.onafterprint = function () {
+        $.each(printBlockElem, function(index, item) {
+           $(item).css('display', 'block');
+        });
+    };
 </script>
 {% endblock %}
