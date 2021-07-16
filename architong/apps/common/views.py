@@ -234,8 +234,7 @@ class LawView(View):
                     if target_sel == "0":  # 법령
                         self.xml_to_markdown_law(xml_text, book_id)
                     elif target_sel == "1":  # 행정규칙
-                        return JsonResponse({"result": "success", "html_url": html_url, "message": "준비중입니다."})
-                        #self.xml_to_markdown_admrul(xml_text, book_id)
+                        self.xml_to_markdown_admrul(xml_text, book_id)
                     elif target_sel == "2":  # 자치법규
                         return JsonResponse({"result": "success", "html_url": html_url, "message": "준비중입니다."})
                         #self.xml_to_markdown_ordin(xml_text, book_id)
@@ -339,7 +338,7 @@ class LawView(View):
     '''
     [ 행정규칙 마크다운 디자인 ]
      - 장 → H2 + 구분선
-     - 절 → H2 + 구분선
+     - 절 → H2
      - 조문 → H3
      - 항 → 디자인 없음
      - 호 → blockquote, ordered list 제거
@@ -350,56 +349,35 @@ class LawView(View):
      - 별표서식파일링크, 별표서식PDF파일링크 → 이미지링크
     '''
     def xml_to_markdown_admrul(self, xml_text, book_id):
+        admrul = []
         # 조문 컨버팅
         jo_root = xml_text.iter(tag='조문내용')
         for jo in jo_root:  # 조문 → H3
-            global markdown_text
-            global title
-            if jo:
-                title = jo.text.lstrip().rstrip().replace('(', ' ').split(')')[0]
-                if is_jomun == "조문":  # 조문 → H3
-                    header = jo.find('조문내용').text.lstrip().rstrip()
-                    if header.find(')') != -1:
-                        markdown_text = "### " + header.split(")", 1)[0] + ")\n"
-                        context = header.split(")", 1)[1]
-                        if context is not None:
-                            markdown_text += context.rstrip() + "\n"
-                    else:
-                        markdown_text = header
-                    hang_root = jo.iter(tag='항')
-                    for hang in hang_root:  # 항 → 디자인 없음
-                        if hang:
-                            if hang.find('항내용') is not None:
-                                markdown_text += hang.find('항내용').text.lstrip() + "\n"
-                            ho_root = hang.iter(tag='호')
-                            for idx, ho in enumerate(ho_root):
-                                if ho:  # 호 → Blockquote
-                                    markdown_text += "> " + ho.find('호내용').text.lstrip().replace(". ", ".") + "\n"
-                                    if ho.find('목') != -1:
-                                        mok_root = ho.iter(tag='목')
-                                        for mok in mok_root:
-                                            mok = mok.find('목내용').text.split('\t\t\t\t\t\t')
-                                            for idx, row in enumerate(mok):
-                                                if row:
-                                                    if idx == 0:
-                                                        markdown_text += ">> " + row.lstrip() + '\n' + '\n'
-                                                    else:
-                                                        markdown_text += ">>> " + row.lstrip() + '\n'
-                                                    if idx == len(mok) - 1:
-                                                        markdown_text += '\n'
-                                    else:
-                                        break
-                                else:
-                                    break
-                        else:
-                            break
-                else:  # 전문 → H2 + 구분선
-                    markdown_text = "\n\n##" + title + "\n----------"
-                self.insert_page(is_jomun, title, self.get_img_link(markdown_text), book_id)
-
+            jo = jo.text.lstrip().rstrip()
+            title = jo.split(" ", maxsplit=1)[0]
+            # 장 → H2 + 구분선
+            if "장" in title:
+                admrul.append({"page_title": jo,
+                               "description": "\n\n##" + jo + "\n----------",
+                               "depth": 0})
+            # 절 → H2
+            if "절" in title:
+                admrul.append({"page_title": "null",
+                               "description": "\n\n##" + jo + "\n",
+                               "depth": 1})
+            # 조 → H3, 조문내용 → 디자인 없음, 이미지 처리
+            if "조" in title:
+                jo_context = jo.split(")", maxsplit=1)
+                admrul.append({"page_title": (jo_context[0].replace("(", " ")),
+                               "description": "\n\n###" + jo_context[0] + ")\n" + self.get_img_link(jo_context[1]),
+                               "depth": 1})
         # 별표, 서식 컨버팅
         attachments_root = xml_text.iter(tag='별표단위')
         if attachments_root:
+            # 별표/서식 목차 페이지 추가
+            admrul.append({"page_title": "별표/서식",
+                           "description": "\n\n##별표/서식 \n----------",
+                           "depth": 0})
             for attachment in attachments_root:
                 attachment_gb = attachment.find('별표구분').text
                 order = str(int(attachment.find('별표번호').text))
@@ -410,18 +388,26 @@ class LawView(View):
                     order = "별표 " + order
                 elif attachment_gb == "서식":
                     if order_branch != "0":
-                        order += "호의" + order_branch
-                    else:
-                        order += "호"
-                    order = "별지 제" + order + "서식"
-                title = "[" + order + "] " \
-                        + attachment.find('별표제목').text.replace("&lt;", "<").replace("&gt;", ">")
-                hwp = "[![](https://www.law.go.kr/LSW/images/button/btn_han.gif)](http://www.law.go.kr" \
-                      + attachment.find("별표서식파일링크").text + ")"
-                pdf = "[![](https://www.law.go.kr/LSW/images/button/btn_pdf.gif)](http://www.law.go.kr" \
-                      + attachment.find("별표서식PDF파일링크").text + ")"
-                markdown_text = title + "&nbsp;&nbsp;&nbsp;&nbsp;" + hwp + "&nbsp;&nbsp;" + pdf + "\n"
-                self.insert_page("별표", title, markdown_text, book_id)
+                        order += "의" + order_branch
+                    order = "서식 " + order
+                elif attachment_gb == "별도":
+                    if order_branch != "0":
+                        order += "의" + order_branch
+                    order = "별도 " + order
+                title = "[" + order + "] " + attachment.find('별표제목').text.replace("&lt;", "<").replace("&gt;", ">")
+                description = title
+                if attachment.find("별표서식파일링크") is not None:
+                    hwp = "[![](https://www.law.go.kr/LSW/images/button/btn_han.gif)](http://www.law.go.kr" \
+                          + attachment.find("별표서식파일링크").text + ")"
+                    description += "&nbsp;&nbsp;&nbsp;&nbsp;" + hwp
+                if attachment.find("별표서식PDF파일링크") is not None:
+                    pdf = "[![](https://www.law.go.kr/LSW/images/button/btn_pdf.gif)](http://www.law.go.kr" \
+                          + attachment.find("별표서식PDF파일링크").text + ")"
+                    description += "&nbsp;&nbsp;" + pdf + "\n"
+                admrul.append({"page_title": title,
+                               "description": description,
+                               "depth": 1})
+        self.insert_page_admrul(admrul, book_id)
 
 
     # 이미지 링크 처리
@@ -436,7 +422,7 @@ class LawView(View):
         else:
             return context
 
-    # 법규 마크다운 저장 function
+    # 법령 마크다운 저장 function
     def insert_page(self, is_jomun, title, markdown_text, book_id):
         page = Pages()
         page.book_id = book_id
@@ -478,6 +464,20 @@ class LawView(View):
             page.depth = 0
             page.parent_id = 0
         page.save()  # 모델 DB 저장
+
+    # 행정규칙 마크다운 저장 function
+    def insert_page_admrul(self, admrul_list, book_id):
+        for admrul in admrul_list:
+            depth = admrul.get('depth')
+            if depth == 0:
+                parent_id = depth
+            else:
+                parent_id = Pages.objects.filter(book_id=book_id, depth=0).last().page_id
+            page = Pages(
+                book_id=book_id, parent_id=parent_id, depth=depth,
+                page_title=admrul.get('page_title'), description=admrul.get('description')
+            )
+            page.save()
 
 
 # 법규관리 페이지를 렌더링하는 function

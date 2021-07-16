@@ -191,8 +191,7 @@ function onclickInsertLaw() {
                 // 해당 법규 법제처 페이지 open
                 window.open(response.html_url);
             } else if(response.result == "success") {
-                alert("등록 되었습니다.");
-                document.location.href = "/law/manage";
+                //document.location.href = "/law/manage";
             }
         },
         error: function (request, status, error) {

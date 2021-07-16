@@ -155,7 +155,7 @@
                             <span class="icon"><i class="arrow_carrot-down"></i></span>
                             <ul class="list-unstyled dropdown_nav" id="parent-list-{{ page.page_id }}" ></ul>
                         </li>
-                        {% elif page.depth == 1 %}
+                        {% elif page.depth == 1 and page.page_title != "null" %}
                         <script>
                             $("#" + "parent-list-" + "{{ page.parent_id }}").append(
                                 `<li><a id='child-list-{{ page.page_id }}' onclick='onclickChildList(this.id)'>` + "{{ page.page_title }}" + `</a></li>`
