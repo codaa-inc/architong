@@ -1,6 +1,6 @@
 import requests
 import json
-import os
+import re
 import datetime
 
 from datetime import datetime, timedelta, timezone
@@ -236,13 +236,14 @@ class LawView(View):
                     elif target_sel == "1":  # 행정규칙
                         self.xml_to_markdown_admrul(xml_text, book_id)
                     elif target_sel == "2":  # 자치법규
-                        return JsonResponse({"result": "success", "html_url": html_url, "message": "준비중입니다."})
-                        #self.xml_to_markdown_ordin(xml_text, book_id)
+                        self.xml_to_markdown_ordin(xml_text, book_id)
                     return JsonResponse({"result": "success", "html_url": html_url, "message": "등록 되었습니다."})
                 else:
                     return JsonResponse({"result": "exist", "message": "이미 등록된 법규입니다."})
+            else:
+                return JsonResponse({"result": "fail", "message": "API 응답 없음"})
             #except Exception as e:
-                #return JsonResponse({"result": "fail", "html_url": html_url,  "message": "등록 실패"})
+                #return JsonResponse({"result": "fail", "html_url": html_url,  "message": "오류 발생"})
         else:
             return JsonResponse({"result": "forbidden", "message": "잘못된 접근입니다."})
 
@@ -314,12 +315,15 @@ class LawView(View):
         if attachments_root:
             for attachment in attachments_root:
                 attachment_gb = attachment.find('별표구분').text
-                order = str(int(attachment.find('별표번호').text))
+                order = "" if int(attachment.find('별표번호').text) else str(int(attachment.find('별표번호').text))
                 order_branch = str(int(attachment.find('별표가지번호').text))
                 if attachment_gb == "별표":
                     if order_branch != "0":
                         order += "의" + order_branch
-                    order = "별표 " + order
+                    if order == "":
+                        order = "별표" + order
+                    else:
+                        order = "별표 " + order
                 elif attachment_gb == "서식":
                     if order_branch != "0":
                         order += "호의" + order_branch
@@ -339,61 +343,64 @@ class LawView(View):
     [ 행정규칙 마크다운 디자인 ]
      - 장 → H2 + 구분선
      - 절 → H2
-     - 조문 → H3
-     - 항 → 디자인 없음
-     - 호 → blockquote, ordered list 제거
-     - 목 → blockquote * 2
-     - 목 하위 텍스트(tab으로 구분) → blockquote * 3
-     - 이미지 → 이미지링크
+     - 조문제목 → H3
+     - 조문내용 → 디자인 없음, 이미지 처리
      - 별표제목 → 별표제목 + 파일링크
-     - 별표서식파일링크, 별표서식PDF파일링크 → 이미지링크
     '''
     def xml_to_markdown_admrul(self, xml_text, book_id):
         admrul = []
         # 조문 컨버팅
         jo_root = xml_text.iter(tag='조문내용')
-        for jo in jo_root:  # 조문 → H3
+        for idx, jo in enumerate(jo_root):  # 조문 → H3
             jo = jo.text.lstrip().rstrip()
-            title = jo.split(" ", maxsplit=1)[0]
+            if "(" in jo:
+                title = jo.split("(", maxsplit=1)[0]
+            else:
+                title = jo.split(" ", maxsplit=1)[0]
+            #전문(장)없이 조문(조)로만 구성된 경우, 행정규칙명으로 부모페이지 생성
+            if idx == 0 and "장" not in title:
+                book_title = xml_text.find('행정규칙기본정보').find('행정규칙명').text
+                admrul.append({"page_title": book_title,
+                               "description": "\n\n##" + book_title + "\n----------",
+                               "depth": 0})
             # 장 → H2 + 구분선
             if "장" in title:
                 admrul.append({"page_title": jo,
                                "description": "\n\n##" + jo + "\n----------",
                                "depth": 0})
             # 절 → H2
-            if "절" in title:
+            elif "절" in title:
                 admrul.append({"page_title": "null",
                                "description": "\n\n##" + jo + "\n",
                                "depth": 1})
             # 조 → H3, 조문내용 → 디자인 없음, 이미지 처리
-            if "조" in title:
+            elif "조" in title:
                 jo_context = jo.split(")", maxsplit=1)
-                admrul.append({"page_title": (jo_context[0].replace("(", " ")),
-                               "description": "\n\n###" + jo_context[0] + ")\n" + self.get_img_link(jo_context[1]),
+                if len(jo_context) < 2:
+                    description = "\n\n###" + jo_context[0] + "\n"
+                else:
+                    description = "\n\n###" + jo_context[0] + ")\n" + self.get_img_link(jo_context[1].replace("\n", "\n\n"))
+
+                admrul.append({"page_title": jo_context[0].replace("(", " "),
+                               "description": description,
                                "depth": 1})
         # 별표, 서식 컨버팅
-        attachments_root = xml_text.iter(tag='별표단위')
-        if attachments_root:
+        if len(xml_text.findall('별표')) > 0:
             # 별표/서식 목차 페이지 추가
+            attachments_root = xml_text.iter(tag='별표단위')
             admrul.append({"page_title": "별표/서식",
                            "description": "\n\n##별표/서식 \n----------",
                            "depth": 0})
             for attachment in attachments_root:
                 attachment_gb = attachment.find('별표구분').text
-                order = str(int(attachment.find('별표번호').text))
+                order = "" if int(attachment.find('별표번호').text) == 0 else str(int(attachment.find('별표번호').text))
                 order_branch = str(int(attachment.find('별표가지번호').text))
-                if attachment_gb == "별표":
-                    if order_branch != "0":
-                        order += "의" + order_branch
-                    order = "별표 " + order
-                elif attachment_gb == "서식":
-                    if order_branch != "0":
-                        order += "의" + order_branch
-                    order = "서식 " + order
-                elif attachment_gb == "별도":
-                    if order_branch != "0":
-                        order += "의" + order_branch
-                    order = "별도 " + order
+                if order_branch != "0":
+                    order += "의" + order_branch
+                if order == "":
+                    order = attachment_gb + order
+                else:
+                    order = attachment_gb + " " + order
                 title = "[" + order + "] " + attachment.find('별표제목').text.replace("&lt;", "<").replace("&gt;", ">")
                 description = title
                 if attachment.find("별표서식파일링크") is not None:
@@ -407,18 +414,62 @@ class LawView(View):
                 admrul.append({"page_title": title,
                                "description": description,
                                "depth": 1})
-        self.insert_page_admrul(admrul, book_id)
+        self.insert_page_admrul_ordin(admrul, book_id)
 
+    '''
+    [ 자치법규 마크다운 디자인 ]
+     - 장 → H2 + 구분선
+     - 절 → H2
+     - 조문제목 → H3
+     - 조문내용 → 디자인 없음, 이미지 처리
+     - 별표제목 → 별표제목 + 파일링크
+    '''
+    def xml_to_markdown_ordin(self, xml_text, book_id):
+        ordin = []
+        # 조문 컨버팅
+        jo_root = xml_text.iter(tag='조')
+        for idx, jo in enumerate(jo_root):
+            jo_gunun = jo.find('조문여부').text
+            jo_context = jo.find('조내용').text
+            # 장없이 조로만 구성된 경우, 자치법규명으로 부모페이지 생성
+            if idx == 0 and jo_gunun == "Y":
+                book_title = xml_text.find('자치법규기본정보').find('자치법규명').text
+                ordin.append({"page_title": book_title,
+                              "description": "\n\n##" + book_title + "\n",
+                              "depth": 0})
+            # 장,절 → H2
+            if jo_gunun == "N":
+                jang_gubun = jo_context.split(" ", maxsplit=1)[0]
+                if "장" in jang_gubun:
+                    ordin.append({"page_title": jo_context,
+                                  "description": "\n\n##" + jo_context + "\n",
+                                  "depth": 0})
+                elif "절" in jang_gubun:
+                    ordin.append({"page_title": "null",
+                                  "description": "\n\n##" + jo_context + "\n",
+                                  "depth": 1})
+            # 조 → H3, 조문내용 → 디자인 없음, 이미지 처리
+            elif jo_gunun == "Y":
+                jo_arr = jo_context.split(")", maxsplit=1)
+                if len(jo_context) < 2:
+                    description = "\n\n###" + jo_arr[0] + "\n"
+                else:
+                    description = "\n\n###" + jo_arr[0] + ")\n" + self.get_img_link(jo_arr[1].replace("\n", "\n\n"))
+
+                ordin.append({"page_title": jo_arr[0].replace("(", " "),
+                              "description": description,
+                              "depth": 1})
+        self.insert_page_admrul_ordin(ordin, book_id)
 
     # 이미지 링크 처리
     def get_img_link(self, context):
         img_start_tag = '<img id="'
-        img_end_tag = '"></img>'
-        if img_start_tag in context:
-            if img_end_tag in context:
-                return context\
-                    .replace(img_start_tag, "\n![](https://www.law.go.kr/LSW/flDownload.do?flSeq=")\
-                    .replace(img_end_tag, ")\n")
+        img_end_tag = '</img>'
+        if img_start_tag in context and img_end_tag in context:
+            return str(context.replace(
+                img_start_tag, "\n![](https://www.law.go.kr/LSW/flDownload.do?flSeq=").replace(
+                img_end_tag, ")\n").replace(
+                '">', ""))
         else:
             return context
 
@@ -465,8 +516,8 @@ class LawView(View):
             page.parent_id = 0
         page.save()  # 모델 DB 저장
 
-    # 행정규칙 마크다운 저장 function
-    def insert_page_admrul(self, admrul_list, book_id):
+    # 행정규칙, 자치법규 마크다운 저장 function
+    def insert_page_admrul_ordin(self, admrul_list, book_id):
         for admrul in admrul_list:
             depth = admrul.get('depth')
             if depth == 0:

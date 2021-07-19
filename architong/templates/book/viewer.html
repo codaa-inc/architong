@@ -153,14 +153,15 @@
                         <li class="nav-item active">
                             <a onclick='onclickChildList("{{ page.page_id }}")' class="nav-link" style="margin-right: 30px;">{{ page.page_title }}</a>
                             <span class="icon"><i class="arrow_carrot-down"></i></span>
-                            <ul class="list-unstyled dropdown_nav" id="parent-list-{{ page.page_id }}" ></ul>
+                            <ul class="list-unstyled dropdown_nav" id="parent-list-{{ page.page_id }}" >
+                                {% for child_page in pages %}
+                                    {% if child_page.depth == 1 and child_page.page_title != "null" and child_page.parent_id == page.page_id %}
+                                    <li><a id='child-list-{{ child_page.page_id }}' onclick='onclickChildList(this.id)'>
+                                        {{ child_page.page_title }}</a></li>
+                                    {% endif %}
+                                {% endfor %}
+                            </ul>
                         </li>
-                        {% elif page.depth == 1 and page.page_title != "null" %}
-                        <script>
-                            $("#" + "parent-list-" + "{{ page.parent_id }}").append(
-                                `<li><a id='child-list-{{ page.page_id }}' onclick='onclickChildList(this.id)'>` + "{{ page.page_title }}" + `</a></li>`
-                            );
-                        </script>
                         {% endif %}
                         {% endfor %}
                     </ul>
@@ -216,24 +217,17 @@
                                         <ion-icon style="font-size: large" name="chatbubbles-outline"></ion-icon>
                                         {{ page.comment_count }}
                                     </a>
-                                    {% if page.comment_count < 1 %}
-                                        <script>
-                                            $("#comment-" + "{{ page.page_id }}").prop("visibility", "hidden");
-                                        </script>
-                                    {% endif %}
                                     <!----------------------- End Comment Icon -------------------->
                                     <!----------------------- Bookmark Icon ----------------------->
-                                    <a id="bookmark-{{ page.page_id }}" class="bookmark" title="북마크 추가"
-                                       onclick="onclikckBookMark({{ page.page_id }})">
-                                        {% if page.is_bookmarked == 1 %}
-                                            <i class="icon_ribbon" style="font-size: larger"></i>
-                                            <script>
-                                                $("#bookmark-" + "{{ page.page_id }}").prop("title", "북마크 삭제");
-                                            </script>
-                                        {% else %}
-                                            <i class="icon_ribbon_alt" style="font-size: larger"></i>
-                                        {% endif %}
-                                    </a>
+                                    {% if page.is_bookmarked == 1 %}
+                                        <a id="bookmark-{{ page.page_id }}" class="bookmark" title="북마크 삭제"
+                                            onclick="onclikckBookMark({{ page.page_id }})">
+                                        <i class="icon_ribbon" style="font-size: larger"></i></a>
+                                    {% else %}
+                                        <a id="bookmark-{{ page.page_id }}" class="bookmark" title="북마크 추가"
+                                            onclick="onclikckBookMark({{ page.page_id }})">
+                                        <i class="icon_ribbon_alt" style="font-size: larger"></i></a>
+                                    {% endif %}
                                     <!----------------------- End Bookmark Icon -------------------->
                                     <!-------------------- Description Area ------------------------>
                                     <div id="description-{{ page.page_id }}">
