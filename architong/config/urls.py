@@ -18,6 +18,7 @@ urlpatterns = [
     path('logout/', auth_views.LogoutView.as_view(), name="logout"),
     path('law/insert', LawView.as_view()),
     path('law/update/<int:book_id>', law_update),
+    path('law/delete/<int:book_id>', law_delete),
     path('law/manage', manage_law),
     path('user/manage', manage_user),
     path('user/update/<int:user_id>', user_update),

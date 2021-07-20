@@ -12,6 +12,18 @@
             color: #4C4DEC;
             font-size: 13px;
         }
+        .table-responsive {
+            padding-bottom: 10px;
+        }
+        .data_table_area .table.dataTable thead tr th {
+            text-align: center;
+        }
+        .data_table_area .table.dataTable tbody tr td {
+            padding-right: 22px;
+        }
+        .center {
+            text-align: center;
+        }
     </style>
 {% endblock %}
 {% block content %}
@@ -39,24 +51,24 @@
                     {% if users %}
                     {% for user in users %}
                     <tr>
-                        <td>{{ forloop.counter }}</td>
+                        <td class="center">{{ forloop.counter }}</td>
                         {% if user.is_staff == 1 %}
-                            <td><a href="javascript:;"
+                            <td class="center"><a href="javascript:;"
                                    onclick="onclickUserIsActive('{{ user.id }}', '{{ user.username }}', 'is_staff')">관리자</a></td>
                         {% else %}
-                            <td><a href="javascript:;"
+                            <td class="center"><a href="javascript:;"
                                    onclick="onclickUserIsActive('{{ user.id }}', '{{ user.username }}', 'is_staff')">일반회원</a></td>
                         {% endif %}
                         <td>{{ user.username }}</td>
                         <td>{{ user.email }}</td>
-                        <td>{{ user.act_point }}</td>
-                        <td>{{ user.last_login | date:'Y.m.d H:i:s' }}</td>
-                        <td>{{ user.date_joined | date:'Y.m.d H:i:s' }}</td>
+                        <td class="center">{{ user.act_point }}</td>
+                        <td class="center">{{ user.last_login | date:'Y.m.d H:i:s' }}</td>
+                        <td class="center">{{ user.date_joined | date:'Y.m.d H:i:s' }}</td>
                         {% if user.is_active == 1 %}
-                            <td><a href="javascript:;"
+                            <td class="center"><a href="javascript:;"
                                    onclick="onclickUserIsActive('{{ user.id }}', '{{ user.username }}', 'is_active')">사용중</a></td>
                         {% else %}
-                            <td><a href="javascript:;"
+                            <td class="center"><a href="javascript:;"
                                    onclick="onclickUserIsActive('{{ user.id }}', '{{ user.username }}', 'is_active')">휴면</a></td>
                         {% endif %}
                     </tr>

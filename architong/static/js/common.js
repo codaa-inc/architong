@@ -226,6 +226,37 @@ function onclickLawRlsYn(book_id, book_title) {
 };
 
 /**
+ * 법규관리 페이지 마크다운 디자인 수정 이벤트
+ * */
+function onclickUpdateLaw(book_id) {
+
+};
+
+/**
+ * 법규관리 페이지 법규 삭제 이벤트
+ * */
+function onclickDeleteLaw(book_id) {
+    if (confirm("법규를 삭제하시면 하위 페이지 및 연관된 북마크, 댓글이 모두 삭제됩니다.\n정말 삭제하시겠습니까?")) {
+        $.ajax({
+            type: "GET",
+            url: "/law/delete/" + book_id,
+            dataType: "json",
+            success: function (response) {
+                if(response.result == "success") {
+                    document.location.href = "/law/manage";
+                } else if (response.result == "fail"){
+                    alert(response.message);
+                }
+            },
+            error: function (request, status, error) {
+                console.log("code:" + request.status + "\n" + "message:"
+                    + request.responseText + "\n" + "error:" + error)
+            },
+       });
+    }
+};
+
+/**
  * 회원관리 페이지 활성화여부 변경 이벤트
  * */
 function onclickUserIsActive(userid, username, flag){

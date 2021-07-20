@@ -247,7 +247,7 @@ function viewCommentList(data, page_id, status) {
             comment_html += '>' + displayNewLine(comment.content) + '</p>';
             // 자신의 글에 수정, 삭제 태그 추가
             if (USERNAME == comment.username && comment.status != "TD") {
-                comment_html += '<a onclick="deleteComment(' + "'parent-" + comment.comment_id + "'" + ')" class="comment_tag">&nbsp;삭제&nbsp;</a>';
+                comment_html += '<a onclick="deleteComment(' + "'parent-" + comment.comment_id + "'" + ')" class="comment_tag delete">&nbsp;삭제&nbsp;</a>';
                 comment_html += '<a onclick="viewUpdateComment(' + "'parent-" + comment.comment_id + "'" + ')" class="comment_tag">&nbsp;수정&nbsp;</a>';
             }
             comment_html += '<a onclick="viewCommentBox(' + "'child-" + comment.comment_id + "'" + ')" class="comment_reply">Reply ' +
@@ -277,7 +277,7 @@ function viewCommentList(data, page_id, status) {
             // 자신의 글에 수정, 삭제 태그 추가
             if (USERNAME == comment.username && comment.status != "TD") {
                 comment_html += '<a onclick="deleteComment(' + "'child-" + comment.comment_id + "'" + ')" ' +
-                    'class="comment_tag">&nbsp;삭제&nbsp;</a>';
+                    'class="comment_tag delete">&nbsp;삭제&nbsp;</a>';
                 comment_html += '<a onclick="viewUpdateComment(' + "'child-" + comment.comment_id + "'" + ')" ' +
                     'class="comment_tag">&nbsp;수정&nbsp;</a>';
             }
