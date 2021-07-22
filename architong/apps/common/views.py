@@ -180,36 +180,36 @@ class LawView(View):
                 url += "&target=admrul&LID=" + request.POST['target_no']
             elif target_sel == "2":         # 자치법규
                 url += "&target=ordin&MST=" + request.POST['target_no']
-            #try:
-            res = requests.get(url)
-            print("request url : ", res.url)
-            if res.status_code == 200:
-                xml_text = ElementTree.fromstring(res.text)
-                html_url = str(res.url.replace("XML", "HTML"))
-                if target_sel == "0":  # 법령
-                    book_title = xml_text.find('기본정보').find('법령명_한글').text
-                elif target_sel == "1":  # 행정규칙
-                    book_title = xml_text.find('행정규칙기본정보').find('행정규칙명').text
-                elif target_sel == "2":  # 자치법규
-                    book_title = xml_text.find('자치법규기본정보').find('자치법규명').text
-                book_count = Books.objects.filter(book_title=book_title).count()
-                # 이미 등록되어있는지 중복체크
-                if book_count == 0:
-                    username = request.user
-                    # 마크다운 파싱
+            try:
+                res = requests.get(url)
+                print("request url : ", res.url)
+                if res.status_code == 200:
+                    xml_text = ElementTree.fromstring(res.text)
+                    html_url = str(res.url.replace("XML", "HTML"))
                     if target_sel == "0":  # 법령
-                        self.xml_to_markdown_law(xml_text, username, target_sel)
+                        book_title = xml_text.find('기본정보').find('법령명_한글').text
                     elif target_sel == "1":  # 행정규칙
-                        self.xml_to_markdown_admrul(xml_text, username, target_sel)
+                        book_title = xml_text.find('행정규칙기본정보').find('행정규칙명').text
                     elif target_sel == "2":  # 자치법규
-                        self.xml_to_markdown_ordin(xml_text, username, target_sel)
-                    return JsonResponse({"result": "success", "html_url": html_url, "message": "등록 되었습니다."})
+                        book_title = xml_text.find('자치법규기본정보').find('자치법규명').text
+                    book_count = Books.objects.filter(book_title=book_title).count()
+                    # 이미 등록되어있는지 중복체크
+                    if book_count == 0:
+                        username = request.user
+                        # 마크다운 파싱
+                        if target_sel == "0":  # 법령
+                            self.xml_to_markdown_law(xml_text, username, target_sel)
+                        elif target_sel == "1":  # 행정규칙
+                            self.xml_to_markdown_admrul(xml_text, username, target_sel)
+                        elif target_sel == "2":  # 자치법규
+                            self.xml_to_markdown_ordin(xml_text, username, target_sel)
+                        return JsonResponse({"result": "success", "html_url": html_url, "message": "등록 되었습니다."})
+                    else:
+                        return JsonResponse({"result": "exist", "message": "이미 등록된 법규입니다."})
                 else:
-                    return JsonResponse({"result": "exist", "message": "이미 등록된 법규입니다."})
-            else:
-                return JsonResponse({"result": "fail", "message": "API 응답없음"})
-            #except Exception as e:
-                #return JsonResponse({"result": "fail", "html_url": html_url,  "message": "API 구문오류"})
+                    return JsonResponse({"result": "fail", "message": "API 응답없음"})
+            except Exception as e:
+                return JsonResponse({"result": "fail", "html_url": html_url,  "message": "API 구문오류"})
         else:
             return JsonResponse({"result": "forbidden", "message": "잘못된 접근입니다."})
 
