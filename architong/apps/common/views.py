@@ -180,36 +180,36 @@ class LawView(View):
                 url += "&target=admrul&LID=" + request.POST['target_no']
             elif target_sel == "2":         # 자치법규
                 url += "&target=ordin&MST=" + request.POST['target_no']
-            try:
-                res = requests.get(url)
-                print("request url : ", res.url)
-                if res.status_code == 200:
-                    xml_text = ElementTree.fromstring(res.text)
-                    html_url = str(res.url.replace("XML", "HTML"))
+            #try:
+            res = requests.get(url)
+            print("request url : ", res.url)
+            if res.status_code == 200:
+                xml_text = ElementTree.fromstring(res.text)
+                html_url = str(res.url.replace("XML", "HTML"))
+                if target_sel == "0":  # 법령
+                    book_title = xml_text.find('기본정보').find('법령명_한글').text
+                elif target_sel == "1":  # 행정규칙
+                    book_title = xml_text.find('행정규칙기본정보').find('행정규칙명').text
+                elif target_sel == "2":  # 자치법규
+                    book_title = xml_text.find('자치법규기본정보').find('자치법규명').text
+                book_count = Books.objects.filter(book_title=book_title).count()
+                # 이미 등록되어있는지 중복체크
+                if book_count == 0:
+                    username = request.user
+                    # 마크다운 파싱
                     if target_sel == "0":  # 법령
-                        book_title = xml_text.find('기본정보').find('법령명_한글').text
+                        self.xml_to_markdown_law(xml_text, username, target_sel)
                     elif target_sel == "1":  # 행정규칙
-                        book_title = xml_text.find('행정규칙기본정보').find('행정규칙명').text
+                        self.xml_to_markdown_admrul(xml_text, username, target_sel)
                     elif target_sel == "2":  # 자치법규
-                        book_title = xml_text.find('자치법규기본정보').find('자치법규명').text
-                    book_count = Books.objects.filter(book_title=book_title).count()
-                    # 이미 등록되어있는지 중복체크
-                    if book_count == 0:
-                        username = request.user
-                        # 마크다운 파싱
-                        if target_sel == "0":  # 법령
-                            self.xml_to_markdown_law(xml_text, username, target_sel)
-                        elif target_sel == "1":  # 행정규칙
-                            self.xml_to_markdown_admrul(xml_text, username, target_sel)
-                        elif target_sel == "2":  # 자치법규
-                            self.xml_to_markdown_ordin(xml_text, username, target_sel)
-                        return JsonResponse({"result": "success", "html_url": html_url, "message": "등록 되었습니다."})
-                    else:
-                        return JsonResponse({"result": "exist", "message": "이미 등록된 법규입니다."})
+                        self.xml_to_markdown_ordin(xml_text, username, target_sel)
+                    return JsonResponse({"result": "success", "html_url": html_url, "message": "등록 되었습니다."})
                 else:
-                    return JsonResponse({"result": "fail", "message": "API 응답없음"})
-            except Exception as e:
-                return JsonResponse({"result": "fail", "html_url": html_url,  "message": "API 구문오류"})
+                    return JsonResponse({"result": "exist", "message": "이미 등록된 법규입니다."})
+            else:
+                return JsonResponse({"result": "fail", "message": "API 응답없음"})
+            #except Exception as e:
+                #return JsonResponse({"result": "fail", "html_url": html_url,  "message": "API 구문오류"})
         else:
             return JsonResponse({"result": "forbidden", "message": "잘못된 접근입니다."})
 
@@ -285,7 +285,7 @@ class LawView(View):
                 else:
                     depth = 0
             law.append({"page_title": title,
-                        "description": self.get_img_link(markdown_text),
+                        "description": self.convert_img_link(markdown_text),
                         "depth": depth})
 
         # 별표, 서식 컨버팅
@@ -373,7 +373,7 @@ class LawView(View):
                 if len(jo_context) < 2:
                     description = "\n\n###" + jo_context[0] + "\n"
                 else:
-                    description = "\n\n###" + jo_context[0] + ")\n" + self.get_img_link(jo_context[1].replace("\n", "\n\n"))
+                    description = "\n\n###" + jo_context[0] + ")\n" + self.convert_img_link(jo_context[1].replace("\n", "\n\n"))
 
                 admrul.append({"page_title": jo_context[0].replace("(", " "),
                                "description": description,
@@ -452,7 +452,7 @@ class LawView(View):
                 if len(jo_arr) < 2:
                     description = "\n\n###" + jo_arr[0] + "\n"
                 else:
-                    description = "\n\n###" + jo_arr[0] + ")\n" + self.get_img_link(jo_arr[1].replace("\n", "\n\n"))
+                    description = "\n\n###" + jo_arr[0] + ")\n" + self.convert_img_link(jo_arr[1].replace("\n", "\n\n"))
 
                 ordin.append({"page_title": jo_arr[0].replace("(", " "),
                               "description": description,
@@ -488,13 +488,17 @@ class LawView(View):
     '''
     법규 내 이미지 링크 처리 function
     '''
-    def get_img_link(self, context):
-        img_start_tag = '<img id="'
-        img_end_tag = '</img>'
-        if img_start_tag in context and img_end_tag in context:
-            return str(context.replace(
-                img_start_tag, "\n![](https://www.law.go.kr/LSW/flDownload.do?flSeq=").replace(
-                img_end_tag, ")\n").replace('">', ""))
+    def convert_img_link(self, context):
+        img_tag = '<img id="'
+        if img_tag in context:
+            img_link = ""
+            img_arr = context.split(img_tag)
+            for idx, img_str in enumerate(img_arr):
+                if idx % 2 == 1:
+                    img_str = "\n![](https://www.law.go.kr/LSW/flDownload.do?flSeq=" \
+                              + img_str.split('">')[0] + ")\n" + img_str.split("</img>")[1]
+                img_link += img_str
+            return img_link
         else:
             return context
 
