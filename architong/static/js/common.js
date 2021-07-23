@@ -229,7 +229,58 @@ function onclickLawRlsYn(book_id, book_title) {
  * 법규관리 페이지 마크다운 디자인 수정 이벤트
  * */
 function onclickUpdateLaw(book_id) {
+    const page_id = selectPageId(book_id, 1);
+    document.location.href = "/law/edit/" + page_id;
+};
 
+/**
+ * 법규 또는 위키 ID로 n번째 page_id를 조회하는 이벤트
+ * PARAM : book_id, order
+ * */
+function selectPageId(book_id, order){
+    if(confirm(book_title + "의 공개여부를 변경하시겠습니까?")) {
+       $.ajax({
+            type: "GET",
+            url: "/law/update/" + book_id,
+            dataType: "json",
+            success: function (response) {
+                if(response.result == "private") {
+                    alert("해당 법규가 비공개 처리 되었습니다.");
+                    document.location.href = "/law/manage";
+                } else if (response.result == "public"){
+                    alert("해당 법규가 공개 처리 되었습니다.");
+                    document.location.href = "/law/manage";
+                }
+            },
+            error: function (request, status, error) {
+                console.log("code:" + request.status + "\n" + "message:" + request.responseText + "\n" + "error:" + error)
+            },
+       });
+    }
+};
+
+/**
+ * 법규 수정 페이지 수정 이벤트
+ * */
+function onclickEditLaw(page_id) {
+    let data = $("#page_form").serialize() + "&csrfmiddlewaretoken=" + $("input[name=csrfmiddlewaretoken]").val();
+    // MDE context 별도 삽입
+    if (simplemde.value() != null && simplemde.value() != "") {
+        data += "&description=" + simplemde.value();
+    }
+    $.ajax({
+        type: "POST",
+        url: "/law/edit/" + page_id,
+        dataType: "json",
+        data: data,
+        success: function (response) {
+            alert(response.message);
+        },
+        error: function (request, status, error) {
+            console.log("code:" + request.status + "\n" + "message:"
+                + request.responseText + "\n" + "error:" + error)
+        },
+   });
 };
 
 /**

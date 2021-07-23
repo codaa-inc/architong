@@ -115,7 +115,7 @@
                         <td>{{ book.author_id }}</td>
                         <td class="center">{{ book.wrt_dt | date:'Y.m.d' }}</td>
                         <td class="center">
-                            <a href="javascript:;" onclick="onclickUpdateLaw({{ book.book_id }})">수정</a>
+                            <a href="/law/edit/init/{{ book.book_id }}">수정</a>
                         </td>
                         <td class="center">
                             <a href="javascript:;" onclick="onclickDeleteLaw({{ book.book_id }})" style="color: #C0392B;">삭제</a>

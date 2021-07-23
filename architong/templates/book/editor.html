@@ -107,15 +107,15 @@
                                     href="/wiki/page/{{ page.page_id }}">{{ page.page_title }}</a>
                                     <span class="icon" data-icon="&#x59;" style="color: #0d0d75 !important;"
                                     onclick="onclickAddPage('{{ book.book_id }}', '{{ page.page_id }}')" title="페이지 추가"></span>
-                                    <ul class="list-unstyled dropdown_nav" id="parent-list-{{ page.page_id }}"></ul>
+                                    <ul class="list-unstyled dropdown_nav" id="parent-list-{{ page.page_id }}">
+                                        {% for child_page in pages %}
+                                            {% if child_page.depth == 1 and child_page.page_title != "null" and child_page.parent_id == page.page_id %}
+                                            <li><a id='child-list-{{ child_page.page_id }}' onclick='onclickChildList(this.id)'>
+                                                {{ child_page.page_title }}</a></li>
+                                            {% endif %}
+                                        {% endfor %}
+                                    </ul>
                                 </li>
-                            {% elif page.depth == 1 %}
-                            <script>
-                                $("#" + "parent-list-" + "{{ page.parent_id }}").append(
-                                    `<li><a id='child-list-{{ page.page_id }}' href="/wiki/page/{{ page.page_id }}">`
-                                    + "{{ page.page_title }}" + `</a></li>`
-                                );
-                            </script>
                             {% endif %}
                             {% endfor %}
                         </ul>
@@ -131,7 +131,7 @@
                                 <h5 style="margin-bottom: 20px;">본문 작성하기</h5>
                                 <p style="margin-bottom: 0px">
                                     <a href="https://ko.wikipedia.org/wiki/마크다운" target="_blank" style="color : #0d0d75";>
-                                        <u>마크다운 작성법</u>
+                                        <u><i class="icon_info"></i>&nbsp;마크다운 작성법</u>
                                     </a>
                                 </p>
                             </div>
@@ -213,12 +213,6 @@
                                 </form>
                             </div>
                             {% endif %}
-                            <script>
-                                $('form [name="page_title"]').attr({
-                                  'class': 'form-control',
-                                  'placeholder': '페이지 제목'
-                                });
-                            </script>
                         </div>
                     </article>
                 </div>

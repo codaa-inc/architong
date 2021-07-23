@@ -1,0 +1,185 @@
+{% extends 'common/base.html' %}
+{% load static %}
+{% load markup_tags %}
+{% block css %}
+<link href="{% static 'plugins/css/bootstrap.min.css' %}" type="text/css" media="all" rel="stylesheet" />
+<link href="{% static 'plugins/css/ace.min.css' %}" type="text/css" media="all" rel="stylesheet"/>
+<link href="{% static 'plugins/css/resizable.min.css' %}" type="text/css" media="all" rel="stylesheet"/>
+<link href="{% static 'martor/css/martor.bootstrap.min.css' %}" type="text/css" media="all" rel="stylesheet"/>
+<link rel="stylesheet" href="https://cdn.jsdelivr.net/simplemde/latest/simplemde.min.css">
+<style>
+    .doc_left_sidebarlist {
+        padding-top: 0px !important;
+        position: fixed;
+        width: 250px;
+        overflow: auto !important;
+        overscroll-behavior: contain;
+        scroll-behavior: smooth;
+    }
+
+    .doc-middle-content {
+        padding-top: 0px;
+    }
+    .user-menu {
+        color: #0d0d75 !important;
+    }
+    span {
+        font-size: larger;
+        transform: none !important;
+    }
+    .form-group span {
+        font-size: smaller;
+    }
+    .editor-tab-description {
+        color: #0d0d75 !important;
+    }
+    .btn-success {
+        float: right;
+        padding: 6px 24px;
+        background-color: #0d0d75;
+        border-color: #0d0d75;
+    }
+    .btn-success:hover {
+        background-color: #0d0d75;
+        border-color: #0d0d75;
+    }
+    #form-top {
+        display: flex;
+        align-items: center;
+        justify-content: space-between;
+    }
+    .action_btn {
+        font-size: 15px;
+        margin-left: 15px;
+    }
+    .doc_border_btn {
+        font-size: 15px;
+        border: 1px solid #0C0E72;
+    }
+    .button_inner_one {
+        display: flex;
+        justify-content: flex-end;
+        margin-top: 20px;
+    }
+    .nav-sidebar {
+        padding-bottom: 70px;
+    }
+    .signup_inner {
+        padding-top: 0px;
+        padding-bottom: 160px;
+    }
+    #book_info {
+        display: flex;
+        justify-content: space-between;
+        color: #5a6268;
+        padding: 0px;
+    }
+    .CodeMirror {
+        height: 50vh;
+        font-size: 14px;
+    }
+    .cm-spell-error {
+        background: transparent !important;
+    }
+</style>
+{% endblock %}
+
+{% block content %}
+    <div class="breadcrumb_area_three" style="padding: 0"></div>
+    <section>
+        <div class="container custom_container">
+            <div class="row">
+                <!-- 사이드 네비게이션 영역 -->
+                <div class="col-lg-3 doc_mobile_menu display_none" style="z-index: 0;">
+                    <aside class="doc_left_sidebarlist">
+                        <ul class="list-unstyled nav-sidebar">
+                            {% if book_title %}
+                                <li class="nav-item">
+                                    <a href="javascript:;" style="color: #3c4257 !important; margin-right: 40px;">
+                                        <i class="icon_document_alt"></i>&nbsp;{{ book_title }}</a>
+                                </li>
+                            {% endif %}
+                            {% for page in page_list %}
+                            {% if page.parent_id == 0 %}
+                                <li class="nav-item active">
+                                    <a class="nav-link" style="margin-right: 40px; color: #0d0d75 !important;"
+                                    href="/law/edit/{{ page.page_id }}">{{ page.page_title }}</a>
+                                    <ul class="list-unstyled dropdown_nav" id="parent-list-{{ page.page_id }}">
+                                        {% for child_page in page_list %}
+                                            {% if child_page.depth == 1 and child_page.page_title != "null" and child_page.parent_id == page.page_id %}
+                                                <li><a id='child-list-{{ child_page.page_id }}' href="/law/edit/{{ child_page.page_id }}">
+                                                    {{ child_page.page_title }}</a></li>
+                                            {% endif %}
+                                        {% endfor %}
+                                    </ul>
+                                </li>
+                            {% endif %}
+                            {% endfor %}
+                        </ul>
+                    </aside>
+                </div>
+                <!-- 에디터 & 뷰어 영역 -->
+                <div class="col-xl-9 doc-middle-content" style="z-index: 1;">
+                    <article id="post" class="documentation_info">
+                        <div class="documentation_body" id="documentation">
+                            <div id="form-top">
+                                <h5 style="margin-bottom: 20px;">법규 수정하기</h5>
+                                <p style="margin-bottom: 0px">
+                                    <a href="/law/manage" style="color: #535550; margin-right: 10px;">
+                                        <u><i class="icon_refresh"></i>&nbsp;목록 돌아가기</u>
+                                    </a>
+                                    <a href="https://ko.wikipedia.org/wiki/마크다운" target="_blank" style="color : #0d0d75";>
+                                        <u><i class="icon_info"></i>&nbsp;마크다운 작성법</u>
+                                    </a>
+                                </p>
+                            </div>
+                            <form class="form" id="page_form" name="page_form">{% csrf_token %}
+                                <input name="book_id" style="display: none;" value="{{ book.book_id }}">
+                                <input class="form-control" name="page_title" value="{{ page_form.page_title }}"
+                                style="margin-bottom: 15px;">
+                                <!-- SimpleMDE 영역 (코드 줄바꿈 또는 수정하면 깨짐. 수정금지) -->
+                                <textarea id="description">{% if page_form.description %}{{ page_form.description }}{% endif %}</textarea>
+                                <!-- End of SimpleMDE 영역 -->
+                                <button type="button" class="btn btn-success" style="margin: 15px 0px 35px 0px;"
+                                onclick="onclickEditLaw({{ page_form.page_id }})">저장</button>
+                            </form>
+                        </div>
+                    </article>
+                </div>
+            </div>
+        </div>
+    </section>
+{% endblock %}
+
+{% block js %}
+    <script src="{% static 'js/common.js' %}"></script>
+    <script src="{% static 'assets/font-size/js/rv-jquery-fontsize-2.0.3.min.js' %}"></script>
+    <script src="{% static 'assets/magnify-pop/jquery.magnific-popup.min.js' %}"></script>
+    <script src="{% static 'js/plugins.js' %}"></script>
+    <script src="https://cdn.jsdelivr.net/simplemde/latest/simplemde.min.js"></script>
+    <script>
+      // 페이지 추가 아이콘 이벤트 제거
+      $(".nav-sidebar > li .icon").unbind();
+
+      // viewer.html, editor.html footer 숨김
+      $(".forum_footer_area").hide();
+    </script>
+    <script>
+        // SimpleMDE 선언
+        var simplemde = new SimpleMDE({
+            element: document.getElementById("description"),
+            hideIcons : ["heading", "guide"],
+            showIcons: ["heading-1", "heading-2","heading-3", "code", "horizontal-rule"],
+            placeholder : "본문 내용"
+        });
+
+        // Fullscreen 또는 SideBySide 모드 전환 : 상단 nav bar 우선순위 toggle
+        simplemde.codemirror.on("refresh", function(){
+            if (simplemde.isFullscreenActive() || simplemde.isSideBySideActive()) {
+                $(".navbar").css('z-index', 0);
+            } else {
+                $(".navbar").css('z-index', 20);
+            }
+        });
+    </script>
+{% endblock %}

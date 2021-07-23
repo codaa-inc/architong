@@ -10,10 +10,12 @@ from xml.etree import ElementTree
 
 from django.views import View
 from django.core.paginator import Paginator
-from django.http import JsonResponse
+from django.http import JsonResponse, HttpResponseRedirect
 from django.db.models import Q
+from django.urls import reverse
 
-from apps.common.models import SocialaccountSocialaccount as Socialaccount
+from .models import SocialaccountSocialaccount as Socialaccount
+from .forms import LawForm
 from apps.book.models import Books, Bookmark, Pages, UserLikeBook
 from apps.forum.models import Comments, UserLikeComment
 
@@ -207,9 +209,9 @@ class LawView(View):
                     else:
                         return JsonResponse({"result": "exist", "message": "이미 등록된 법규입니다."})
                 else:
-                    return JsonResponse({"result": "fail", "message": "API 응답없음"})
+                    return JsonResponse({"result": "fail", "message": "API 응답 없음"})
             except Exception as e:
-                return JsonResponse({"result": "fail", "html_url": html_url,  "message": "API 구문오류"})
+                return JsonResponse({"result": "fail", "html_url": html_url,  "message": "등록할 수 없는 법규입니다."})
         else:
             return JsonResponse({"result": "forbidden", "message": "잘못된 접근입니다."})
 
@@ -235,7 +237,8 @@ class LawView(View):
             title = jo.find('조문내용').text.lstrip().rstrip().replace('(', ' ').split(')')[0]
             # 전문(장)없이 조문(조)로만 구성된 경우, 부모레벨을 제목페이지를 생성
             if idx == 0 and (is_jomun == "조문" or is_jomun == "Y"):
-                law.append({"page_title": title, "description": "\n\n##" + title + "\n----------", "depth": 0})
+                law_title = xml_text.find('기본정보').find('법령명_한글').text
+                law.append({"page_title": law_title, "description": "\n\n## " + law_title + "\n----------", "depth": 0})
             # 조문 → H3
             if is_jomun == "조문":
                 header = jo.find('조문내용').text.lstrip().rstrip()
@@ -278,7 +281,7 @@ class LawView(View):
                 depth = 1
             # 전문 → H2 + 구분선
             else:
-                markdown_text = "\n\n##" + title + "\n----------"
+                markdown_text = "\n\n## " + title + "\n----------"
                 if "절" in title.split(" ")[0]:
                     title = "null"
                     depth = 1
@@ -295,7 +298,7 @@ class LawView(View):
                 # 첫번째 별표/서식 등록시 부모레벨 생성
                 if idx == 0:
                     law.append({"page_title": "별표/서식",
-                                "description": "\n\n##별표/서식\n----------",
+                                "description": "\n\n## 별표/서식\n----------",
                                 "depth": 0})
                 attachment_gb = attachment.find('별표구분').text
                 order = "" if int(attachment.find('별표번호').text) == 0 else str(int(attachment.find('별표번호').text))
@@ -355,25 +358,25 @@ class LawView(View):
             if idx == 0 and "장" not in title:
                 book_title = xml_text.find('행정규칙기본정보').find('행정규칙명').text
                 admrul.append({"page_title": book_title,
-                               "description": "\n\n##" + book_title + "\n----------",
+                               "description": "\n\n## " + book_title + "\n----------",
                                "depth": 0})
             # 장 → H2 + 구분선
             if "장" in title:
                 admrul.append({"page_title": jo,
-                               "description": "\n\n##" + jo + "\n----------",
+                               "description": "\n\n## " + jo + "\n----------",
                                "depth": 0})
             # 절 → H2
             elif "절" in title:
                 admrul.append({"page_title": "null",
-                               "description": "\n\n##" + jo + "\n",
+                               "description": "\n\n## " + jo + "\n",
                                "depth": 1})
             # 조 → H3, 조문내용 → 디자인 없음, 이미지 처리
             elif "조" in title:
                 jo_context = jo.split(")", maxsplit=1)
                 if len(jo_context) < 2:
-                    description = "\n\n###" + jo_context[0] + "\n"
+                    description = "\n\n### " + jo_context[0] + "\n"
                 else:
-                    description = "\n\n###" + jo_context[0] + ")\n" + self.convert_img_link(jo_context[1].replace("\n", "\n\n"))
+                    description = "\n\n### " + jo_context[0] + ")\n" + self.convert_img_link(jo_context[1].replace("\n", "\n\n"))
 
                 admrul.append({"page_title": jo_context[0].replace("(", " "),
                                "description": description,
@@ -383,7 +386,7 @@ class LawView(View):
             # 별표/서식 목차 페이지 추가
             attachments_root = xml_text.iter(tag='별표단위')
             admrul.append({"page_title": "별표/서식",
-                           "description": "\n\n##별표/서식 \n----------",
+                           "description": "\n\n## 별표/서식 \n----------",
                            "depth": 0})
             for attachment in attachments_root:
                 attachment_gb = attachment.find('별표구분').text
@@ -433,26 +436,26 @@ class LawView(View):
             if idx == 0 and jo_gunun == "Y":
                 book_title = xml_text.find('자치법규기본정보').find('자치법규명').text
                 ordin.append({"page_title": book_title,
-                              "description": "\n\n##" + book_title + "\n----------",
+                              "description": "\n\n## " + book_title + "\n----------",
                               "depth": 0})
             # 장,절 → H2
             if jo_gunun == "N":
                 jang_gubun = jo_context.split(" ", maxsplit=1)[0]
                 if "장" in jang_gubun:
                     ordin.append({"page_title": jo_context,
-                                  "description": "\n\n##" + jo_context + "\n----------",
+                                  "description": "\n\n## " + jo_context + "\n----------",
                                   "depth": 0})
                 elif "절" in jang_gubun:
                     ordin.append({"page_title": "null",
-                                  "description": "\n\n##" + jo_context + "\n",
+                                  "description": "\n\n## " + jo_context + "\n",
                                   "depth": 1})
             # 조 → H3, 조문내용 → 디자인 없음, 이미지 처리
             elif jo_gunun == "Y":
                 jo_arr = jo_context.split(")", maxsplit=1)
                 if len(jo_arr) < 2:
-                    description = "\n\n###" + jo_arr[0] + "\n"
+                    description = "\n\n### " + jo_arr[0] + "\n"
                 else:
-                    description = "\n\n###" + jo_arr[0] + ")\n" + self.convert_img_link(jo_arr[1].replace("\n", "\n\n"))
+                    description = "\n\n### " + jo_arr[0] + ")\n" + self.convert_img_link(jo_arr[1].replace("\n", "\n\n"))
 
                 ordin.append({"page_title": jo_arr[0].replace("(", " "),
                               "description": description,
@@ -462,7 +465,7 @@ class LawView(View):
             # 별표/서식 목차 페이지 추가
             attachments_root = xml_text.iter(tag='별표단위')
             ordin.append({"page_title": "별표/서식",
-                          "description": "\n\n##별표/서식 \n----------",
+                          "description": "\n\n## 별표/서식 \n----------",
                           "depth": 0})
             for attachment in attachments_root:
                 page_title = attachment.find('별표제목').text
@@ -533,15 +536,52 @@ class LawView(View):
             raise Exception
 
 
-
-
-
-
 # 법규관리 페이지를 렌더링하는 function
 @staff_member_required
 def manage_law(request):
     context = {"books": Books.objects.filter(codes_yn="Y").order_by('-wrt_dt')}
     return render(request, "common/law_admin.html", context)
+
+
+# 법규관리 수정 페이지를 book_id로 탐색해 Redirect 하는 function
+@staff_member_required
+def law_edit_init(request, book_id):
+    page_id = Pages.objects.filter(book_id=book_id, depth=1).first().page_id
+    return HttpResponseRedirect(reverse("law-edit", args=[page_id]))
+
+
+# 법규수정 페이지 렌더링 및 수정 function
+@staff_member_required
+def law_edit(request, page_id):
+    # 법규 에디터 페이지 렌더링
+    if request.method == "GET":
+        sorted_pages = []
+        page = Pages.objects.get(page_id=page_id)
+        book = Books.objects.get(book_id=page.book_id)
+        parent_pages = Pages.objects.filter(book_id=book.book_id, depth=0)
+        child_pages = Pages.objects.filter(book_id=book.book_id, depth=1)
+        for parent_page in parent_pages:
+            sorted_pages.append(parent_page)
+            for child_page in child_pages:
+                if child_page.parent_id == parent_page.page_id:
+                    sorted_pages.append(child_page)
+        context = {"page_form": page,
+                   "page_list": sorted_pages}
+        # 여러개의 장으로 구성된 법규에만 법규명 출력
+        if parent_pages.count() > 1:
+            context["book_title"] = book.book_title
+        return render(request, 'common/law_editor.html', context)
+    # 법규 Form 저장
+    elif request.method == "POST":
+        form = LawForm(request.POST)
+        if form.is_valid():
+            edit_page = Pages.objects.get(page_id=page_id)
+            edit_page.page_title = request.POST.get('page_title')
+            edit_page.description = request.POST.get('description')
+            edit_page.save()
+            return JsonResponse({"message": "수정되었습니다."})
+        else:
+            return JsonResponse({"message": "저장하는 중 오류가 발생했습니다. 양식을 확인해주세요."})
 
 
 # 법규 공개여부를 번경하는 function
@@ -556,6 +596,7 @@ def law_update(request, book_id):
         result = "public"
     law.save()
     return JsonResponse({"result": result})
+
 
 # 법규 삭제 function
 @staff_member_required

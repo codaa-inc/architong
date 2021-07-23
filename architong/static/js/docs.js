@@ -633,6 +633,7 @@ function onclickSaveBook() {
  * */
 function onclickSavePage(page_id) {
     let data = $("#page_form").serialize() + "&csrfmiddlewaretoken=" + $("input[name=csrfmiddlewaretoken]").val();
+    // MDE context 별도 삽입
     if (simplemde.value() != null && simplemde.value() != "") {
         data += "&description=" + simplemde.value();
     }
