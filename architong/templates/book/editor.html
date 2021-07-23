@@ -110,7 +110,7 @@
                                     <ul class="list-unstyled dropdown_nav" id="parent-list-{{ page.page_id }}">
                                         {% for child_page in page_list %}
                                             {% if child_page.depth == 1 and child_page.page_title != "null" and child_page.parent_id == page.page_id %}
-                                            <li><a id='child-list-{{ child_page.page_id }}' onclick='onclickChildList(this.id)'>
+                                            <li><a id='child-list-{{ child_page.page_id }}' href="/wiki/page/{{ child_page.page_id }}">
                                                 {{ child_page.page_title }}</a></li>
                                             {% endif %}
                                         {% endfor %}
