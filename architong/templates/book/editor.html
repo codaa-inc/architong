@@ -108,7 +108,7 @@
                                     <span class="icon" data-icon="&#x59;" style="color: #0d0d75 !important;"
                                     onclick="onclickAddPage('{{ book.book_id }}', '{{ page.page_id }}')" title="페이지 추가"></span>
                                     <ul class="list-unstyled dropdown_nav" id="parent-list-{{ page.page_id }}">
-                                        {% for child_page in pages %}
+                                        {% for child_page in page_list %}
                                             {% if child_page.depth == 1 and child_page.page_title != "null" and child_page.parent_id == page.page_id %}
                                             <li><a id='child-list-{{ child_page.page_id }}' onclick='onclickChildList(this.id)'>
                                                 {{ child_page.page_title }}</a></li>
