@@ -6,15 +6,14 @@ from datetime import datetime, timedelta, timezone
 from django.shortcuts import render
 from django.contrib.admin.views.decorators import staff_member_required
 from django.contrib.auth import get_user_model
-from xml.etree import ElementTree
-
 from django.views import View
 from django.core.paginator import Paginator
-from django.http import JsonResponse, HttpResponseRedirect
+from django.http import JsonResponse, HttpResponseRedirect, Http404
 from django.db.models import Q
 from django.urls import reverse
+from xml.etree import ElementTree
 
-from .models import SocialaccountSocialaccount as Socialaccount
+from .models import SocialaccountSocialaccount as Socialaccount, UserInfo
 from .forms import LawForm
 from apps.book.models import Books, Bookmark, Pages, UserLikeBook
 from apps.forum.models import Comments, UserLikeComment
@@ -78,7 +77,10 @@ def index(request):
 class Profile(View):
     def get(self, request, username):
         # 사용자정보, 활동점수, 댓글수, 작성한 댓글의 좋아요 합계 QuerySet
-        user_info = get_user_model().objects.get(username=username)
+        try:
+            user_info = get_user_model().objects.get(username=username)
+        except UserInfo.DoesNotExist:
+            raise Http404('존재하지 않는 사용자입니다.')
         user_info.picture = json.loads(Socialaccount.objects.get(user_id=user_info.id).extra_data)['picture']
         act_point = get_user_model().objects.get(username=username).act_point
 

@@ -139,7 +139,9 @@
                                 <input name="book_id" style="display: none;" value="{{ book.book_id }}">
                                 <input class="form-control" name="page_title" value="{{ page_form.page_title }}"
                                 style="margin-bottom: 15px;">
+                                <!-- SimpleMDE 영역 (코드 줄바꿈 또는 수정하면 깨짐. 수정금지) -->
                                 <textarea id="description">{% if page_form.description %}{{ page_form.description }}{% endif %}</textarea>
+                                <!-- End of SimpleMDE 영역 -->
                                 <button type="button" class="btn btn-success" onclick="onclickSavePage('{{ page_id }}')"
                                 style="margin: 15px 0px 35px 0px;">저장</button>
                             </form>
