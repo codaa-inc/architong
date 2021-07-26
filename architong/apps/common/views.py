@@ -3,12 +3,12 @@ import json
 import datetime
 
 from datetime import datetime, timedelta, timezone
-from django.shortcuts import render
+from django.shortcuts import render, get_object_or_404
 from django.contrib.admin.views.decorators import staff_member_required
 from django.contrib.auth import get_user_model
 from django.views import View
 from django.core.paginator import Paginator
-from django.http import JsonResponse, HttpResponseRedirect, Http404
+from django.http import JsonResponse, HttpResponseRedirect, Http404, HttpResponseNotFound
 from django.db.models import Q
 from django.urls import reverse
 from xml.etree import ElementTree
@@ -80,7 +80,7 @@ class Profile(View):
         try:
             user_info = get_user_model().objects.get(username=username)
         except UserInfo.DoesNotExist:
-            raise Http404('존재하지 않는 사용자입니다.')
+            return render(request, "404.html", {"message": "존재하지 않는 회원입니다."})
         user_info.picture = json.loads(Socialaccount.objects.get(user_id=user_info.id).extra_data)['picture']
         act_point = get_user_model().objects.get(username=username).act_point
 
@@ -548,7 +548,10 @@ def manage_law(request):
 # 법규관리 수정 페이지를 book_id로 탐색해 Redirect 하는 function
 @staff_member_required
 def law_edit_init(request, book_id):
-    page_id = Pages.objects.filter(book_id=book_id, depth=1).first().page_id
+    try:
+        page_id = Pages.objects.filter(book_id=book_id, depth=1).first().page_id
+    except Pages.DoesNotExist:
+        return render(request, "404.html", {"message": "존재하지 않는 법규입니다."})
     return HttpResponseRedirect(reverse("law-edit", args=[page_id]))
 
 
@@ -557,9 +560,14 @@ def law_edit_init(request, book_id):
 def law_edit(request, page_id):
     # 법규 에디터 페이지 렌더링
     if request.method == "GET":
+        try:
+            page = Pages.objects.get(page_id=page_id)
+            book = Books.objects.get(book_id=page.book_id)
+        except Pages.DoesNotExist:
+            return render(request, "404.html", {"message": "존재하지 않는 페이지입니다."})
+        except Books.DoesNotExist:
+            return render(request, "404.html", {"message": "존재하지 않는 법규입니다."})
         sorted_pages = []
-        page = Pages.objects.get(page_id=page_id)
-        book = Books.objects.get(book_id=page.book_id)
         parent_pages = Pages.objects.filter(book_id=book.book_id, depth=0)
         child_pages = Pages.objects.filter(book_id=book.book_id, depth=1)
         for parent_page in parent_pages:
@@ -589,7 +597,10 @@ def law_edit(request, page_id):
 # 법규 공개여부를 번경하는 function
 @staff_member_required
 def law_update(request, book_id):
-    law = Books.objects.get(book_id=book_id)
+    try:
+        law = Books.objects.get(book_id=book_id)
+    except:
+        return render(request, "404.html", {"message": "존재하지 않는 법규입니다."})
     if law.rls_yn == "Y":
         law.rls_yn = "N"
         result = "private"
@@ -629,7 +640,10 @@ def manage_user(request):
 # 회원 활성화여부, 관리자여부를 변경하는 function
 @staff_member_required
 def user_update(request, user_id):
-    user = get_user_model().objects.get(id=user_id)
+    try:
+        user = get_user_model().objects.get(id=user_id)
+    except UserInfo.DoesNotExist:
+        return render(request, "404.html", {"message": "존재하지 않는 회원입니다."})
     flag = request.GET.get('flag')
     if flag == 'is_active':
         if user.is_active == 0:
