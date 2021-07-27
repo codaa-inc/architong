@@ -1,15 +1,15 @@
 import json
 import datetime
 
-from django.conf import settings
 from django.contrib.auth import get_user_model
+from django.contrib.auth.decorators import login_required
 from django.core.paginator import Paginator
 from django.core.serializers.json import DjangoJSONEncoder
-from django.http import JsonResponse, HttpResponse
-from django.views.decorators.csrf import csrf_exempt
-from django.contrib.auth.decorators import login_required
-from django.shortcuts import render, redirect
 from django.db.models import Q
+from django.http import JsonResponse, HttpResponseRedirect
+from django.shortcuts import render
+from django.views.decorators.csrf import csrf_exempt
+from django.urls import reverse
 
 from apps.forum.models import Comments
 from .forms import BookForm
@@ -18,7 +18,7 @@ from .models import Books, Pages, Bookmark, BookmarkLabel
 
 # 나의 위키 페이지 렌더링
 @login_required(login_url="/account/google/login")
-def wiki_manage(request):
+def wiki_view(request):
     username = str(request.user)
     sort = request.GET.get('sort', 'recent')  # 정렬기준 쿼리스트링을 가져온다, 없는 경우 default 등록순
     if sort == 'views':
@@ -58,10 +58,11 @@ def wiki_manage(request):
 # 책만들기 function
 @login_required(login_url="/account/google/login")
 def wiki_add(request):
-    # GET 요청이면 책만들기 페이지 렌더링
+    # GET 요청이면 위키 작성 페이지 렌더링
     if request.method == 'GET':
         return render(request, "book/wiki_regist.html")
-    # POST 요청이면 책저장하고 페이지 에디터로 렌더링
+
+    # POST 요청이면 위키 저장하고 페이지 에디터로 렌더링
     elif request.method == 'POST':
         form = BookForm(request.POST)
         if form.is_valid():
@@ -70,6 +71,7 @@ def wiki_add(request):
                 author_id=request.user,
                 book_title=request.POST.get('book_title'),
                 rls_yn=request.POST.get('rls_yn'),
+                wiki_gubun=request.POST.get('wiki_gubun'),
                 codes_yn="N",
             )
             new_book.save()
@@ -88,11 +90,16 @@ def wiki_add(request):
 
 # 책정보 조회/수정 function
 @login_required(login_url="/account/google/login")
-def wiki_update(request, book_id):
-    book = Books.objects.get(book_id=book_id)
+def wiki_manage(request, book_id):
+    # 위키 쿼리셋
+    try:
+        book = Books.objects.get(book_id=book_id, codes_yn="N")
+    except Books.DoesNotExist:
+        return render(request, "404.html", {"message": "존재하지 않는 위키입니다."})
+
     # 작성자와 사용자가 일치하는지 체크
     if str(request.user) == book.author_id:
-        # GET 요청이면 책정보 페이지 조회
+        # 위키 조회
         if request.method == 'GET':
             # 목차 계층구조 정렬
             sorted_pages = []
@@ -117,6 +124,7 @@ def wiki_update(request, book_id):
             context = {"book": book,
                        "page_list": sorted_pages}
             return render(request, "book/editor.html", context)
+        # 위키 저장
         elif request.method == 'POST':
             form = BookForm(request.POST)
             if form.is_valid():
@@ -128,11 +136,32 @@ def wiki_update(request, book_id):
             else:
                 return JsonResponse({"result": "fail", "message": "정보를 확인해주세요."})
 
+        # 위키 삭제
+        elif request.method == 'DELETE':
+            # 연관 북마크 삭제
+            Bookmark.objects.filter(book_id=book_id).delete()
+            # 연관 댓글 삭제
+            page_list = Pages.objects.filter(book_id=book_id)
+            for page in page_list:
+                Comments.objects.filter(page_id=page.page_id).delete()
+            # 하위 페이지들 삭제
+            page_list.delete()
+            # 페이지 삭제
+            book.delete()
+            return JsonResponse({"result": "success"})
+    else:
+        return render(request, "404.html", {"message": "잘못된 접근입니다."})
+
 
 # 마크다운 에디터 페이지 추가 function
 @login_required(login_url="/account/google/login")
-def wiki_add_page(request, book_id):
-    book = Books.objects.get(book_id=book_id)
+def wiki_page_add(request, book_id):
+    # 위키 쿼리셋
+    try:
+        book = Books.objects.get(book_id=book_id, codes_yn="N")
+    except Books.DoesNotExist:
+        return render(request, "404.html", {"message": "존재하지 않는 위키입니다."})
+
     # 작성자와 사용자가 일치하는지 체크
     if str(request.user) == book.author_id:
         # GET 요청이면 editor 새로운 페이지 생성 후 페이지 렌더링
@@ -148,30 +177,23 @@ def wiki_add_page(request, book_id):
             book.mdfcn_dt = datetime.datetime.now().now()
             book.save()  # 해당 위키의 최근수정일 갱신
             new_page = Pages.objects.order_by('page_id').last()
-
-            # 목차 계층구조 정렬
-            sorted_pages = []
-            parent_pages = Pages.objects.filter(book_id=book.book_id, depth=0)
-            child_pages = Pages.objects.filter(book_id=book.book_id, depth=1)
-            for parent_page in parent_pages:
-                sorted_pages.append(parent_page)
-                for child_page in child_pages:
-                    if child_page.parent_id == parent_page.page_id:
-                        sorted_pages.append(child_page)
-            context = {"page_form": new_page,
-                       "page_id":  new_page.page_id,
-                       "book": book,
-                       "page_list": sorted_pages}
-            return render(request, 'book/editor.html', context)
+            return HttpResponseRedirect(reverse("wiki_editor", args=[new_page.page_id]))
     else:
-        return HttpResponse("잘못된 접근입니다.")
+        return render(request, "404.html", {"message": "잘못된 접근입니다."})
 
 
 # 마크다운 에디터 function
 @login_required(login_url="/account/google/login")
 def wiki_editor(request, page_id):
-    page = Pages.objects.get(page_id=page_id)
-    book = Books.objects.get(book_id=page.book_id)
+    # 페이지, 위키 쿼리셋
+    try:
+        page = Pages.objects.get(page_id=page_id)
+        book = Books.objects.get(book_id=page.book_id, codes_yn="N")
+    except Pages.DoesNotExist:
+        return render(request, "404.html", {"message": "존재하지 않는 페이지입니다."})
+    except Books.DoesNotExist:
+        return render(request, "404.html", {"message": "존재하지 않는 위키입니다."})
+
     # 작성자와 사용자가 일치하는지 체크
     if str(request.user) == book.author_id:
         # GET 요청이면 에디터 페이지 랜더링
@@ -190,24 +212,46 @@ def wiki_editor(request, page_id):
                        "book": book,
                        "page_list": sorted_pages}
             return render(request, 'book/editor.html', context)
+
         # POST 요청이면 페이지 수정 저장
         elif request.method == 'POST':
-            page = Pages.objects.get(page_id=page_id)
             page.page_title = request.POST['page_title']
             page.description = request.POST['description']
             page.save()
             book.mdfcn_dt = datetime.datetime.now().now()
             book.save()     # 해당 위키의 최근수정일 갱신
             return JsonResponse({"page_id": page_id})
+
+        # DELETE 요청이면 페이지 삭제
+        elif request.method == 'DELETE':
+            # 연관 북마크 삭제
+            Bookmark.objects.filter(page_id=page_id).delete()
+            # 연관 댓글 삭제
+            Comments.objects.filter(page_id=page_id).delete()
+            # 자식 페이지 삭제
+            Pages.objects.filter(parent_id=page_id).delete()
+            # 페이지 삭제
+            page.delete()
+            # 해당 위키의 최근수정일 갱신
+            book.mdfcn_dt = datetime.datetime.now().now()
+            book.save()
+            return JsonResponse({"book_id": book.book_id})
     else:
-        return HttpResponse("잘못된 접근입니다.")
+        return render(request, "404.html", {"message": "잘못된 접근입니다."})
 
 
 # 마크다운 에디터 미리보기 모드 function
 @login_required(login_url="/account/google/login")
-def wiki_page_viewer(request, page_id):
-    page = Pages.objects.get(page_id=page_id)
-    book = Books.objects.get(book_id=page.book_id)
+def wiki_preview(request, page_id):
+    # 페이지, 위키 쿼리셋
+    try:
+        page = Pages.objects.get(page_id=page_id)
+        book = Books.objects.get(book_id=page.book_id, codes_yn="N")
+    except Pages.DoesNotExist:
+        return render(request, "404.html", {"message": "존재하지 않는 페이지입니다."})
+    except Books.DoesNotExist:
+        return render(request, "404.html", {"message": "존재하지 않는 위키입니다."})
+
     # 작성자와 사용자가 일치하는지 체크
     if str(request.user) == book.author_id:
         # GET 요청이면 미리보기 페이지 랜더링
@@ -228,13 +272,18 @@ def wiki_page_viewer(request, page_id):
             }
             return render(request, 'book/editor.html', context)
     else:
-        return HttpResponse("잘못된 접근입니다.")
+        return render(request, "404.html", {"message": "잘못된 접근입니다."})
 
 
 # 위키 삭제 function
 @login_required(login_url="/account/google/login")
 def wiki_delete(request, book_id):
-    book = Books.objects.get(book_id=book_id)
+    # 위키 쿼리셋
+    try:
+        book = Books.objects.get(book_id=book_id)
+    except Books.DoesNotExist:
+        return render(request, "404.html", {"message": "존재하지 않는 위키입니다."})
+
     # 작성자와 사용자가 일치하는지 체크
     if str(request.user) == book.author_id:
         # 연관 북마크 삭제
@@ -249,113 +298,20 @@ def wiki_delete(request, book_id):
         book.delete()
         return JsonResponse({"result": "success"})
     else:
-        return HttpResponse("잘못된 접근입니다.")
-
-
-# 위키 페이지 삭제 function
-@login_required(login_url="/account/google/login")
-def wiki_delete_page(request, page_id):
-    page = Pages.objects.get(page_id=page_id)
-    book = Books.objects.get(book_id=page.book_id)
-    # 작성자와 사용자가 일치하는지 체크
-    if str(request.user) == book.author_id:
-        # 연관 북마크 삭제
-        Bookmark.objects.filter(page_id=page_id).delete()
-        # 연관 댓글 삭제
-        Comments.objects.filter(page_id=page_id).delete()
-        # 자식 페이지 삭제
-        Pages.objects.filter(parent_id=page_id).delete()
-        # 페이지 삭제
-        page.delete()
-        # 해당 위키의 최근수정일 갱신
-        book.mdfcn_dt = datetime.datetime.now().now()
-        book.save()
-        return JsonResponse({"book_id": book.book_id})
-    else:
-        return HttpResponse("잘못된 접근입니다.")
-
-
-# 법규 리스트 조회 function
-def law_list(request):
-    sort = request.GET.get('sort', 'recent')  # 정렬기준 쿼리스트링을 가져온다, 없는 경우 default 시행일자순
-    if sort == 'views':
-        laws = Books.objects.filter(codes_yn="Y", rls_yn="Y").order_by('-hit_count')
-    elif sort == 'registered':
-        laws = Books.objects.filter(codes_yn="Y", rls_yn="Y").order_by('enfc_dt')
-    else:
-        laws = Books.objects.filter(codes_yn="Y", rls_yn="Y").order_by('-enfc_dt')
-
-    # 댓글 객체 좋아요 관련 정보 추가 : is_liked, like_user_count
-    for law in laws:
-        like_comment = list(Books.objects.get(book_id=law.book_id).like_users.all())
-        if request.user in like_comment:
-            law.is_liked = "true"
-        else:
-            law.is_liked = "false"
-        law.like_user_count = len(like_comment)
-
-    # 페이징처리
-    page = request.GET.get('page')
-    paginator = Paginator(laws, 15).get_page(page)
-
-    # 정렬기준
-    sort_list = [{'value': 'recent', 'label': '시행일순'},
-                 {'value': 'views', 'label': '조회순'},
-                 {'value': 'registered', 'label': '과거순'}]
-    if sort != 'recent':
-        for idx, item in enumerate(sort_list):
-            if item.get('value') == sort:
-                sel_item = sort_list[idx]
-                sort_list.remove(sel_item)
-                sort_list.insert(0, sel_item)
-    context = {"books": paginator,
-               "sort_list": sort_list}
-    return render(request, "book/lawlist.html", context)
-
-
-# 문서 리스트 조회 function
-def wiki_list(request):
-    sort = request.GET.get('sort', 'recent')  # 정렬기준 쿼리스트링을 가져온다, 없는 경우 default 등록순
-    if sort == 'views':
-        docs = Books.objects.filter(codes_yn="N", rls_yn="Y").order_by('-hit_count')
-    elif sort == 'registered':
-        docs = Books.objects.filter(codes_yn="N", rls_yn="Y").order_by('wrt_dt')
-    else:
-        docs = Books.objects.filter(codes_yn="N", rls_yn="Y").order_by('-wrt_dt')
-
-    # 댓글 객체 좋아요 관련 정보 추가 : is_liked, like_user_count
-    for doc in docs:
-        like_comment = list(Books.objects.get(book_id=doc.book_id).like_users.all())
-        if request.user in like_comment:
-            doc.is_liked = "true"
-        else:
-            doc.is_liked = "false"
-        doc.like_user_count = len(like_comment)
-
-    # 페이징처리
-    page = request.GET.get('page')
-    paginator = Paginator(docs, 15).get_page(page)
-
-    # 정렬기준
-    sort_list = [{'value': 'recent', 'label': '등록순'},
-                 {'value': 'views', 'label': '조회순'},
-                 {'value': 'registered', 'label': '과거순'}]
-    if sort != 'recent':
-        for idx, item in enumerate(sort_list):
-            if item.get('value') == sort:
-                sel_item = sort_list[idx]
-                sort_list.remove(sel_item)
-                sort_list.insert(0, sel_item)
-    context = {"books": paginator, "sort_list": sort_list}
-    return render(request, "book/wikilist.html", context)
+        return render(request, "404.html", {"message": "잘못된 접근입니다."})
 
 
 # 책/페이지 조회 function
 def view_book(request, book_id):
-    # Books, Pages QuerySet
-    username = request.user
-    book = Books.objects.get(book_id=book_id)
-    pages = Pages.objects.filter(book_id=book_id)
+    # 페이지, 위키 쿼리셋
+    try:
+        username = request.user
+        book = Books.objects.get(book_id=book_id)
+        pages = Pages.objects.filter(book_id=book_id)
+    except Pages.DoesNotExist:
+        return render(request, "404.html", {"message": "존재하지 않는 페이지입니다."})
+    except Books.DoesNotExist:
+        return render(request, "404.html", {"message": "존재하지 않는 위키입니다."})
 
     # 본문 장의 갯수 → 1개의 장으로 구성되어 있는 경우 제목 보여주지 않기 위함
     law_count = pages.filter(Q(depth=0) & ~Q(page_title="별표/서식")).count()
@@ -422,11 +378,16 @@ def view_book(request, book_id):
 
 # 페이지 조회 function
 def view_page(request, page_id):
-    # Books, Pages QuerySet
-    username = request.user  # 세션으로부터 유저 정보 가져오기
-    book_id = Pages.objects.get(page_id=page_id).book_id
-    book = Books.objects.get(book_id=book_id)
-    pages = Pages.objects.filter(book_id=book_id)
+    # 페이지, 위키 쿼리셋
+    try:
+        username = request.user
+        book_id = Pages.objects.get(page_id=page_id).book_id
+        book = Books.objects.get(book_id=book_id)
+        pages = Pages.objects.filter(book_id=book_id)
+    except Pages.DoesNotExist:
+        return render(request, "404.html", {"message": "존재하지 않는 페이지입니다."})
+    except Books.DoesNotExist:
+        return render(request, "404.html", {"message": "존재하지 않는 위키입니다."})
 
     # 본문 장의 갯수 → 1개의 장으로 구성되어 있는 경우 제목 보여주지 않기 위함
     law_count = pages.filter(Q(depth=0) & ~Q(page_title="별표/서식")).count()
@@ -550,72 +511,72 @@ def add_or_remove_bookmark(request, page_id):
 # 북마크 관리 페이지 조회 function
 @login_required(login_url="/account/google/login")
 def view_bookmark(request):
-    if request.user.is_authenticated:
-        # 북마크 쿼리셋, label 검색조건 적용
-        username = request.user
-        label_id = request.GET.get('sort', "")
-        if label_id != "0" and label_id != "":
-            bookmarks = Bookmark.objects.filter(username=username, label_id=label_id).order_by('book_id', 'page_id')
-        else:
-            bookmarks = Bookmark.objects.filter(username=username).order_by('book_id', 'page_id')
+    # 북마크 쿼리셋, label 검색조건 적용
+    username = request.user
+    label_id = request.GET.get('sort', "")
+    if label_id != "0" and label_id != "":
+        bookmarks = Bookmark.objects.filter(username=username, label_id=label_id).order_by('book_id', 'page_id')
+    else:
+        bookmarks = Bookmark.objects.filter(username=username).order_by('book_id', 'page_id')
 
-        # 북마크 메모 쿼리셋 추가
-        page_q = Q(page_id__in=bookmarks.values_list('page_id', flat=True))
-        status_q = Q(status="C") | Q(status="U")
-        pages = Pages.objects.filter(page_q).values()
-        comments = Comments.objects.filter(page_q & status_q & Q(rls_yn="N"))
-        for idx, bookmark in enumerate(bookmarks):
-            bookmark.description = pages.get(page_id=bookmark.page_id)['description']
-            comment = comments.filter(page_id=bookmark.page_id).values()
-            if len(comment) > 0:
-                bookmark.comment = json.dumps(list(comment), cls=DjangoJSONEncoder)
-            if idx == 0 or bookmark.book_id != bookmarks[idx - 1].book_id:
-                bookmark.book_title = Books.objects.get(book_id=bookmark.book_id).book_title
+    # 북마크 메모 쿼리셋
+    page_q = Q(page_id__in=bookmarks.values_list('page_id', flat=True))
+    status_q = Q(status="C") | Q(status="U")
+    pages = Pages.objects.filter(page_q).values()
+    comments = Comments.objects.filter(page_q & status_q & Q(rls_yn="N"))
+    for idx, bookmark in enumerate(bookmarks):
+        bookmark.description = pages.get(page_id=bookmark.page_id)['description']
+        comment = comments.filter(page_id=bookmark.page_id).values()
+        if len(comment) > 0:
+            bookmark.comment = json.dumps(list(comment), cls=DjangoJSONEncoder)
+        if idx == 0 or bookmark.book_id != bookmarks[idx - 1].book_id:
+            bookmark.book_title = Books.objects.get(book_id=bookmark.book_id).book_title
 
-        # 북마크 레이블 리스트 추가
-        bookmark_label = [{"label_id": "0", "label_name": "전체"}]
-        bookmark_label.extend(list(BookmarkLabel.objects.filter(
-            user_id=get_user_model().objects.get(username=username)).order_by('-label_id').values()))
+    # 북마크 레이블 리스트 추가
+    bookmark_label = [{"label_id": "0", "label_name": "전체"}]
+    bookmark_label.extend(list(BookmarkLabel.objects.filter(
+        user_id=get_user_model().objects.get(username=username)).order_by('-label_id').values()))
 
-        # 선택값이 있을 경우 lable 정렬
-        if label_id != "0" and label_id != "":
-            for idx, label in enumerate(bookmark_label):
-                if label['label_id'] == int(label_id):
-                    sel_label = bookmark_label[idx]
-                    bookmark_label.pop(idx)
-                    bookmark_label.insert(0, sel_label)
-        context = {
-            "bookmarks": bookmarks,
-            "bookmark_label": bookmark_label
-        }
-        return render(request, "book/bookmark.html", context)
+    # 선택값이 있을 경우 lable 정렬
+    if label_id != "0" and label_id != "":
+        for idx, label in enumerate(bookmark_label):
+            if label['label_id'] == int(label_id):
+                sel_label = bookmark_label[idx]
+                bookmark_label.pop(idx)
+                bookmark_label.insert(0, sel_label)
+    context = {
+        "bookmarks": bookmarks,
+        "bookmark_label": bookmark_label
+    }
+    return render(request, "book/bookmark.html", context)
 
 
 # 북마크 관리 페이지 삭제 function
 @login_required(login_url="/account/google/login")
 @csrf_exempt
 def delete_bookmark(request, page_id):
-    if request.user.is_authenticated:
-        # 세션으로부터 유저 정보 가져오기
+    # 북마크 쿼리셋
+    try:
         username = request.user
-        # 북마크 하위 메모들을 삭제한다
-        private_comment = Comments.objects.filter(page_id=page_id, username=username, rls_yn="N")
-        for data in private_comment:
-            data.status = "D"
-        Comments.objects.bulk_update(private_comment, ['status'])
-        # 북마크를 삭제한다
         bookmark = Bookmark.objects.get(page_id=page_id, username=username)
-        bookmark.delete()
-        return JsonResponse({"result": "success"})
+    except Bookmark.DoesNotExist:
+        return render(request, "404.html", {"message": "존재하지 않는 북마크입니다."})
+
+    # 북마크 하위 메모들을 삭제한다
+    private_comment = Comments.objects.filter(page_id=page_id, username=username, rls_yn="N")
+    for data in private_comment:
+        data.status = "D"
+    Comments.objects.bulk_update(private_comment, ['status'])
+
+    # 북마크를 삭제한다
+    bookmark.delete()
+    return JsonResponse({"result": "success"})
 
 
 # 댓글 갯수를 리턴해주는 function
 @login_required
 def comment_count(request):
-    page_id = request.GET['page_id']
-    rls_yn = request.GET['rls_yn']
-    username = request.user
-    q = Q(page_id=page_id) & Q(rls_yn=rls_yn) & Q(username=username) & ~Q(status='D')
+    q = Q(page_id=request.GET['page_id']) & Q(rls_yn=request.GET['rls_yn']) & Q(username=request.user) & ~Q(status='D')
     count = Comments.objects.filter(q).count()
     return JsonResponse({"comment_count": str(count)})
 
@@ -623,8 +584,11 @@ def comment_count(request):
 # 책 좋아요 토글 function
 @login_required(login_url="/account/google/login")
 def like_book(request, book_id):
-    # 문서, 작성자 QuerySet 선언
-    book = Books.objects.get(book_id=book_id)
+    # 문서, 작성자 쿼리셋
+    try:
+        book = Books.objects.get(book_id=book_id)
+    except Books.DoesNotExist:
+        return render(request, "404.html", {"message": "존재하지 않는 위키입니다."})
     author = get_user_model().objects.get(username=book.author_id)
 
     # 좋아요 삭제, 댓글 작성자 활동점수 -1
@@ -645,15 +609,20 @@ def like_book(request, book_id):
 
 
 # 북마크 레이블 등록 수정 삭제 function
-@login_required(login_url="/account/google/login")
 def manage_label(request, label_id):
     if request.user.is_authenticated:
         username = request.user
+        # 수정 또는 삭제시 BookmarkLabel 쿼리셋
         if label_id != 0:
-            label = BookmarkLabel.objects.get(label_id=label_id)
+            try:
+                label = BookmarkLabel.objects.get(label_id=label_id)
+            except BookmarkLabel.DoesNotExist:
+                return render(request, "404.html", {"message": "존재하지 않는 폴더입니다."})
+
         # POST 요청시 북마크 레이블 등록 또는 수정
         if request.method == "POST":
             if label_id == 0:
+                # BookmarkLabel 등록
                 new_label = BookmarkLabel(
                     label_name=request.POST['label_name'],
                     user_id=get_user_model().objects.get(username=username).id
@@ -662,6 +631,7 @@ def manage_label(request, label_id):
                 label_id = BookmarkLabel.objects.latest('label_id').label_id
                 return JsonResponse({"result": "success", "label_id": str(label_id)})
             else:
+                # BookmarkLabel 수정
                 if label.user_id == get_user_model().objects.get(username=username).id:
                     label.label_name = request.POST['label_name']
                     label.save()
@@ -676,7 +646,7 @@ def manage_label(request, label_id):
             if len(page_list) > 0:
                 Comments.objects.filter(
                     username=username, rls_yn="N", page_id__in=page_list).delete()
-            # 북마크 레이블 삭제, 북마크는 casecade로 자동삭제
+            # 북마크 레이블 삭제, 해당 북마크는 casecade로 자동삭제
             label.delete()
             return JsonResponse({"result": "success"})
     else:

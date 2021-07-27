@@ -159,7 +159,7 @@
                             </div>
                             <div class="button_inner_one">
                                 <a href="javascript:;" onclick="onclickDeletePage({{ page.page_id }})" class="doc_border_btn btn_small">삭제</a>
-                                <a href="/wiki/edit/page/{{ page.page_id }}" class="action_btn btn_small">수정</a>
+                                <a href="/wiki-editor/page/{{ page.page_id }}" class="action_btn btn_small">수정</a>
                             </div>
                             {% else %}
                             <!-- 위키 정보 모드 -->
@@ -205,6 +205,7 @@
                                             <option value="4">설비</option>
                                             <option value="5">환경</option>
                                             <option value="6">도시</option>
+                                            <option value="7">기타</option>
                                         </select>
                                     </div>
                                     <script>$("#wiki_gubun").val({{ book.wiki_gubun }})</script>
@@ -215,6 +216,16 @@
                                 </form>
                             </div>
                             {% endif %}
+                            <script>
+                                /**
+                                 * TODO
+                                 * // 1개의 장으로 구성되어 있는 경우 제목 보여주지 않음
+                                const law_count = "{{ law_count }}";
+                                if (law_count < 2) {
+                                    $(".martor-content").children().first().remove();
+                                }
+                                 * */
+                            </script>
                         </div>
                     </article>
                 </div>

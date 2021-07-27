@@ -612,12 +612,12 @@ function getCommentCount(page_id, rls_yn) {
 function onclickSaveBook() {
     $.ajax({
         type: "POST",
-        url: "/wiki/add",
+        url: "/wiki/page",
         data: $("#wiki_register").serialize() + "&csrfmiddlewaretoken=" + $("input[name=csrfmiddlewaretoken]").val(),
         dataType: "json",
         success: function (response) {
             if (response.book_id != undefined) {
-                document.location.href = "/wiki/edit/" + response.book_id;
+                document.location.href = "/wiki-editor/" + response.book_id;
             } else {
                 alert(response.error_message);
             }
@@ -639,7 +639,7 @@ function onclickSavePage(page_id) {
     }
     $.ajax({
         type: "POST",
-        url: "/wiki/edit/page/" + page_id,
+        url: "/wiki-editor/page/" + page_id,
         data: data,
         dataType: "json",
         success: function (response) {
@@ -661,10 +661,10 @@ function onclickSavePage(page_id) {
 function onclickAddPage(book_id, page_id) {
     if (page_id != "" && page_id != undefined) {
         // depth2에 추가
-        document.location.href = "/wiki/edit/" + book_id + "?page=" + page_id;
+        document.location.href = "/wiki-editor/" + book_id + "?page=" + page_id;
     } else {
         // depth1에 추가
-        document.location.href = "/wiki/edit/" + book_id;
+        document.location.href = "/wiki-editor/" + book_id;
     }
 };
 
@@ -674,9 +674,12 @@ function onclickAddPage(book_id, page_id) {
 function onclickDeletePage(page_id) {
     if(confirm("페이지를 삭제하시면 하위 페이지 및 연관된 북마크, 댓글 모두 삭제됩니다.\n정말 삭제하시겠습니까?")) {
         $.ajax({
-            type: "GET",
-            url: "/wiki/delete/page/" + page_id,
+            type: "DELETE",
+            url: "/wiki-editor/page/" + page_id,
             dataType: "json",
+            headers: {
+                "X-CSRFToken" : $("input[name=csrfmiddlewaretoken]").val()
+            },
             success: function (response) {
                 if (response.book_id != undefined) {
                     alert("삭제 되었습니다.");
@@ -719,9 +722,12 @@ function onclickUpdateWiki(book_id){
 function onclickDeleteWiki(book_id){
     if(confirm("책을 삭제하시면 하위 페이지 및 연관된 북마크, 댓글 모두 삭제됩니다.\n정말 삭제하시겠습니까?")) {
         $.ajax({
-            type: "GET",
-            url: "/wiki/delete/" + book_id,
+            type: "DELETE",
+            url: "/wiki/" + book_id,
             dataType: "json",
+            headers: {
+                "X-CSRFToken" : $("input[name=csrfmiddlewaretoken]").val()
+            },
             success: function (response) {
                 if (response.result == "success") {
                     alert("삭제 되었습니다.");

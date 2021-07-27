@@ -3,12 +3,12 @@ import json
 import datetime
 
 from datetime import datetime, timedelta, timezone
-from django.shortcuts import render, get_object_or_404
+from django.shortcuts import render
 from django.contrib.admin.views.decorators import staff_member_required
 from django.contrib.auth import get_user_model
 from django.views import View
 from django.core.paginator import Paginator
-from django.http import JsonResponse, HttpResponseRedirect, Http404, HttpResponseNotFound
+from django.http import JsonResponse, HttpResponseRedirect
 from django.db.models import Q
 from django.urls import reverse
 from xml.etree import ElementTree
@@ -71,6 +71,83 @@ def index(request):
                    "search_term": text,
                    "sort_list": sort_list}
         return render(request, 'common/index.html', context)
+
+
+# 법규 리스트 조회 function
+def law_list(request):
+    # 위키 쿼리셋, 정렬 조건 필터 적용
+    sort = request.GET.get('sort', 'recent')  # 정렬기준 쿼리스트링을 가져온다, 없는 경우 default 시행일자순
+    if sort == 'views':
+        laws = Books.objects.filter(codes_yn="Y", rls_yn="Y").order_by('-hit_count')
+    elif sort == 'registered':
+        laws = Books.objects.filter(codes_yn="Y", rls_yn="Y").order_by('enfc_dt')
+    else:
+        laws = Books.objects.filter(codes_yn="Y", rls_yn="Y").order_by('-enfc_dt')
+
+    # 댓글 객체 좋아요 관련 정보 추가 : is_liked, like_user_count
+    for law in laws:
+        like_comment = list(Books.objects.get(book_id=law.book_id).like_users.all())
+        if request.user in like_comment:
+            law.is_liked = "true"
+        else:
+            law.is_liked = "false"
+        law.like_user_count = len(like_comment)
+
+    # 페이징처리
+    page = request.GET.get('page')
+    paginator = Paginator(laws, 15).get_page(page)
+
+    # 정렬기준
+    sort_list = [{'value': 'recent', 'label': '시행일순'},
+                 {'value': 'views', 'label': '조회순'},
+                 {'value': 'registered', 'label': '과거순'}]
+    if sort != 'recent':
+        for idx, item in enumerate(sort_list):
+            if item.get('value') == sort:
+                sel_item = sort_list[idx]
+                sort_list.remove(sel_item)
+                sort_list.insert(0, sel_item)
+    context = {"books": paginator,
+               "sort_list": sort_list}
+    return render(request, "book/lawlist.html", context)
+
+
+# 문서 리스트 조회 function
+def wiki_list(request):
+    # 위키 쿼리셋, 정렬 조건 필터 적용
+    sort = request.GET.get('sort', 'recent')  # 정렬기준 쿼리스트링을 가져온다, 없는 경우 default 등록순
+    if sort == 'views':
+        docs = Books.objects.filter(codes_yn="N", rls_yn="Y").order_by('-hit_count')
+    elif sort == 'registered':
+        docs = Books.objects.filter(codes_yn="N", rls_yn="Y").order_by('wrt_dt')
+    else:
+        docs = Books.objects.filter(codes_yn="N", rls_yn="Y").order_by('-wrt_dt')
+
+    # 댓글 객체 좋아요 관련 정보 추가 : is_liked, like_user_count
+    for doc in docs:
+        like_comment = list(Books.objects.get(book_id=doc.book_id).like_users.all())
+        if request.user in like_comment:
+            doc.is_liked = "true"
+        else:
+            doc.is_liked = "false"
+        doc.like_user_count = len(like_comment)
+
+    # 페이징처리
+    page = request.GET.get('page')
+    paginator = Paginator(docs, 15).get_page(page)
+
+    # 정렬기준
+    sort_list = [{'value': 'recent', 'label': '등록순'},
+                 {'value': 'views', 'label': '조회순'},
+                 {'value': 'registered', 'label': '과거순'}]
+    if sort != 'recent':
+        for idx, item in enumerate(sort_list):
+            if item.get('value') == sort:
+                sel_item = sort_list[idx]
+                sort_list.remove(sel_item)
+                sort_list.insert(0, sel_item)
+    context = {"books": paginator, "sort_list": sort_list}
+    return render(request, "book/wikilist.html", context)
 
 
 # 유저 프로필 페이지 function
@@ -170,7 +247,15 @@ class Profile(View):
 
 # 법규 데이터를 처리하는 class
 class LawView(View):
-    # 법규 API 호출 function
+    # 법규관리 페이지 랜더링
+    def get(self, request):
+        if request.user.is_staff:  # 관리자 권한 검사
+            context = {"books": Books.objects.filter(codes_yn="Y").order_by('-wrt_dt')}
+            return render(request, "common/law_admin.html", context)
+        else:
+            return render(request, "404.html", {"message": "잘못된 접근입니다."})
+
+    # 법규 추가 API 호출 function
     def post(self, request):
         if request.user.is_staff:       # 관리자 권한 검사
             host = "http://www.law.go.kr/DRF/lawService.do?"
@@ -215,7 +300,7 @@ class LawView(View):
             except Exception as e:
                 return JsonResponse({"result": "fail", "html_url": html_url,  "message": "등록할 수 없는 법규입니다."})
         else:
-            return JsonResponse({"result": "forbidden", "message": "잘못된 접근입니다."})
+            return render(request, "404.html", {"message": "잘못된 접근입니다."})
 
 
     '''
@@ -538,27 +623,20 @@ class LawView(View):
             raise Exception
 
 
-# 법규관리 페이지를 렌더링하는 function
-@staff_member_required
-def manage_law(request):
-    context = {"books": Books.objects.filter(codes_yn="Y").order_by('-wrt_dt')}
-    return render(request, "common/law_admin.html", context)
-
-
 # 법규관리 수정 페이지를 book_id로 탐색해 Redirect 하는 function
-@staff_member_required
+@staff_member_required(login_url='/forbidden')
 def law_edit_init(request, book_id):
     try:
         page_id = Pages.objects.filter(book_id=book_id, depth=1).first().page_id
     except Pages.DoesNotExist:
         return render(request, "404.html", {"message": "존재하지 않는 법규입니다."})
-    return HttpResponseRedirect(reverse("law-edit", args=[page_id]))
+    return HttpResponseRedirect(reverse("law_manage", args=[page_id]))
 
 
 # 법규수정 페이지 렌더링 및 수정 function
-@staff_member_required
-def law_edit(request, page_id):
-    # 법규 에디터 페이지 렌더링
+@staff_member_required(login_url='/forbidden')
+def law_manage(request, page_id):
+    # 법규 수정 Form 랜더링
     if request.method == "GET":
         try:
             page = Pages.objects.get(page_id=page_id)
@@ -581,7 +659,7 @@ def law_edit(request, page_id):
         if parent_pages.count() > 1:
             context["book_title"] = book.book_title
         return render(request, 'common/law_editor.html', context)
-    # 법규 Form 저장
+    # 법규 수정 Form 저장
     elif request.method == "POST":
         form = LawForm(request.POST)
         if form.is_valid():
@@ -592,53 +670,49 @@ def law_edit(request, page_id):
             return JsonResponse({"message": "수정되었습니다."})
         else:
             return JsonResponse({"message": "저장하는 중 오류가 발생했습니다. 양식을 확인해주세요."})
-
-
-# 법규 공개여부를 번경하는 function
-@staff_member_required
-def law_update(request, book_id):
-    try:
-        law = Books.objects.get(book_id=book_id)
-    except:
-        return render(request, "404.html", {"message": "존재하지 않는 법규입니다."})
-    if law.rls_yn == "Y":
-        law.rls_yn = "N"
-        result = "private"
-    else:
-        law.rls_yn = "Y"
-        result = "public"
-    law.save()
-    return JsonResponse({"result": result})
-
-
-# 법규 삭제 function
-@staff_member_required
-def law_delete(request, book_id):
-    try:
-        # 연관 북마크 삭제
-        Bookmark.objects.filter(book_id=book_id).delete()
-        # 연관 댓글 삭제
-        page_list = Pages.objects.filter(book_id=book_id)
-        for page in page_list:
-            Comments.objects.filter(page_id=page.page_id).delete()
-        # 하위 페이지들 삭제
-        page_list.delete()
-        # 페이지 삭제
-        Books.objects.get(book_id=book_id).delete()
-        return JsonResponse({"result": "success"})
-    except Exception as e:
-        return JsonResponse({"result": "fail", "message": "법규를 삭제하는 중 오류가 발생했습니다."})
+    # 법규 공개여부 변경
+    elif request.method == "PUT":
+        try:
+            book_id = page_id
+            law = Books.objects.get(book_id=book_id)
+        except:
+            return render(request, "404.html", {"message": "존재하지 않는 법규입니다."})
+        if law.rls_yn == "Y":
+            law.rls_yn = "N"
+            result = "private"
+        else:
+            law.rls_yn = "Y"
+            result = "public"
+        law.save()
+        return JsonResponse({"result": result})
+    # 법규 삭제
+    elif request.method == "DELETE":
+        try:
+            # 연관 북마크 삭제
+            book_id = page_id
+            Bookmark.objects.filter(book_id=book_id).delete()
+            # 연관 댓글 삭제
+            page_list = Pages.objects.filter(book_id=book_id)
+            for page in page_list:
+                Comments.objects.filter(page_id=page.page_id).delete()
+            # 하위 페이지들 삭제
+            page_list.delete()
+            # 페이지 삭제
+            Books.objects.get(book_id=book_id).delete()
+            return JsonResponse({"result": "success"})
+        except Exception as e:
+            return JsonResponse({"result": "fail", "message": "법규를 삭제하는 중 오류가 발생했습니다."})
 
 
 # 회원관리 페이지를 렌더링하는 function
-@staff_member_required
-def manage_user(request):
+@staff_member_required(login_url='/forbidden')
+def user_manage(request):
     context = {"users": get_user_model().objects.all()}
     return render(request, "common/user_admin.html", context)
 
 
 # 회원 활성화여부, 관리자여부를 변경하는 function
-@staff_member_required
+@staff_member_required(login_url='/forbidden')
 def user_update(request, user_id):
     try:
         user = get_user_model().objects.get(id=user_id)
@@ -661,3 +735,8 @@ def user_update(request, user_id):
             message = "일반회원으로 변경"
     user.save()
     return JsonResponse({"message": message})
+
+
+# 관리자 권한 검사에 걸렸을때 페이지 랜더링
+def forbidden(request):
+    return render(request, "404.html", {"message": "잘못된 접근입니다."})

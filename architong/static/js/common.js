@@ -182,7 +182,7 @@ $(document).ready(function(){
 function onclickInsertLaw() {
     $.ajax({
         type: "POST",
-        url: "/law/insert",
+        url: "/law",
         dataType: "json",
         data: $("#law_form").serialize() + "&csrfmiddlewaretoken=" + $("input[name=csrfmiddlewaretoken]").val(),
         success: function (response) {
@@ -206,8 +206,11 @@ function onclickInsertLaw() {
 function onclickLawRlsYn(book_id, book_title) {
     if(confirm(book_title + "의 공개여부를 변경하시겠습니까?")) {
        $.ajax({
-            type: "GET",
-            url: "/law/update/" + book_id,
+            type: "PUT",
+            url: "/law/" + book_id,
+            headers: {
+                "X-CSRFToken" : $("input[name=csrfmiddlewaretoken]").val()
+            },
             dataType: "json",
             success: function (response) {
                 if(response.result == "private") {
@@ -234,32 +237,6 @@ function onclickUpdateLaw(book_id) {
 };
 
 /**
- * 법규 또는 위키 ID로 n번째 page_id를 조회하는 이벤트
- * PARAM : book_id, order
- * */
-function selectPageId(book_id, order){
-    if(confirm(book_title + "의 공개여부를 변경하시겠습니까?")) {
-       $.ajax({
-            type: "GET",
-            url: "/law/update/" + book_id,
-            dataType: "json",
-            success: function (response) {
-                if(response.result == "private") {
-                    alert("해당 법규가 비공개 처리 되었습니다.");
-                    document.location.href = "/law/manage";
-                } else if (response.result == "public"){
-                    alert("해당 법규가 공개 처리 되었습니다.");
-                    document.location.href = "/law/manage";
-                }
-            },
-            error: function (request, status, error) {
-                console.log("code:" + request.status + "\n" + "message:" + request.responseText + "\n" + "error:" + error)
-            },
-       });
-    }
-};
-
-/**
  * 법규 수정 페이지 수정 이벤트
  * */
 function onclickEditLaw(page_id) {
@@ -270,7 +247,7 @@ function onclickEditLaw(page_id) {
     }
     $.ajax({
         type: "POST",
-        url: "/law/edit/" + page_id,
+        url: "/law/" + page_id,
         dataType: "json",
         data: data,
         success: function (response) {
@@ -289,8 +266,11 @@ function onclickEditLaw(page_id) {
 function onclickDeleteLaw(book_id) {
     if (confirm("법규를 삭제하시면 하위 페이지 및 연관된 북마크, 댓글이 모두 삭제됩니다.\n정말 삭제하시겠습니까?")) {
         $.ajax({
-            type: "GET",
-            url: "/law/delete/" + book_id,
+            type: "DELETE",
+            url: "/law/" + book_id,
+            headers: {
+                "X-CSRFToken" : $("input[name=csrfmiddlewaretoken]").val()
+            },
             dataType: "json",
             success: function (response) {
                 if(response.result == "success") {
@@ -315,11 +295,11 @@ function onclickUserIsActive(userid, username, flag){
     if(confirm(username + "님의 " + message + " 변경하시겠습니까?")) {
        $.ajax({
             type: "GET",
-            url: "/user/update/" + userid + "?flag=" + flag,
+            url: "/user/" + userid + "?flag=" + flag,
             dataType: "json",
             success: function (response) {
                 alert(username + "님이 " + response.message + " 처리 되었습니다.");
-                document.location.href = "/user/manage";
+                document.location.href = "/user";
             },
             error: function (request, status, error) {
                 console.log("code:" + request.status + "\n" + "message:" + request.responseText + "\n" + "error:" + error)
