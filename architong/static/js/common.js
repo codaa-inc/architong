@@ -47,7 +47,7 @@ function displayRegDt(reg_dt) {
     if (days < 7) {
         return `${Math.floor(days)}일 전`
     }
-    return moment(reg_dt).format('YYYY.MM.DD');
+    return reg_dt.split("T")[0].replace(/-/g, ".");
 };
 
 /**
