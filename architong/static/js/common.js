@@ -111,7 +111,7 @@ function onclickLikeComment(comment_id) {
         },
         error: function (request, status, error) { // 통신 실패시 - 로그인 페이지 리다이렉트
             console.log("code:"+request.status+"\n"+"message:"+request.responseText+"\n"+"error:"+error)
-            //window.location.replace("/accounts/google/login/")
+            
         },
     });
 };
@@ -191,7 +191,7 @@ function onclickInsertLaw() {
                 // 해당 법규 법제처 페이지 open
                 window.open(response.html_url);
             } else if(response.result == "success") {
-                document.location.href = "/law/manage";
+                document.location.href = "/law";
             }
         },
         error: function (request, status, error) {

@@ -197,7 +197,7 @@ function selectCommentList(page_id) {
         },
         error: function (request, status, error) { // 통신 실패시 - 로그인 페이지 리다이렉트
             console.log("code:"+request.status+"\n"+"message:"+request.responseText+"\n"+"error:"+error)
-            //window.location.replace("/accounts/google/login/")
+            
         },
     });
 }
@@ -435,7 +435,7 @@ function addComment(id) {
             },
             error: function (request, status, error) { // 통신 실패시 - 로그인 페이지 리다이렉트
                 console.log("code:" + request.status + "\n" + "message:" + request.responseText + "\n" + "error:" + error)
-                //window.location.replace("/accounts/google/login/")
+                
             },
         });
     }
@@ -472,7 +472,7 @@ function viewUpdateComment(id) {
 
 
 /**
- * 댓글수정함수
+ * 댓글수정 요청함수
  * */
 function updateComment(id) {
     // 댓글 수정 POST 요청
@@ -491,7 +491,6 @@ function updateComment(id) {
                          '&nbsp;&nbsp;' + displayRegDt(comment.reg_dt) + '&nbsp;&nbsp;수정됨' +
                          '<a id=' + "like-count-" + comment.comment_id  + ' class="count" ' +
                          'onclick="onclickLikeComment(' + "'" + comment.comment_id + "'" + ')" style="margin-right: 85px;">';
-
                     // 좋아요 표시
                     if (comment.is_liked === "true") {
                         comment_html += '<ion-icon name="heart"></ion-icon>';
@@ -529,7 +528,7 @@ function updateComment(id) {
             },
             error: function (request, status, error) { // 통신 실패시 - 로그인 페이지 리다이렉트
                 console.log("code:"+request.status+"\n"+"message:"+request.responseText+"\n"+"error:"+error)
-                //window.location.replace("/accounts/google/login/")
+                
             },
         });
     }
@@ -551,7 +550,7 @@ function deleteComment(id) {
                 // 해당 page의 comment count 증감
                 const comment_count = Number($("#comment-" + id).text()) - 1;
                 const comment_icon  = '<ion-icon style="font-size: large" name="chatbubbles-outline"></ion-icon>&nbsp;';
-                $("#comment-" + id).html(commeauthor-avatarnt_icon + comment_count);
+                $("#comment-" + id).html(comment_icon + comment_count);
                 // delete → 해당 댓글란 삭제
                 if (response.result == "delete") {
                     $("#" + id).remove();
@@ -579,9 +578,19 @@ function deleteComment(id) {
         },
         error: function (request, status, error) { // 통신 실패시 - 로그인 페이지 리다이렉트
             console.log("code:"+request.status+"\n"+"message:"+request.responseText+"\n"+"error:"+error)
-            //window.location.replace("/accounts/google/login/")
+            
         },
     });
+};
+
+/**
+ * 북마크 댓글 추가 이벤트
+ * */
+function onclickBookmarkComment(id) {
+  addComment(id);
+  setTimeout(function () {
+      $('a').remove('.count');
+  }, 50)
 };
 
 /**
@@ -766,7 +775,7 @@ function onclickLikeBook(book_id) {
         },
         error: function (request, status, error) { // 통신 실패시 - 로그인 페이지 리다이렉트
             console.log("code:"+request.status+"\n"+"message:"+request.responseText+"\n"+"error:"+error)
-            //window.location.replace("/accounts/google/login/")
+            
         },
     });
 };

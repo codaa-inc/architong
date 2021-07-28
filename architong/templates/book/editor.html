@@ -124,7 +124,7 @@
                 <!-- 에디터 & 뷰어 영역 -->
                 <div class="col-xl-9 doc-middle-content" style="z-index: 1;">
                     <article id="post" class="documentation_info">
-                        <div class="documentation_body" id="documentation">
+                        <div class="documentation_body" id="documentation">{% csrf_token %}
                             {% if page_form %}
                             <!-- 마크다운 편집 모드 -->
                             <div id="form-top">
@@ -135,7 +135,7 @@
                                     </a>
                                 </p>
                             </div>
-                            <form class="form" id="page_form" name="page_form">{% csrf_token %}
+                            <form class="form" id="page_form" name="page_form">
                                 <input name="book_id" style="display: none;" value="{{ book.book_id }}">
                                 <input class="form-control" name="page_title" value="{{ page_form.page_title }}"
                                 style="margin-bottom: 15px;">
@@ -216,16 +216,6 @@
                                 </form>
                             </div>
                             {% endif %}
-                            <script>
-                                /**
-                                 * TODO
-                                 * // 1개의 장으로 구성되어 있는 경우 제목 보여주지 않음
-                                const law_count = "{{ law_count }}";
-                                if (law_count < 2) {
-                                    $(".martor-content").children().first().remove();
-                                }
-                                 * */
-                            </script>
                         </div>
                     </article>
                 </div>

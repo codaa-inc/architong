@@ -51,6 +51,9 @@
         cursor: pointer;
         float: right;
     }
+    .delete {
+        color: #C0392B !important;
+    }
     .comment_inner {
         padding-top: 0px;
     }
@@ -219,7 +222,7 @@
                                         </div>
                                         <div class="col-md-12 form-group" id="radio-group">
                                             <button class="action_btn btn_small" type="button"
-                                                    onclick="addComment('parent-{{ bookmark.page_id }}')" style="color: #fff;">저장</button>
+                                                    onclick="onclickBookmarkComment('parent-{{ bookmark.page_id }}')" style="color: #fff;">저장</button>
                                         </div>
                                     </form>
                                 </div>
@@ -297,8 +300,16 @@
 <script src="{% static 'assets/magnify-pop/jquery.magnific-popup.min.js' %}"></script>
 <script src="{% static 'js/plugins.js' %}"></script>
 <script>
-    // 북마크 댓글은 비공개이므로 좋아요 제거
+    // 북마크 댓글은 비공개이므로 초기 로딩시 좋아요 제거
     $('a').remove('.count');
+
+    // 댓글 추가 및 수정 이벤트 발생을 감지해 좋아요 제거
+    let target = document.querySelector(".comment_inner");
+    let option = {childList: true, subtree: true};
+    let observer = new MutationObserver((mutations) => {
+        $('a').remove('.count');
+    })
+    observer.observe(target, option);
 
     // modal close 시 페이지 reload
     $("#selectProjectModal").on('hide.bs.modal', function(e) {

@@ -24,9 +24,15 @@ class CommentView(View):
         comments = []
         username = request.user
 
+        # 유효한 페이지인지 검증
+        try:
+            page = Pages.objects.get(page_id=id)
+        except Pages.DoesNotExist:
+            return render(request, "404.html", {"message": "잘못된 접근입니다."})
+
         # 부모,자식 댓글 QuerySet
         q = Q(page_id=id) & ~Q(status="D")
-        if request.user.is_authenticated:
+        if username.is_authenticated:
             q.add(Q(rls_yn="Y") | Q(rls_yn="N", username=username), q.AND)
         else:
             q.add(Q(rls_yn="Y"), q.AND)
@@ -56,13 +62,20 @@ class CommentView(View):
 
     # POST 요청시 댓글 등록
     def post(self, request, id):
+        # Comment 객체 선언, ID 지정
+        comment = Comments()
+        nodestr = id.split('-')[0]
+        idstr = id.split('-')[1]
         username = request.user
-        if username.is_authenticated:
-            # Comment 객체 선언, ID 지정
-            comment = Comments()
-            nodestr = id.split('-')[0]
-            idstr = id.split('-')[1]
 
+        # 유효한 페이지인지 검증
+        try:
+            page = Pages.objects.get(page_id=idstr)
+        except Pages.DoesNotExist:
+            return render(request, "404.html", {"message": "잘못된 접근입니다."})
+
+        # 해당 댓글의 작성자와 일치하는지 검증
+        if username.is_authenticated:
             # 부모,자식 댓글에 공통으로 저장할 data
             comment.username = username
             comment.content = request.POST['content']
@@ -118,22 +131,27 @@ class CommentView(View):
 
             context = json.dumps(list(new_comment_obj), cls=DjangoJSONEncoder)
             return HttpResponse(context, content_type="text/json")
-
         else:
             # 비인가 접근은 로그인 페이지로 redirect
-            message = "로그인이 필요한 서비스입니다.\n로그인하시겠습니까?"
+            message = "잘못된 접근입니다.\n로그인하시겠습니까?"
             context = {"result": "fail", "message": message}
             return JsonResponse(context, content_type="text/json")
 
     # DELETE 요청시 댓글 삭제
     def delete(self, request, id):
         username = request.user
-        if username.is_authenticated:
-            comment_id = id.split('-')[1]
+        comment_id = id.split('-')[1]
+
+        # Comments 쿼리셋
+        try:
             comment = Comments.objects.get(comment_id=comment_id)
+        except Comments.DoesNotExist:
+            return render(request, "404.html", {"message": "존재하지 않는 댓글입니다."})
+
+        # 해당 댓글의 작성자와 일치하는지 검증
+        if username.is_authenticated and str(username) == comment.username:
             result = "delete"
             status = Q(status="C") | Q(status="U")
-
             # 자식 댓글이 존재하는 경우 → 임시삭제 상태로 변경
             if comment.depth == 0:
                 has_any_child = Comments.objects.filter(Q(parent_id=comment_id) & status).count()
@@ -157,18 +175,20 @@ class CommentView(View):
             comment.save()
             return JsonResponse({"result": result})
         else:
-            context = {"result": "parent delete"}
-            return JsonResponse(context, content_type="text/json")
+            return render(request, "404.html", {"message": "잘못된 접근입니다."})
 
 
 # 댓글 수정 function
-@login_required
+@login_required(login_url="/account/google/login")
 def comment_update(request, id):
-    if request.method == 'POST':
-        # Comment 객체 선언, ID 지정
+    # Comment 객체 선언, ID 지정
+    try:
         comment_id = id.split('-')[1]
         comment = Comments.objects.get(comment_id=comment_id)
+    except Comments.DoesNotExist:
+        return render(request, "404.html", {"message": "존재하지 않는 댓글입니다."})
 
+    if request.method == 'POST' and str(request.user) == comment.username:
         # 댓글을 수정한다.
         comment.content = request.POST['content']
         comment.reg_dt = datetime.datetime.now()
@@ -186,9 +206,10 @@ def comment_update(request, id):
             else:
                 update_comment['is_liked'] = "false"
             update_comment['like_user_count'] = len(like_comment)
-
         update_comment = json.dumps(update_comment, cls=DjangoJSONEncoder)
         return HttpResponse(update_comment, content_type="text/json")
+    else:
+        return render(request, "404.html", {"message": "잘못된 접근입니다."})
 
 
 # 포럼 리스트 조회 function
@@ -278,18 +299,21 @@ def forum_detail(request, comment_id):
     # 자식댓글 조회 여부 초기값 false
     child_view = False
 
-    # 부모,자식 공통 QuerySet 호출
-    users = list(get_user_model().objects.all().only('id', 'username'))
-    socialaccounts: List[Socialaccount] = list(Socialaccount.objects.all().only('user_id', 'extra_data'))
-
     # 부모댓글 QuerySet
-    parent_comment = Comments.objects.get(comment_id=comment_id)
+    try:
+        parent_comment = Comments.objects.get(comment_id=comment_id)
+    except Comments.DoesNotExist:
+        return render(request, "404.html", {"message": "존재하지 않는 게시물입니다."})
     if parent_comment.depth == 1:
         # 자식댓글로 호출이 들어온 경우 부모댓글을 찾아가고, 자식조회 flag 설정함
         parent_id = parent_comment.parent_id
         parent_comment = Comments.objects.get(comment_id=parent_id)
         child_view = comment_id
         comment_id = parent_id
+
+    # 부모,자식 공통 QuerySet 호출
+    users = list(get_user_model().objects.all().only('id', 'username'))
+    socialaccounts: List[Socialaccount] = list(Socialaccount.objects.all().only('user_id', 'extra_data'))
 
     # 부모댓글 작성자 프로필 사진 정보 추가 : picture
     user_id = [user.id for user in users if user.username == parent_comment.username][0]
@@ -387,11 +411,14 @@ def forum_detail(request, comment_id):
 
 
 # 댓글 좋아요 토글 function
-@login_required
+@login_required(login_url="/account/google/login")
 def like_comment(request, comment_id):
     # 댓글, 작성자 QuerySet 선언
-    comment = Comments.objects.get(comment_id=comment_id)
-    author = get_user_model().objects.get(username=comment.username)
+    try:
+        comment = Comments.objects.get(comment_id=comment_id)
+        author = get_user_model().objects.get(username=comment.username)
+    except Comments.DoesNotExist:
+        return render(request, "404.html", {"message": "존재하지 않는 댓글입니다."})
 
     # 좋아요 삭제, 댓글 작성자 활동점수 -1
     if request.user in comment.like_users.all():

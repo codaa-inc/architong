@@ -30,9 +30,12 @@
     }
     .col-lg-3 {
         display: flex;
-        justify-content: center;
-        align-items: flex-end;
+        justify-content: flex-end;
+        align-items: center;
         flex-direction: row;
+    }
+    .forum-post-content {
+        padding-left: 0px;
     }
 </style>
 {% endblock %}
@@ -136,12 +139,10 @@
                                             <a>&nbsp;수정됨</a>
                                             {% endif %}
                                             {% if comment.username == request.user.username %}
-                                            <a onclick='viewUpdateComment("{{ comment.comment_id }}")' style="cursor: pointer;">
-                                                &nbsp;&#183;&nbsp;수정
-                                            </a>
-                                            <a onclick='deleteComment("{{ comment.comment_id }}")' style="cursor: pointer;">
-                                                &nbsp;&#183;&nbsp;삭제
-                                            </a>
+                                            &nbsp;&#183;
+                                            <a onclick='viewUpdateComment("{{ comment.comment_id }}")' style="cursor: pointer;">&nbsp;수정</a>
+                                            &nbsp;&#183;
+                                            <a onclick='deleteComment("{{ comment.comment_id }}")' style="cursor: pointer; color: #C0392B;">&nbsp;삭제</a>
                                             {% endif %}
                                         </div>
                                     </div>

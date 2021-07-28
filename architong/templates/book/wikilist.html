@@ -52,7 +52,9 @@
                         <div class="post_tag">
                             <div>
                                 <a href="javascript:;">위키</a>
+                                {% if book.wiki_gubun %}
                                 <a class="c_blue">{{ book.get_wiki_gubun_display }}</a>
+                                {% endif %}
                             </div>
                             <p>
                                 {% if book.is_liked == "true" %}

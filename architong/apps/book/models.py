@@ -18,13 +18,12 @@ class Books(models.Model):
     CODE_CHOICES = (
         ('0', '법령'), ('1', '행정규칙'), ('2', '자치법규')
     )
-
     WIKI_CHOICES = (
         ('0', '전체'), ('1', '설계'), ('2', '재료'), ('3', '시공'),
         ('4', '설비'), ('5', '환경'), ('6', '도시'), ('7', '기타')
     )
     code_gubun = models.CharField(max_length=2, choices=CODE_CHOICES)
-    wiki_gubun = models.CharField(max_length=10, blank=True, null=True, choices=WIKI_CHOICES, default=7)
+    wiki_gubun = models.CharField(max_length=10, blank=True, null=True, choices=WIKI_CHOICES)
     like_users = models.ManyToManyField(settings.AUTH_USER_MODEL, through='UserLikeBook')
 
     class Meta:

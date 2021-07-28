@@ -124,6 +124,7 @@ def wiki_manage(request, book_id):
             context = {"book": book,
                        "page_list": sorted_pages}
             return render(request, "book/editor.html", context)
+
         # 위키 저장
         elif request.method == 'POST':
             form = BookForm(request.POST)

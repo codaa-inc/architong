@@ -43,7 +43,9 @@
                             <a class="c_blue">{{ book.get_code_gubun_display }}</a>
                             {% else %}
                             <a>위키</a>
-                            <a class="c_blue">{{ book.get_wiki_gubun_display }}</a>
+                                {% if book.wiki_gubun %}
+                                <a class="c_blue">{{ book.get_wiki_gubun_display }}</a>
+                                {% endif %}
                             {% endif %}
                         </div>
                         <a>

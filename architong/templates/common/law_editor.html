@@ -103,11 +103,11 @@
                             {% if page.parent_id == 0 %}
                                 <li class="nav-item active">
                                     <a class="nav-link" style="margin-right: 40px; color: #0d0d75 !important;"
-                                    href="/law/edit/{{ page.page_id }}">{{ page.page_title }}</a>
+                                    href="/law/{{ page.page_id }}">{{ page.page_title }}</a>
                                     <ul class="list-unstyled dropdown_nav" id="parent-list-{{ page.page_id }}">
                                         {% for child_page in page_list %}
                                             {% if child_page.depth == 1 and child_page.page_title != "null" and child_page.parent_id == page.page_id %}
-                                                <li><a id='child-list-{{ child_page.page_id }}' href="/law/edit/{{ child_page.page_id }}">
+                                                <li><a id='child-list-{{ child_page.page_id }}' href="/law/{{ child_page.page_id }}">
                                                     {{ child_page.page_title }}</a></li>
                                             {% endif %}
                                         {% endfor %}
@@ -125,7 +125,7 @@
                             <div id="form-top">
                                 <h5 style="margin-bottom: 20px;">법규 수정하기</h5>
                                 <p style="margin-bottom: 0px">
-                                    <a href="/law/manage" style="color: #535550; margin-right: 10px;">
+                                    <a href="/law" style="color: #535550; margin-right: 10px;">
                                         <u><i class="icon_refresh"></i>&nbsp;목록 돌아가기</u>
                                     </a>
                                     <a href="https://ko.wikipedia.org/wiki/마크다운" target="_blank" style="color : #0d0d75";>

@@ -51,5 +51,4 @@ urlpatterns = [
     path('calc/uvalue', uvalue),
     path('m.calc/uvalue', uvalue_m),
     path('calc/uvalue/data', uvalue_data),
-
 ]

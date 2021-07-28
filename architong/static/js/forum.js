@@ -18,7 +18,7 @@ function addComment(id) {
         const csrftoken = "&csrfmiddlewaretoken=" + $("input[name=csrfmiddlewaretoken]").val();
         $.ajax({
             type: "POST",
-            url: "/comment/" + "child-" + id,
+            url: "/comment/child-" + id,
             dataType: "json", // 서버측에서 전송한 Response 데이터 형식 (json)
             data: $("#form-" + id).serialize() + '&rls_yn=Y' + csrftoken,
             success: function (response) { // 통신 성공시 - 동적으로 북마크 아이콘 변경
@@ -34,7 +34,7 @@ function addComment(id) {
             },
             error: function (request, status, error) { // 통신 실패시 - 로그인 페이지 리다이렉트
                 console.log("code:" + request.status + "\n" + "message:" + request.responseText + "\n" + "error:" + error)
-                //window.location.replace("/accounts/google/login/")
+                
             },
         });
     }
@@ -83,13 +83,10 @@ function updateComment(commentId) {
             dataType: "json", // 서버측에서 전송한 Response 데이터 형식 (json)
             data: $("#form-" + commentId).serialize() + "&csrfmiddlewaretoken=" + $("input[name=csrfmiddlewaretoken]").val(),
             success: function (response) { // 통신 성공시 - 동적으로 북마크 아이콘 변경
-                if (response.length > 0) {
-                    location.reload();
-                }
+                location.reload();
             },
             error: function (request, status, error) { // 통신 실패시 - 로그인 페이지 리다이렉트
                 console.log("code:" + request.status + "\n" + "message:" + request.responseText + "\n" + "error:" + error)
-                //window.location.replace("/accounts/google/login/")
             },
         });
     }
@@ -114,7 +111,7 @@ function deleteComment(commentId) {
         },
         error: function (request, status, error) { // 통신 실패시 - 로그인 페이지 리다이렉트
             console.log("code:"+request.status+"\n"+"message:"+request.responseText+"\n"+"error:"+error)
-            //window.location.replace("/accounts/google/login/")
+            
         },
     });
 };
