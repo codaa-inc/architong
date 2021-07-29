@@ -59,7 +59,7 @@
                             <td class="center"><a href="javascript:;"
                                    onclick="onclickUserIsActive('{{ user.id }}', '{{ user.username }}', 'is_staff')">일반회원</a></td>
                         {% endif %}
-                        <td>{{ user.username }}</td>
+                        <td><a href="/profile/{{ user.username }}">{{ user.username }}</a></td>
                         <td>{{ user.email }}</td>
                         <td class="center">{{ user.act_point }}</td>
                         <td class="center">{{ user.last_login | date:'Y.m.d H:i:s' }}</td>

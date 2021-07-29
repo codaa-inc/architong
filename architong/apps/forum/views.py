@@ -120,14 +120,16 @@ class CommentView(View):
             comment_id = Comments.objects.order_by('-pk')[0].comment_id
             new_comment_obj = Comments.objects.filter(comment_id=comment_id).values()
 
-            # 좋아요 관련 정보 추가 : is_liked, like_user_count
+            # 공개댓글에 좋아요 관련 정보 추가 : is_liked, like_user_count
+
             for new_comment in new_comment_obj:
-                like_comment = Comments.objects.get(comment_id=comment_id).like_users.all()
-                if request.user in like_comment:
-                    new_comment['is_liked'] = "true"
-                else:
-                    new_comment['is_liked'] = "false"
-                new_comment['like_user_count'] = len(like_comment)
+                if new_comment['rls_yn'] == "Y":
+                    like_comment = Comments.objects.get(comment_id=comment_id).like_users.all()
+                    if request.user in like_comment:
+                        new_comment['is_liked'] = "true"
+                    else:
+                        new_comment['is_liked'] = "false"
+                    new_comment['like_user_count'] = len(like_comment)
 
             context = json.dumps(list(new_comment_obj), cls=DjangoJSONEncoder)
             return HttpResponse(context, content_type="text/json")
@@ -196,18 +198,16 @@ def comment_update(request, id):
         comment.save()
 
         # 저장한 comment 객체를 return 한다.
-        update_comment_obj = Comments.objects.filter(comment_id=comment_id).values()
-
-        # 좋아요 관련 정보 추가 : is_liked, like_user_count
-        for update_comment in update_comment_obj:
+        update_comment_obj = list(Comments.objects.filter(comment_id=comment_id).values())[0]
+        # 공개댓글에 좋아요 관련 정보 추가 : is_liked, like_user_count
+        if update_comment_obj['rls_yn'] == "Y":
             like_comment = Comments.objects.get(comment_id=comment_id).like_users.all()
+            update_comment_obj['like_user_count'] = len(like_comment)
             if request.user in like_comment:
-                update_comment['is_liked'] = "true"
+                update_comment_obj['is_liked'] = "true"
             else:
-                update_comment['is_liked'] = "false"
-            update_comment['like_user_count'] = len(like_comment)
-        update_comment = json.dumps(update_comment, cls=DjangoJSONEncoder)
-        return HttpResponse(update_comment, content_type="text/json")
+                update_comment_obj['is_liked'] = "false"
+        return HttpResponse(json.dumps(update_comment_obj, cls=DjangoJSONEncoder), content_type="text/json")
     else:
         return render(request, "404.html", {"message": "잘못된 접근입니다."})
 

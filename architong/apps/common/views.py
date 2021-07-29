@@ -156,9 +156,12 @@ class Profile(View):
         # 사용자정보, 활동점수, 댓글수, 작성한 댓글의 좋아요 합계 QuerySet
         try:
             user_info = get_user_model().objects.get(username=username)
+            social_account = Socialaccount.objects.get(user_id=user_info.id)
         except UserInfo.DoesNotExist:
             return render(request, "404.html", {"message": "존재하지 않는 회원입니다."})
-        user_info.picture = json.loads(Socialaccount.objects.get(user_id=user_info.id).extra_data)['picture']
+        except Socialaccount.DoesNotExist:
+            return render(request, "404.html", {"message": "소셜 회원이 아닙니다."})
+        user_info.picture = json.loads(social_account.extra_data)['picture']
         act_point = get_user_model().objects.get(username=username).act_point
 
         # 최근활동, 알림 QuerySet 선언

@@ -78,28 +78,7 @@ function addOrRemoveBookmark(pageId) {
         success: function (response) { // 통신 성공시 - 동적으로 북마크 아이콘 변경
             if (response.result == "insert" || response.result == "delete") {
                 window.location.href = "/page/" + pageId;
-            } /**
-            if (response.result == "insert") {
-                // 북마크 등록
-                $("#bookmark-" + pageId).children().attr("class", "icon_ribbon");
-                $("#bookmark-" + pageId).prop("title", "북마크 삭제");
-            } else if (response.result == "delete"){
-                // 북마크 삭제
-                $("#bookmark-" + pageId).children().attr("class", "icon_ribbon_alt");
-                $("#bookmark-" + pageId).prop("title", "북마크 등록");
-                // 북마크 하위 메모 삭제
-                const del_comment = response.del_comment;
-                if (del_comment.length > 0) {
-                    for (let i in del_comment) {
-                        let comment = del_comment[i];
-                        if (comment.depth == 0) {
-                            $("div").remove("#parent-" + comment.comment_id);
-                        } else {
-                            $("ul").remove("#child-" + comment.comment_id);
-                        }
-                    }
-                }
-            } */ else if(response.result == "false") {
+            } else if(response.result == "false") {
                 if (confirm(response.message)) {
                     // 인증된 사용자가 아닌 경우 로그인 페이지로 이동
                     document.location.href = "/accounts/google/login/?next=" + window.location.pathname;
@@ -231,14 +210,18 @@ function viewCommentList(data, page_id, status) {
             }
 
             // 좋아요 표시
-            comment_html += '<a id=' + "like-count-" + comment.comment_id  + ' class="count" ' +
-                            'onclick="onclickLikeComment(' + "'" + comment.comment_id + "'" + ')" style="margin-right: 85px;">';
-            if (comment.is_liked === "true") {
-                comment_html += '<ion-icon name="heart"></ion-icon>';
-            } else {
-                comment_html += '<ion-icon name="heart-outline"></ion-icon>';
+            if(comment.like_user_count != undefined) {
+               comment_html += '<a id=' + "like-count-" + comment.comment_id  + ' class="count" ' +
+                            'onclick="onclickLikeComment(' + "'" + comment.comment_id + "'" + ')" ' +
+                            'style="margin-right: 85px;">';
+               if (comment.is_liked === "true") {
+                    comment_html += '<ion-icon name="heart"></ion-icon>';
+               } else {
+                    comment_html += '<ion-icon name="heart-outline"></ion-icon>';
+               }
+               comment_html += '&nbsp;' + comment.like_user_count + '</a>';
             }
-            comment_html += '&nbsp;' + comment.like_user_count + '</a></div></div><p';
+            comment_html += '</div></div><p';
 
             // 임시저장 메세지 스타일 적용
             if (comment.status == "TD") {
@@ -247,11 +230,13 @@ function viewCommentList(data, page_id, status) {
             comment_html += '>' + displayNewLine(comment.content) + '</p>';
             // 자신의 글에 수정, 삭제 태그 추가
             if (USERNAME == comment.username && comment.status != "TD") {
-                comment_html += '<a onclick="deleteComment(' + "'parent-" + comment.comment_id + "'" + ')" class="comment_tag delete">&nbsp;삭제&nbsp;</a>';
-                comment_html += '<a onclick="viewUpdateComment(' + "'parent-" + comment.comment_id + "'" + ')" class="comment_tag">&nbsp;수정&nbsp;</a>';
+                comment_html += '<a onclick="deleteComment(' + "'parent-" + comment.comment_id + "'" + ')" ' +
+                    'class="comment_tag delete">&nbsp;삭제&nbsp;</a>';
+                comment_html += '<a onclick="viewUpdateComment(' + "'parent-" + comment.comment_id + "'" + ')" ' +
+                    'class="comment_tag">&nbsp;수정&nbsp;</a>';
             }
-            comment_html += '<a onclick="viewCommentBox(' + "'child-" + comment.comment_id + "'" + ')" class="comment_reply">Reply ' +
-                            '<i class="arrow_right"></i></a></div></div>';
+            comment_html += '<a onclick="viewCommentBox(' + "'child-" + comment.comment_id + "'" + ')" ' +
+                'class="comment_reply">Reply <i class="arrow_right"></i></a></div></div>';
 
         } else if (comment.depth == 1) {
             comment_html += '<ul id="child-' + comment.comment_id + '" class="list-unstyled reply_comment">' +
@@ -264,15 +249,17 @@ function viewCommentList(data, page_id, status) {
             }
 
             // 좋아요 표시
-            comment_html += '<a id=' + "like-count-" + comment.comment_id  + ' class="count" ' +
+            if (comment.like_user_count != undefined){
+                 comment_html += '<a id=' + "like-count-" + comment.comment_id  + ' class="count" ' +
                             'onclick="onclickLikeComment(' + "'" + comment.comment_id + "'" + ')">';
-            if (comment.is_liked === "true") {
-                comment_html += '<ion-icon name="heart"></ion-icon>';
-            } else {
-                comment_html += '<ion-icon name="heart-outline"></ion-icon>';
+                 if (comment.is_liked === "true") {
+                    comment_html += '<ion-icon name="heart"></ion-icon>';
+                 } else {
+                    comment_html += '<ion-icon name="heart-outline"></ion-icon>';
+                 }
+                 comment_html += '&nbsp;' + comment.like_user_count + '</a>'
             }
-            comment_html += '&nbsp;' + comment.like_user_count + '</a>' +
-                            '</div></div><p>' + displayNewLine(comment.content) + '</p>';
+            comment_html += '</div></div><p>' + displayNewLine(comment.content) + '</p>';
 
             // 자신의 글에 수정, 삭제 태그 추가
             if (USERNAME == comment.username && comment.status != "TD") {
@@ -320,12 +307,13 @@ function viewCommentBox(id) {
 
     ////////////////////  Depth 2 ////////////////////
     if (id.indexOf("parent") == -1) {
-        let commentbox_html = '<div id="commentbox-' + id + '" class="blog_comment_box topic_comment" style="padding-top: 0px;">' +
-                            '<form id="form-' + id + '"  class="get_quote_form row"><div class="col-md-12 form-group">' +
-                            '<textarea id="textarea-' + id + '" name="content" class="form-control message" required></textarea>' +
-                            '<label class="floating-label">Comment</label></div><div class="col-md-12 form-group" id="radio-group">' +
-                            '<button class="action_btn btn_small" type="button" ' +
-                            'onclick="addComment(' + "'" + id + "'" + ')" style="color: #fff;">저장</button></div></form></div>';
+        let commentbox_html =
+            '<div id="commentbox-' + id + '" class="blog_comment_box topic_comment" style="padding-top: 0px;">' +
+            '<form id="form-' + id + '"  class="get_quote_form row"><div class="col-md-12 form-group">' +
+            '<textarea id="textarea-' + id + '" name="content" class="form-control message" required></textarea>' +
+            '<label class="floating-label">Comment</label></div><div class="col-md-12 form-group" id="radio-group">' +
+            '<button class="action_btn btn_small" type="button" ' +
+            'onclick="addComment(' + "'" + id + "'" + ')" style="color: #fff;">저장</button></div></form></div>';
         // 대댓글 창이 존재하지 않는 경우 생성
         if(!document.getElementById("commentbox-" + id)) {
             let targetId = "";
@@ -352,7 +340,7 @@ function viewCommentBox(id) {
         // 대댓글 창이 이미 존재하는 경우 toggle
         } else {
             if($('#commentbox-' + page_id).css('display') == 'none'){
-                $('#commentbox-' + page_id).show();     // 댓글창 show
+                $('#commentbox-' + page_id).show();                 // 댓글창 show
             } else {
                 $('#commentbox-' + page_id).hide(200, 'swing');     // 댓글창 hide
             }
@@ -360,27 +348,23 @@ function viewCommentBox(id) {
 
     ////////////////////  Depth 1 ////////////////////
     } else {
-        let commentbox_html = '<div id="commentbox-' + id + '" class="blog_comment_box topic_comment" style="padding-top: 0px;">' +
-                            '<form id="form-' + id + '"  class="get_quote_form row"><div class="col-md-12 form-group">' +
-                            '<textarea id="textarea-' + id + '" name="content" class="form-control message" required></textarea>' +
-                            '<label class="floating-label">Comment</label></div><div class="col-md-12 form-group" id="radio-group">' +
-                            '<input type="radio" class="rls_yn" name="rls_yn" value="Y" id="rls_y" onchange="onchangeRadio(' + "'" + "rls_y" + "'" + ')" checked><label>공개 댓글</label>' +
-                            '<input type="radio" class="rls_yn" name="rls_yn" value="N" id="rls_n" onchange="onchangeRadio(' + "'" + "rls_n" + "'" + ')" style="margin-left: 10px;"><label>북마크 메모</label>' +
-                            '<button class="action_btn btn_small" type="button" ' +
-                            'onclick="addComment(' + "'" + id + "'" + ')" style="color: #fff;">저장</button></div></form></div>';
+        let commentbox_html =
+            '<div id="commentbox-' + id + '" class="blog_comment_box topic_comment" style="padding-top: 0px;">' +
+            '<form id="form-' + id + '"  class="get_quote_form row"><div class="col-md-12 form-group">' +
+            '<textarea id="textarea-' + id + '" name="content" class="form-control message" required></textarea>' +
+            '<label class="floating-label">Comment</label></div><div class="col-md-12 form-group" id="radio-group">' +
+            '<input type="radio" class="rls_yn" name="rls_yn" value="Y" id="rls_y" ' +
+            'onchange="onchangeRadio(' + "'" + "rls_y" + "'" + ')" checked><label>공개 댓글</label>' +
+            '<input type="radio" class="rls_yn" name="rls_yn" value="N" id="rls_n" ' +
+            'onchange="onchangeRadio(' + "'" + "rls_n" + "'" + ')" style="margin-left: 10px;"><label>북마크 메모</label>' +
+            '<button class="action_btn btn_small" type="button" ' +
+            'onclick="addComment(' + "'" + id + "'" + ')" style="color: #fff;">저장</button></div></form></div>';
         $("#page-" + page_id).after(commentbox_html);
     }
 
     // 생성한 textarea로 마우스 커서 이동
     $('#textarea-' + id).focus();
 };
-
-/**
-// textarea enter key 입력시 저장 버튼 클릭 이벤트 실행
-$('textarea[name=content]').click(function(){
-    const id = $(this).attr('id').replace("textarea-", "");
-    addComment(id);
-});*/
 
 /**
  * 댓글 radio toggle
@@ -458,10 +442,13 @@ function viewUpdateComment(id) {
     else {
         let commentbox_html = '<div id="commentbox-' + id + '" class="blog_comment_box topic_comment" style="padding-top: 0px;">' +
             '<form id="form-' + id + '"  class="get_quote_form row"><div class="col-md-12 form-group">' +
-            '<textarea id="textarea-' + id + '" name="content" class="form-control message" required>' + edit_comment.text() + '</textarea>' +
+            '<textarea id="textarea-' + id + '" name="content" class="form-control message" required>'
+            + edit_comment.text() + '</textarea>' +
             '<label class="floating-label">Comment</label></div><div class="col-md-12 form-group" id="radio-group">' +
-            '<a class="doc_border_btn btn_small" type="button" onclick="viewUpdateComment(' + "'" + id + "'" + ')" style="margin-right: 10px; font-size: 16px;">취소</a>' +
-            '<a class="action_btn btn_small" type="button" onclick="updateComment(' + "'" + id + "'" + ')" style="color: #fff;">저장</a></div></form></div>';
+            '<a class="doc_border_btn btn_small" type="button" onclick="viewUpdateComment(' + "'" + id + "'" + ')" ' +
+            'style="margin-right: 10px; font-size: 16px;">취소</a>' +
+            '<a class="action_btn btn_small" type="button" onclick="updateComment(' + "'" + id + "'" + ')" ' +
+            'style="color: #fff;">저장</a></div></form></div>';
         // 댓글창 숨김, textarea 삽입
         edit_comment.hide();
         edit_comment.next().hide();
@@ -488,17 +475,21 @@ function updateComment(id) {
                     comment_html += '<div id=' + "parent-" + comment.comment_id + ' class="media comment_author">' +
                          '<div class="media-body"><div class="comment_info"><div class="comment_date">' +
                         '<a href="/profile/' + comment.username +'"><strong>' + comment.username + '</strong></a>' +
-                         '&nbsp;&nbsp;' + displayRegDt(comment.reg_dt) + '&nbsp;&nbsp;수정됨' +
-                         '<a id=' + "like-count-" + comment.comment_id  + ' class="count" ' +
-                         'onclick="onclickLikeComment(' + "'" + comment.comment_id + "'" + ')" style="margin-right: 85px;">';
+                         '&nbsp;&nbsp;' + displayRegDt(comment.reg_dt) + '&nbsp;&nbsp;수정됨';
+
                     // 좋아요 표시
-                    if (comment.is_liked === "true") {
-                        comment_html += '<ion-icon name="heart"></ion-icon>';
-                    } else {
-                        comment_html += '<ion-icon name="heart-outline"></ion-icon>';
+                    if(comment.like_user_count != undefined) {
+                        comment_html += '<a id=' + "like-count-" + comment.comment_id  + ' class="count" ' +
+                         'onclick="onclickLikeComment(' + "'" + comment.comment_id + "'" + ')" style="margin-right: 85px;">';
+                        if (comment.is_liked === "true") {
+                            comment_html += '<ion-icon name="heart"></ion-icon>';
+                        } else {
+                            comment_html += '<ion-icon name="heart-outline"></ion-icon>';
+                        }
+                        comment_html += '&nbsp;' + comment.like_user_count + '</a>';
                     }
 
-                    comment_html += '&nbsp;' + comment.like_user_count + '</a></div></div><p>' + displayNewLine(comment.content) + '</p>' +
+                    comment_html += '</div></div><p>' + displayNewLine(comment.content) + '</p>' +
                          '<a onclick="deleteComment(' + "'parent-" + comment.comment_id + "'" + ')" class="comment_tag">&nbsp;삭제&nbsp;</a>' +
                          '<a onclick="viewUpdateComment(' + "'parent-" + comment.comment_id + "'" + ')" class="comment_tag">&nbsp;수정&nbsp;</a>' +
                          '<a onclick="viewCommentBox(' + "'child-" + comment.comment_id + "'" + ')" class="comment_reply">Reply ' +
@@ -508,18 +499,21 @@ function updateComment(id) {
                     comment_html += '<ul id="child-' + comment.comment_id + '" class="list-unstyled reply_comment">' +
                         '<li><div class="media comment_author"><div class="media-body"><div class="comment_info"><div class="comment_date">' +
                         '<a href="/profile/' + comment.username + '"><strong>' + comment.username + '</strong></a>&nbsp;&nbsp;' +
-                        displayRegDt(comment.reg_dt) + '&nbsp;&nbsp;수정됨' +
-                        '<a id=' + "like-count-" + comment.comment_id  + ' class="count" ' +
-                        'onclick="onclickLikeComment(' + "'" + comment.comment_id + "'" + ')">';
+                        displayRegDt(comment.reg_dt) + '&nbsp;&nbsp;수정됨';
 
-                    // 좋아요 표시
-                    if (comment.is_liked === "true") {
-                        comment_html += '<ion-icon name="heart"></ion-icon>';
-                    } else {
-                        comment_html += '<ion-icon name="heart-outline"></ion-icon>';
-                    }
+                        // 좋아요 표시
+                        if (comment.like_user_count != undefined) {
+                            comment_html += '<a id=' + "like-count-" + comment.comment_id  + ' class="count"' +
+                                'onclick="onclickLikeComment(' + "'" + comment.comment_id + "'" + ')">';
+                            if (comment.is_liked === "true") {
+                                comment_html += '<ion-icon name="heart"></ion-icon>';
+                            } else {
+                                comment_html += '<ion-icon name="heart-outline"></ion-icon>';
+                            }
+                            comment_html += '&nbsp;' + comment.like_user_count + '</a>';
+                        }
 
-                    comment_html += '&nbsp;' + comment.like_user_count + '</a></div></div><p>' + displayNewLine(comment.content) + '</p>' +
+                    comment_html += '</div></div><p>' + displayNewLine(comment.content) + '</p>' +
                         '<a onclick="deleteComment(' + "'child-" + comment.comment_id + "'" + ')" class="comment_tag">&nbsp;삭제&nbsp;</a>' +
                         '<a onclick="viewUpdateComment(' + "'child-" + comment.comment_id + "'" + ')" class="comment_tag">&nbsp;수정&nbsp;</a>' +
                         '</div></div></li></ul>';
@@ -581,16 +575,6 @@ function deleteComment(id) {
             
         },
     });
-};
-
-/**
- * 북마크 댓글 추가 이벤트
- * */
-function onclickBookmarkComment(id) {
-  addComment(id);
-  setTimeout(function () {
-      $('a').remove('.count');
-  }, 50)
 };
 
 /**
