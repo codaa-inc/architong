@@ -584,7 +584,7 @@ def comment_count(request):
 
 # 책 좋아요 토글 function
 @login_required(login_url="/account/google/login")
-def like_book(request, book_id):
+def book_like(request, book_id):
     # 문서, 작성자 쿼리셋
     try:
         book = Books.objects.get(book_id=book_id)

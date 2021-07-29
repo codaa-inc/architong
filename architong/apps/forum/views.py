@@ -121,7 +121,6 @@ class CommentView(View):
             new_comment_obj = Comments.objects.filter(comment_id=comment_id).values()
 
             # 공개댓글에 좋아요 관련 정보 추가 : is_liked, like_user_count
-
             for new_comment in new_comment_obj:
                 if new_comment['rls_yn'] == "Y":
                     like_comment = Comments.objects.get(comment_id=comment_id).like_users.all()

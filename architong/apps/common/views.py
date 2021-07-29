@@ -627,7 +627,7 @@ class LawView(View):
 
 
 # 법규관리 수정 페이지를 book_id로 탐색해 Redirect 하는 function
-@staff_member_required(login_url='/forbidden')
+@staff_member_required(login_url='/access-restrict')
 def law_edit_init(request, book_id):
     try:
         page_id = Pages.objects.filter(book_id=book_id, depth=1).first().page_id
@@ -637,7 +637,7 @@ def law_edit_init(request, book_id):
 
 
 # 법규수정 페이지 렌더링 및 수정 function
-@staff_member_required(login_url='/forbidden')
+@staff_member_required(login_url='/access-restrict')
 def law_manage(request, page_id):
     # 법규 수정 Form 랜더링
     if request.method == "GET":
@@ -662,6 +662,7 @@ def law_manage(request, page_id):
         if parent_pages.count() > 1:
             context["book_title"] = book.book_title
         return render(request, 'common/law_editor.html', context)
+
     # 법규 수정 Form 저장
     elif request.method == "POST":
         form = LawForm(request.POST)
@@ -673,6 +674,7 @@ def law_manage(request, page_id):
             return JsonResponse({"message": "수정되었습니다."})
         else:
             return JsonResponse({"message": "저장하는 중 오류가 발생했습니다. 양식을 확인해주세요."})
+
     # 법규 공개여부 변경
     elif request.method == "PUT":
         try:
@@ -708,14 +710,14 @@ def law_manage(request, page_id):
 
 
 # 회원관리 페이지를 렌더링하는 function
-@staff_member_required(login_url='/forbidden')
+@staff_member_required(login_url='/access-restrict')
 def user_manage(request):
     context = {"users": get_user_model().objects.all()}
     return render(request, "common/user_admin.html", context)
 
 
 # 회원 활성화여부, 관리자여부를 변경하는 function
-@staff_member_required(login_url='/forbidden')
+@staff_member_required(login_url='/access-restrict')
 def user_update(request, user_id):
     try:
         user = get_user_model().objects.get(id=user_id)
@@ -740,6 +742,16 @@ def user_update(request, user_id):
     return JsonResponse({"message": message})
 
 
-# 관리자 권한 검사에 걸렸을때 페이지 랜더링
-def forbidden(request):
+# handler404
+def page_not_found_view(request, exception):
+    return render(request, "404.html", {"message": "존재하지 않는 페이지입니다."})
+
+
+# handler500
+def server_error_view(request):
     return render(request, "404.html", {"message": "잘못된 접근입니다."})
+
+
+# 관리자 권한 검사에 걸렸을때 접근 제한 페이지 랜더링
+def access_restrict(request):
+    return render(request, "404.html", {"message": "접근 권한이 없습니다."})

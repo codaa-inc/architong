@@ -1,6 +1,5 @@
 from django.contrib import admin
 from django.contrib.auth import views as auth_views
-from django.contrib.auth.views import LogoutView
 from django.urls import path, include
 
 from apps.common.views import *
@@ -8,8 +7,12 @@ from apps.book.views import *
 from apps.forum.views import *
 from apps.calculator.views import *
 
+# ------ Error Handler ------
+handler404 = 'apps.common.views.page_not_found_view'
+handler500 = 'apps.common.views.server_error_view'
+
 urlpatterns = [
-    # Common
+    # ------ Common ------
     path('', index),
     path('admin/', admin.site.urls),
     path('accounts/', include('allauth.urls')),
@@ -22,9 +25,9 @@ urlpatterns = [
     path('law/<int:page_id>', law_manage, name="law_manage"),
     path('user', user_manage),
     path('user/<int:user_id>', user_update),
-    path('forbidden', forbidden),
+    path('access-restrict', access_restrict),
 
-    # Book
+    # ------ Book ------
     path('wiki/', wiki_view),
     path('wiki/<int:book_id>', wiki_manage),
     path('wiki/page', wiki_add),
@@ -33,13 +36,13 @@ urlpatterns = [
     path('wiki-editor/page/<int:page_id>', wiki_editor, name="wiki_editor"),
     path('book/<int:book_id>', view_book),
     path('book/bookmark/<int:page_id>', add_or_remove_bookmark),
-    path('book/like/<int:book_id>', like_book),
+    path('book/like/<int:book_id>', book_like),
     path('page/<int:page_id>', view_page),
     path('bookmark/', view_bookmark),
     path('bookmark/<int:page_id>', delete_bookmark),
     path('bookmark/label/<int:label_id>', manage_label),
 
-    # Forum
+    # ------ Forum ------
     path('comment/<str:id>', CommentView.as_view()),
     path('comment/update/<str:id>', comment_update),
     path('comment/count/', comment_count),
@@ -47,7 +50,7 @@ urlpatterns = [
     path('forum/', forum),
     path('forum/<str:comment_id>', forum_detail),
 
-    # Calculator
+    # ------ Calculator ------
     path('calc/uvalue', uvalue),
     path('m.calc/uvalue', uvalue_m),
     path('calc/uvalue/data', uvalue_data),
